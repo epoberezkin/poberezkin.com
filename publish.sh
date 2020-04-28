@@ -5,7 +5,7 @@ git checkout develop
 stack exec my-site clean
 stack exec my-site build
 git fetch --all
-git checkout -b master
+git checkout -b master --track origin/master
 cp -a _site/. .
 
 git add .

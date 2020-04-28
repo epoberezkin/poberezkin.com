@@ -1,7 +1,7 @@
 ---
 title: Validating data with JSON-schema
 author: Evgeny Poberezkin
-tags: json-schema, tutorial
+tags: json-schema, tutorial, coding
 ---
 
 Tutsplus.com published my [2 part tutorial](https://code.tutsplus.com/tutorials/validating-data-with-json-schema-part-1--cms-25343) on how to use JSON-schemas and also about some other related stuff:

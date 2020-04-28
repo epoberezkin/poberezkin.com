@@ -34,7 +34,7 @@ postPages tags = match "posts/*" $ do
 
 tagPages :: Tags -> Rules ()
 tagPages tags = tagsRules tags $ \tag ptrn -> do
-  let title = "&#35;" ++ tag ++ " posts"
+  let title = "&#35;" ++ tag
   postList ptrn title "templates/tag.html"
 
 archive :: Rules ()

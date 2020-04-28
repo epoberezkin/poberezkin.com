@@ -1,7 +1,7 @@
 ---
 title: TDD doesn’t work… Maybe CDD would?
 author: Evgeny Poberezkin
-tags: tests
+tags: tests, coding
 ref: https://medium.com/@epoberezkin/tdd-doesnt-work-maybe-cdd-would-1fd756d2ca4b
 ---
 

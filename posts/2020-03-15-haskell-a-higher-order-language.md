@@ -1,7 +1,7 @@
 ---
 title: Haskell — a higher order language
 author: Evgeny Poberezkin
-tags: haskell
+tags: haskell, coding
 ref: https://medium.com/@epoberezkin/haskell-a-higher-order-language-ade461d453c7
 ---
 

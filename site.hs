@@ -21,25 +21,37 @@ pages = match (fromList ["about.md", "contact.md"]) $ do
     >>= loadAndApplyTemplate "templates/default.html" defaultContext
     >>= relativizeUrls
 
-postPages :: Rules ()
-postPages = match "posts/*" $ do
+postTags :: Rules Tags
+postTags = buildTags "posts/*" (fromCapture "tags/*.html")
+
+postPages :: Tags -> Rules ()
+postPages tags = match "posts/*" $ do
   route $ setExtension "html"
   compile $ pandocCompiler
-    >>= loadAndApplyTemplate "templates/post.html" postCtx
-    >>= loadAndApplyTemplate "templates/default.html" postCtx
+    >>= loadAndApplyTemplate "templates/post.html" (postCtxWithTags tags)
+    >>= loadAndApplyTemplate "templates/default.html" (postCtxWithTags tags)
     >>= relativizeUrls
 
+tagPages :: Tags -> Rules ()
+tagPages tags = tagsRules tags $ \tag ptrn -> do
+  let title = "&#35;" ++ tag ++ " posts"
+  postList ptrn title "templates/tag.html"
+
 archive :: Rules ()
-archive = create ["archive.html"] $ do
+archive = create ["archive.html"] $
+  postList "posts/*" "Archives" "templates/archive.html"
+
+postList :: Pattern -> String -> Identifier -> Rules ()
+postList ptrn title tmpl = do
   route idRoute
   compile $ do
-    posts <- recentFirst =<< loadAll "posts/*"
-    let archiveCtx = listField "posts" postCtx (return posts)
-                     `mappend` constField "title" "Archives"
-                     `mappend` defaultContext
+    posts <- recentFirst =<< loadAll ptrn
+    let ctx = listField "posts" postCtx (return posts)
+              `mappend` constField "title" title
+              `mappend` defaultContext
     makeItem ""
-      >>= loadAndApplyTemplate "templates/archive.html" archiveCtx
-      >>= loadAndApplyTemplate "templates/default.html" archiveCtx
+      >>= loadAndApplyTemplate tmpl ctx
+      >>= loadAndApplyTemplate "templates/default.html" ctx
       >>= relativizeUrls
 
 index :: Rules ()
@@ -61,11 +73,17 @@ postCtx :: Context String
 postCtx = dateField "date" "%B %e, %Y"
           `mappend` defaultContext
 
+postCtxWithTags :: Tags -> Context String
+postCtxWithTags tags = tagsField "tags" tags
+                       `mappend` postCtx
+
 main :: IO ()
 main = hakyllWith cfg $ do
   static
   pages
-  postPages
+  tags <- postTags
+  postPages tags
+  tagPages tags
   archive
   index
   templates

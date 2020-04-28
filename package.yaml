@@ -24,6 +24,7 @@ ghc-options:
   - -Wincomplete-uni-patterns
 
 default-extensions:
+  - BlockArguments
   - OverloadedStrings
   - PartialTypeSignatures
 

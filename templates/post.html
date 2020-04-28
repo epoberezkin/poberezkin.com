@@ -1,14 +1,21 @@
 <article>
     <section class="header">
-        Posted on
-        $if(ref)$
-            <a href="$ref$">$date$</a>
-        $else$
-            $date$
-        $endif$
-        $if(author)$
-            by $author$
-        $endif$
+        <div class="info">
+            Posted on
+            $if(ref)$
+                <a href="$ref$">$date$</a>
+            $else$
+                $date$
+            $endif$
+            $if(author)$
+                by $author$
+            $endif$
+        </div>
+        <div class="info">
+            $if(tags)$
+                Tags: $tags$
+            $endif$
+        </div>
     </section>
     <section>
         $body$

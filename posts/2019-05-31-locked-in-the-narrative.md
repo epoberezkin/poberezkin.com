@@ -1,6 +1,7 @@
 ---
 title: Locked in the Narrative?
 author: Evgeny Poberezkin
+tags: essay
 ref: https://medium.com/@epoberezkin/locked-in-the-narrative-921bc45006dd
 ---
 

@@ -1,0 +1,32 @@
+name:                my-site
+version:             0.1.0.0
+#synopsis:
+#description:
+homepage:            https://github.com/epoberezkin/my-site
+license:             BSD3
+author:              Evgeny Poberezkin
+copyright:           2020 Evgeny Poberezkin
+category:            Web
+extra-source-files:
+- README.md
+
+dependencies:
+  - base >= 4.7 && < 5
+  - hakyll
+
+ghc-options:
+  - -Wall
+  - -Wcompat
+  - -Worphans
+  - -Werror=incomplete-patterns
+  - -Wredundant-constraints
+  - -Wincomplete-record-updates
+  - -Wincomplete-uni-patterns
+
+default-extensions:
+  - OverloadedStrings
+
+
+executables:
+  my-site:
+    main:             site.hs

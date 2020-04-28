@@ -15,7 +15,7 @@ static = do
     compile compressCssCompiler
 
 pages :: Rules ()
-pages = match (fromList ["about.md", "contact.md"]) $ do
+pages = match (fromList ["about.md"]) $ do
   route $ setExtension "html"
   compile $ pandocCompiler
     >>= loadAndApplyTemplate "templates/default.html" defaultContext
@@ -41,6 +41,13 @@ archive :: Rules ()
 archive = create ["archive.html"] $
   postList "posts/*" "Archives" "templates/archive.html"
 
+index :: Rules ()
+index = create ["index.html"] $
+  postList "posts/*" " " "templates/index.html"
+
+templates :: Rules ()
+templates = match "templates/*" $ compile templateBodyCompiler
+
 postList :: Pattern -> String -> Identifier -> Rules ()
 postList ptrn title tmpl = do
   route idRoute
@@ -53,21 +60,6 @@ postList ptrn title tmpl = do
       >>= loadAndApplyTemplate tmpl ctx
       >>= loadAndApplyTemplate "templates/default.html" ctx
       >>= relativizeUrls
-
-index :: Rules ()
-index = match "index.html" $ do
-  route idRoute
-  compile $ do
-    posts <- recentFirst =<< loadAll "posts/*"
-    let indexCtx = listField "posts" postCtx (return posts)
-                   `mappend` defaultContext
-    getResourceBody
-      >>= applyAsTemplate indexCtx
-      >>= loadAndApplyTemplate "templates/default.html" indexCtx
-      >>= relativizeUrls
-
-templates :: Rules ()
-templates = match "templates/*" $ compile templateBodyCompiler
 
 postCtx :: Context String
 postCtx = dateField "date" "%B %e, %Y"

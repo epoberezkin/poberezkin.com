@@ -25,6 +25,7 @@ ghc-options:
 
 default-extensions:
   - OverloadedStrings
+  - PartialTypeSignatures
 
 
 executables:

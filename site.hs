@@ -1,7 +1,12 @@
 import Hakyll
 
+cfg :: Configuration
+cfg = defaultConfiguration
+        { deployCommand = "./publish.sh"
+        }
+
 main :: IO ()
-main = hakyll $ do
+main = hakyllWith cfg $ do
     match "images/*" $ do
         route   idRoute
         compile copyFileCompiler
@@ -10,7 +15,7 @@ main = hakyll $ do
         route   idRoute
         compile compressCssCompiler
 
-    match (fromList ["about.rst", "contact.markdown"]) $ do
+    match (fromList ["about.md", "contact.md"]) $ do
         route   $ setExtension "html"
         compile $ pandocCompiler
             >>= loadAndApplyTemplate "templates/default.html" defaultContext

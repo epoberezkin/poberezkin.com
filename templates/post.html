@@ -1,6 +1,11 @@
 <article>
     <section class="header">
-        Posted on $date$
+        Posted on
+        $if(ref)$
+            <a href="$ref$">$date$</a>
+        $else$
+            $date$
+        $endif$
         $if(author)$
             by $author$
         $endif$

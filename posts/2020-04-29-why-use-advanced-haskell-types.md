@@ -6,7 +6,7 @@ tags: haskell, coding
 
 Haskell type system has dramatically evolved, both with the language extensions and libraries. It can be a challenge to navigate this space. So why anything beyond basic types is needed?
 
-Types in Haskell provide a way not only to type-check the code you write, but to design the whole system in types, before any code is written, and then use the types to guide the development. It is worth reading the book "Type-driven development in Idris" by Edwin Brady about this approach.
+Types in Haskell provide a way not only to type-check the code you write, but to design the whole system in types, before any code is written, and then use the types to guide the development. It is worth reading the book "[Type-driven development in Idris](https://www.manning.com/books/type-driven-development-with-idris)" by Edwin Brady about this approach.
 
 Let's try to design types for some service accounts that can represent a user or an organisation.
 
@@ -29,9 +29,9 @@ data Account = User AInfo | Org AInfo Members
 type Members = [Account]
 ```
 
-We've already met the first problem with this approach - members of the organisation should be users, but `Members` types allows both users and organisations - we will have to manage it in code.
+We've already met the first problem with this approach - members of the organisation should be users, but `Members` type allows both users and organisations - we will have to manage it in code.
 
-Some functions for these accounts:
+Here are some functions for these accounts:
 
 ```haskell
 -- all shared functions should work with both users and orgs
@@ -73,7 +73,7 @@ data Org = Org AInfo Members
 type Members = [User]
 ```
 
-This is better, organisation members can be only users.
+This is better, organisation members can be only users now.
 
 We cannot have one function working on two different types, but we can define a type class and make `User` and `Org` types its instances:
 
@@ -93,7 +93,7 @@ orgMembers :: Org -> Members
 orgMembers (Org _ ms) = ms
 ```
 
-The problem that we now have is that `User` and `Org` are two different types, and we cannot put them into the one list.
+The problem that we now have is that `User` and `Org` are two different types, and we cannot put them into one list.
 
 Haskell GHC compiler (since v6.8.1 released in 2007) has the extension [ExistentialQuantification](https://downloads.haskell.org/ghc/8.8.3/docs/html/users_guide/glasgow_exts.html#extension-ExistentialQuantification) that allows to create a type that can wrap values of multiple types, and the members of this wrapper type can be put in the list:
 
@@ -102,7 +102,7 @@ data A = forall a. Acc a => A a
 type Accounts = [A]
 ```
 
-In our case we limit the allowed types to the instances of `Acc` type class, so we can use this list with our type class functions, but it is not the only shared criteria the types can have and still be useful - see another example in ExistentialQuantification docs.
+In our case we limit the allowed types to the instances of `Acc` type class, so we can use the list elements with our type class functions, but it is not the only shared criteria the types can have and still be useful - see another example in ExistentialQuantification docs.
 
 Now we can put wrapped users and orgs into the same list and process them:
 
@@ -128,11 +128,11 @@ There are two downsides of this approach:
 Let's try to solve these problems.
 
 
-## Approach #3 - data families and data kinds
+<h2>Approach #3 - data families and data kinds</h2>
 
-We will try to limit the types that can be instances of `Acc` type class. Types in Haskell have kinds, and in most cases the kind of the type is determined by the number of type parameters.
+We will try to limit the types that can be instances of `Acc` type class. Types in Haskell have kinds, and in most cases the kind of a type is determined by the number of type parameters.
 
-From v7.4.1 released in 2012 Haskell allows to define your own kinds using [DataKinds](https://downloads.haskell.org/ghc/8.8.3/docs/html/users_guide/glasgow_exts.html#extension-DataKinds) extension - we will use it to limit the types that can be used as `Acc`. We will also use extensions [TypeFamilies](https://downloads.haskell.org/ghc/8.8.3/docs/html/users_guide/glasgow_exts.html#extension-TypeFamilies) and ExistentialQuantification we already used to have types of user and organisation related to each other and to put them into the same list.
+From v7.4.1 released in 2012 Haskell makes all your types also kinds using [DataKinds](https://downloads.haskell.org/ghc/8.8.3/docs/html/users_guide/glasgow_exts.html#extension-DataKinds) extension - we will use it to limit the types that can be used as `Acc`. We will also use extensions [TypeFamilies](https://downloads.haskell.org/ghc/8.8.3/docs/html/users_guide/glasgow_exts.html#extension-TypeFamilies) and ExistentialQuantification we already used to have types of user and organisation related to each other and to put them into the same list.
 
 Let's define a simple type that has the list of allowed account types:
 
@@ -195,7 +195,7 @@ data Account (a :: AType) where
 type Members = [Account 'AUser] -- organisation members can be only users
 ```
 
-Now that we have one parametrised type, we can define functions on the general type without a type class, using just pattern matching:
+Now that we have one parametrised type, we can define functions on this general type without a type class, using just pattern matching:
 
 ```haskell
 accountName :: Account a -> Text
@@ -228,6 +228,6 @@ Beyond basic types, we looked at three options that allow to define different en
 
 1. Type classes - the most extensible option, that allows to define the behavior independently of its implementation. The classic scenario for type classes is some kind of widgets/shapes/etc.
 2. Data families restricted with data kinds. The advantage of such data families is that you can define its members in different parts of your code, but you have control of the list of allowed members in a single location using a custom data kind.
-3. GADTs - they provide a much bigger flexibility in defining your types, in many cases without the need for type classes. They allow different constructors of one parametrised type (of a higher kind) return specific types (of basic kind).
+3. GADTs - they provide a much bigger flexibility in defining your types, in many cases without the need for type classes. They allow different constructors of one parametrised type (of a higher kind) to return specific types (of basic kind).
 
-Haskell offers many different approaches to design your whole system, not just its data, in types. This post is a small sample of what is possible with advanced Haskell types.
+Haskell offers many different approaches to design your whole system, not just its data, in types. This post is just a small sample of what is possible with advanced Haskell types.

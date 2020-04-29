@@ -325,3 +325,7 @@ hr {
 img.social {
   margin-right: 5px;
 }
+
+article section.header {
+  margin-bottom: 2.0rem;
+}

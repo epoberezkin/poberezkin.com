@@ -127,19 +127,13 @@ nav {
 
 nav a.nav,
 nav .logo a {
-  font-size: 1.6rem;
+  font-size: 1.4rem;
   font-weight: bold;
   text-decoration: none;
 }
 
-nav .logo {
-  margin-bottom: 20px;
-}
-
-nav .source {
-  font-size: 1.2rem;
-  position: fixed;
-  bottom: 10px;
+nav .source div {
+  margin-bottom: 2px;
 }
 
 @media (min-width: 400px) {
@@ -147,6 +141,25 @@ nav .source {
     width: 90%;
     padding: 0;
     padding-top: 20px;
+  }
+}
+
+@media (max-width: 639px) {
+  nav {
+    margin-bottom: 20px
+  }
+
+  nav .source {
+    font-size: 1rem;
+    float: right;
+  }
+
+  nav .logo {
+    margin-bottom: 4px;
+  } 
+
+  nav a.nav {
+    margin: 0 6px 0 2px;
   }
 }
 
@@ -163,7 +176,18 @@ nav .source {
   }
 
   nav a.nav {
-    display: block
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  nav .logo {
+    margin-bottom: 20px;
+  }
+  
+  nav .source {
+    font-size: 1.2rem;
+    position: fixed;
+    bottom: 10px;
   }
 
   main {
@@ -190,8 +214,8 @@ body {
   font-size: 1.5em; /* currently ems cause chrome bug misinterpreting rems on body element */
   line-height: 1.6;
   font-weight: 400;
-  font-family: "Raleway", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  color: #222;
+  font-family: "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #333;
 }
 
 nav .logo a, h1, h2, h3, h4, h5, h6 {
@@ -224,7 +248,7 @@ p {
 }
 
 a {
-  color: #333;
+  color: #444;
 }
 
 a:hover {
@@ -233,6 +257,10 @@ a:hover {
 
 ul {
   list-style: circle inside;
+}
+
+ul.posts {
+  list-style: none;
 }
 
 ol {
@@ -250,7 +278,7 @@ ul ul, ul ol, ol ol, ol ul {
 }
 
 li {
-  margin-bottom: 1rem;
+  margin-bottom: 0.8rem;
 }
 
 code {
@@ -284,7 +312,7 @@ th:last-child, td:last-child {
 }
 
 pre, blockquote, dl, figure, table, p, ul, ol {
-  margin-bottom: 2.5rem;
+  margin-bottom: 1.8rem;
 }
 
 hr {
@@ -292,4 +320,8 @@ hr {
   margin-bottom: 3.5rem;
   border-width: 0;
   border-top: 1px solid #E1E1E1;
+}
+
+img.social {
+  margin-right: 5px;
 }

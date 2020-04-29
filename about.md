@@ -9,10 +9,8 @@ Experience of delivering enterprise-level distributed systems with high availabi
 I lead the technology team at [Threads](https://www.threadsstyling.com/) (@[threadsstyling](https://www.instagram.com/threadsstyling/)) - luxury chat-commerce business with a global reach.
 We are providing the world's best luxury shopping experience.
 
-[GitHub](https://github.com/epoberezkin)
+Email: <a href="mailto:evgeny@poberezkin.com">evgeny@poberezkin.com</a>
 
-[Twitter](https://twitter.com/epoberezkin)
-
-[LinkedIn](https://www.linkedin.com/in/epoberezkin/)
-
-email: evgeny (a) poberezkin.com
+[<img class="social" src="/images/github.png">](https://github.com/epoberezkin)
+[<img class="social" src="/images/twitter.png">](https://twitter.com/epoberezkin)
+[<img class="social" src="/images/linkedin.png">](https://www.linkedin.com/in/epoberezkin/)

@@ -1,5 +1,5 @@
 ---
-title: WTF is Reactive Programming
+title: "Talk: WTF is Reactive Programming"
 author: Evgeny Poberezkin
 tags: talk, reactive
 ---

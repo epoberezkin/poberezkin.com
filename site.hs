@@ -28,8 +28,8 @@ postPages :: Tags -> Rules ()
 postPages tags = match "posts/*" $ do
   route $ setExtension "html"
   compile $ pandocCompiler
-    >>= saveSnapshot "content"
     >>= loadAndApplyTemplate "templates/post.html" (postCtxWithTags tags)
+    >>= saveSnapshot "content"
     >>= loadAndApplyTemplate "templates/default.html" (postCtxWithTags tags)
     >>= relativizeUrls
 

@@ -8,8 +8,172 @@
         <name>Evgeny Poberezkin</name>
         <email>evgeny@poberezkin.com</email>
     </author>
-    <updated>2020-03-15T00:00:00Z</updated>
+    <updated>2020-04-29T00:00:00Z</updated>
     <entry>
+    <title>Why use advanced Haskell types?</title>
+    <link href="http://poberezkin.com/posts/2020-04-29-why-use-advanced-haskell-types.html" />
+    <id>http://poberezkin.com/posts/2020-04-29-why-use-advanced-haskell-types.html</id>
+    <published>2020-04-29T00:00:00Z</published>
+    <updated>2020-04-29T00:00:00Z</updated>
+    <summary type="html"><![CDATA[<article>
+  <section class="header">
+    <div class="info">
+      Posted on
+      
+        April 29, 2020
+      
+      
+        by Evgeny Poberezkin
+      
+    </div>
+    <div class="info">
+      
+        Tags: <a title="All pages tagged &#39;haskell&#39;." href="/tags/haskell.html">haskell</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html">coding</a>
+      
+    </div>
+  </section>
+  <section>
+    <p>Haskell type system has dramatically evolved, both with the language extensions and libraries. It can be a challenge to navigate this space. So why anything beyond basic types is needed?</p>
+<p>Types in Haskell provide a way not only to type-check the code you write, but to design the whole system in types, before any code is written, and then use the types to guide the development. It is worth reading the book “<a href="https://www.manning.com/books/type-driven-development-with-idris">Type-driven development in Idris</a>” by Edwin Brady about this approach.</p>
+<p>Let’s try to design types for some service accounts that can represent a user or an organisation.</p>
+<p>The source code is available in <a href="https://github.com/epoberezkin/advanced-haskell-types">advanced-haskell-types</a> repo.</p>
+<h2 id="approach-1---basic-types">Approach #1 - basic types</h2>
+<p>While users and organisations are quite different, they may have many similarities (for example, have a look at <a href="https://developer.github.com/v3/users/#get-a-single-user">GitHub API</a> that returns both users and orgs).</p>
+<p>Our users and orgs share some functionality and we would want to store them in one list. So we will make a single type to hold these accounts:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1"></a><span class="co">-- shared information for both users and organisations</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="kw">data</span> <span class="dt">AInfo</span> <span class="ot">=</span> <span class="dt">AInfo</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a>              {<span class="ot"> name ::</span> <span class="dt">Text</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a>              ,<span class="ot"> displayName ::</span> <span class="dt">Text</span> }</span>
+<span id="cb1-5"><a href="#cb1-5"></a></span>
+<span id="cb1-6"><a href="#cb1-6"></a><span class="kw">data</span> <span class="dt">Account</span> <span class="ot">=</span> <span class="dt">User</span> <span class="dt">AInfo</span> <span class="op">|</span> <span class="dt">Org</span> <span class="dt">AInfo</span> <span class="dt">Members</span></span>
+<span id="cb1-7"><a href="#cb1-7"></a><span class="kw">type</span> <span class="dt">Members</span> <span class="ot">=</span> [<span class="dt">Account</span>]</span></code></pre></div>
+<p>We’ve already met the first problem with this approach - members of the organisation should be users, but <code>Members</code> type allows both users and organisations - we will have to manage it in code.</p>
+<p>Here are some functions for these accounts:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1"></a><span class="co">-- all shared functions should work with both users and orgs</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="ot">accountName ::</span> <span class="dt">Account</span> <span class="ot">-&gt;</span> <span class="dt">Text</span></span>
+<span id="cb2-3"><a href="#cb2-3"></a>accountName (<span class="dt">User</span> info) <span class="ot">=</span> name info</span>
+<span id="cb2-4"><a href="#cb2-4"></a>accountName (<span class="dt">Org</span> info _) <span class="ot">=</span> name info</span>
+<span id="cb2-5"><a href="#cb2-5"></a></span>
+<span id="cb2-6"><a href="#cb2-6"></a><span class="co">-- but some functions may only work with orgs,</span></span>
+<span id="cb2-7"><a href="#cb2-7"></a><span class="co">-- so we will have to use Maybe type to return results</span></span>
+<span id="cb2-8"><a href="#cb2-8"></a><span class="ot">orgMembers ::</span> <span class="dt">Account</span> <span class="ot">-&gt;</span> <span class="dt">Maybe</span> <span class="dt">Members</span></span>
+<span id="cb2-9"><a href="#cb2-9"></a>orgMembers (<span class="dt">User</span> _) <span class="ot">=</span> <span class="dt">Nothing</span></span>
+<span id="cb2-10"><a href="#cb2-10"></a>orgMembers (<span class="dt">Org</span> _ ms) <span class="ot">=</span> <span class="dt">Just</span> ms</span></code></pre></div>
+<p>It’s easy to put accounts in one list and process this list, as they have the same type, but we will have to check the result when we use a function intended only for organisations:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb3-2"><a href="#cb3-2"></a>main <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a>  <span class="kw">let</span> user <span class="ot">=</span> <span class="dt">User</span> (<span class="dt">AInfo</span> <span class="st">&quot;john&quot;</span> <span class="st">&quot;John Doe&quot;</span>)</span>
+<span id="cb3-4"><a href="#cb3-4"></a>      org <span class="ot">=</span> <span class="dt">Org</span> (<span class="dt">AInfo</span> <span class="st">&quot;team&quot;</span> <span class="st">&quot;John&#39;s team&quot;</span>) [user]</span>
+<span id="cb3-5"><a href="#cb3-5"></a>      accounts <span class="ot">=</span> [user, org]</span>
+<span id="cb3-6"><a href="#cb3-6"></a>  <span class="fu">print</span> <span class="op">$</span> <span class="fu">map</span> accountName accounts</span>
+<span id="cb3-7"><a href="#cb3-7"></a>  <span class="kw">case</span> orgMembers org <span class="kw">of</span></span>
+<span id="cb3-8"><a href="#cb3-8"></a>    <span class="dt">Just</span> ms <span class="ot">-&gt;</span> <span class="fu">print</span> <span class="op">$</span> <span class="fu">map</span> accountName ms</span>
+<span id="cb3-9"><a href="#cb3-9"></a>    <span class="dt">Nothing</span> <span class="ot">-&gt;</span> <span class="fu">return</span> ()</span></code></pre></div>
+<p>Could we design better types for our scenario to avoid the need to check the result of functions for orgs? It would also be good to prevent organisations being added as members at a type level, but without losing the ability to process both users and organisation in a single list.</p>
+<h2 id="approach-2---existential-quantification">Approach #2 - existential quantification</h2>
+<p>Let’s try to create two different types to store users and organisations, to avoid the problems we had:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">data</span> <span class="dt">User</span> <span class="ot">=</span> <span class="dt">User</span> <span class="dt">AInfo</span> <span class="co">-- we could have made it newtype</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="kw">data</span> <span class="dt">Org</span> <span class="ot">=</span> <span class="dt">Org</span> <span class="dt">AInfo</span> <span class="dt">Members</span></span>
+<span id="cb4-3"><a href="#cb4-3"></a><span class="kw">type</span> <span class="dt">Members</span> <span class="ot">=</span> [<span class="dt">User</span>]</span></code></pre></div>
+<p>This is better, organisation members can be only users now.</p>
+<p>We cannot have one function working on two different types, but we can define a type class and make <code>User</code> and <code>Org</code> types its instances:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">class</span> <span class="dt">Acc</span> a <span class="kw">where</span></span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="ot">  accountName ::</span> a <span class="ot">-&gt;</span> <span class="dt">Text</span></span>
+<span id="cb5-3"><a href="#cb5-3"></a><span class="kw">instance</span> <span class="dt">Acc</span> <span class="dt">User</span> <span class="kw">where</span></span>
+<span id="cb5-4"><a href="#cb5-4"></a>  accountName (<span class="dt">User</span> info) <span class="ot">=</span> name info</span>
+<span id="cb5-5"><a href="#cb5-5"></a><span class="kw">instance</span> <span class="dt">Acc</span> <span class="dt">Org</span> <span class="kw">where</span></span>
+<span id="cb5-6"><a href="#cb5-6"></a>  accountName (<span class="dt">Org</span> info _) <span class="ot">=</span> name info</span></code></pre></div>
+<p>And we can also have a function that works only with organisations, without using Maybe:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb6-1"><a href="#cb6-1"></a><span class="ot">orgMembers ::</span> <span class="dt">Org</span> <span class="ot">-&gt;</span> <span class="dt">Members</span></span>
+<span id="cb6-2"><a href="#cb6-2"></a>orgMembers (<span class="dt">Org</span> _ ms) <span class="ot">=</span> ms</span></code></pre></div>
+<p>The problem that we now have is that <code>User</code> and <code>Org</code> are two different types, and we cannot put them into one list.</p>
+<p>Haskell GHC compiler (since v6.8.1 released in 2007) has the extension <a href="https://downloads.haskell.org/ghc/8.8.3/docs/html/users_guide/glasgow_exts.html#extension-ExistentialQuantification">ExistentialQuantification</a> that allows to create a type that can wrap values of multiple types, and the members of this wrapper type can be put in the list:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1"></a><span class="kw">data</span> <span class="dt">A</span> <span class="ot">=</span> <span class="kw">forall</span> a<span class="op">.</span> <span class="dt">Acc</span> a <span class="ot">=&gt;</span> <span class="dt">A</span> a</span>
+<span id="cb7-2"><a href="#cb7-2"></a><span class="kw">type</span> <span class="dt">Accounts</span> <span class="ot">=</span> [<span class="dt">A</span>]</span></code></pre></div>
+<p>In our case we limit the allowed types to the instances of <code>Acc</code> type class, so we can use the list elements with our type class functions, but it is not the only shared criteria the types can have and still be useful - see another example in ExistentialQuantification docs.</p>
+<p>Now we can put wrapped users and orgs into the same list and process them:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb8-1"><a href="#cb8-1"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb8-2"><a href="#cb8-2"></a>main <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb8-3"><a href="#cb8-3"></a>  <span class="kw">let</span> user <span class="ot">=</span> <span class="dt">User</span> (<span class="dt">AInfo</span> <span class="st">&quot;john&quot;</span> <span class="st">&quot;John Doe&quot;</span>)</span>
+<span id="cb8-4"><a href="#cb8-4"></a>      org <span class="ot">=</span> <span class="dt">Org</span> (<span class="dt">AInfo</span> <span class="st">&quot;team&quot;</span> <span class="st">&quot;John&#39;s team&quot;</span>) [user]</span>
+<span id="cb8-5"><a href="#cb8-5"></a>      accounts <span class="ot">=</span> [<span class="dt">A</span> user, <span class="dt">A</span> org] <span class="co">-- we need to wrap users and orgs</span></span>
+<span id="cb8-6"><a href="#cb8-6"></a></span>
+<span id="cb8-7"><a href="#cb8-7"></a>  <span class="co">-- we do not need to check type of the org now</span></span>
+<span id="cb8-8"><a href="#cb8-8"></a>  <span class="fu">print</span> <span class="op">.</span> <span class="fu">map</span> accountName <span class="op">$</span> orgMembers org</span>
+<span id="cb8-9"><a href="#cb8-9"></a></span>
+<span id="cb8-10"><a href="#cb8-10"></a>  <span class="co">-- the only way to unwrap an existential wrapper is with pattern matching</span></span>
+<span id="cb8-11"><a href="#cb8-11"></a>  <span class="fu">print</span> <span class="op">$</span> <span class="fu">map</span> (\(<span class="dt">A</span> acc) <span class="ot">-&gt;</span> accountName acc) accounts</span></code></pre></div>
+<p>There are two downsides of this approach:</p>
+<ol type="1">
+<li>We cannot limit which types can be instances of <code>Acc</code> type class. While in some more general cases this unlimited extensibility can be helpful, if we want to control which types can be used as <code>Acc</code> we need some other approach.</li>
+<li>We have to write some boiler plate code - we really just wanted one type with some additional flexbility in it, and not two different types and type class to represent it.</li>
+</ol>
+<p>Let’s try to solve these problems.</p>
+<h2>
+Approach #3 - data families and data kinds
+</h2>
+<p>We will try to limit the types that can be instances of <code>Acc</code> type class. Types in Haskell have kinds, and in most cases the kind of a type is determined by the number of type parameters.</p>
+<p>From v7.4.1 released in 2012 Haskell makes all your types also kinds using <a href="https://downloads.haskell.org/ghc/8.8.3/docs/html/users_guide/glasgow_exts.html#extension-DataKinds">DataKinds</a> extension - we will use it to limit the types that can be used as <code>Acc</code>. We will also use extensions <a href="https://downloads.haskell.org/ghc/8.8.3/docs/html/users_guide/glasgow_exts.html#extension-TypeFamilies">TypeFamilies</a> and ExistentialQuantification we already used to have types of user and organisation related to each other and to put them into the same list.</p>
+<p>Let’s define a simple type that has the list of allowed account types:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb9-1"><a href="#cb9-1"></a><span class="kw">data</span> <span class="dt">AType</span> <span class="ot">=</span> <span class="dt">AUser</span> <span class="op">|</span> <span class="dt">AOrg</span></span></code></pre></div>
+<p>With DataKinds extension each <em>type</em> (in this case <code>AType</code>) automatically becomes a <em>kind</em> that can be used to define and restrict other types. We will use this kind to create <code>Account</code> data family:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb10-1"><a href="#cb10-1"></a><span class="kw">data</span> <span class="kw">family</span> <span class="dt">Account</span> (<span class="ot">a ::</span> <span class="dt">AType</span>)</span>
+<span id="cb10-2"><a href="#cb10-2"></a><span class="kw">data</span> <span class="kw">instance</span> <span class="dt">Account</span> <span class="dt">&#39;AUser</span> <span class="ot">=</span> <span class="dt">User</span> <span class="dt">AInfo</span></span>
+<span id="cb10-3"><a href="#cb10-3"></a><span class="kw">data</span> <span class="kw">instance</span> <span class="dt">Account</span> <span class="dt">&#39;AOrg</span> <span class="ot">=</span> <span class="dt">Org</span> <span class="dt">AInfo</span> <span class="dt">Members</span></span>
+<span id="cb10-4"><a href="#cb10-4"></a></span>
+<span id="cb10-5"><a href="#cb10-5"></a><span class="kw">type</span> <span class="dt">Members</span> <span class="ot">=</span> [<span class="dt">Account</span> <span class="dt">&#39;AUser</span>] <span class="co">-- organisation members can be only users</span></span></code></pre></div>
+<p><code>'AUser</code> and <code>'AOrg</code> is a special syntax that allows to use <em>constructors of type</em> <code>AType</code> as <em>types of kind</em> <code>AType</code>. <code>User</code> and <code>Org</code> are just normal constructors of types <code>Account 'AUser</code> and <code>Account 'AOrg</code>.</p>
+<p>To define shared functionality we would still have to use a type class, because while <code>Account 'AUser</code> and <code>Account 'AOrg</code> are now related (as family members), they are still two separate types:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb11-1"><a href="#cb11-1"></a><span class="kw">class</span> <span class="dt">Acc</span> (<span class="ot">a ::</span> <span class="dt">AType</span>) <span class="kw">where</span></span>
+<span id="cb11-2"><a href="#cb11-2"></a><span class="ot">  accountName ::</span> <span class="dt">Account</span> a <span class="ot">-&gt;</span> <span class="dt">Text</span></span>
+<span id="cb11-3"><a href="#cb11-3"></a><span class="kw">instance</span> <span class="dt">Acc</span> <span class="dt">AUser</span> <span class="kw">where</span></span>
+<span id="cb11-4"><a href="#cb11-4"></a>  accountName (<span class="dt">User</span> info) <span class="ot">=</span> name info</span>
+<span id="cb11-5"><a href="#cb11-5"></a><span class="kw">instance</span> <span class="dt">Acc</span> <span class="dt">AOrg</span> <span class="kw">where</span></span>
+<span id="cb11-6"><a href="#cb11-6"></a>  accountName (<span class="dt">Org</span> info _) <span class="ot">=</span> name info</span>
+<span id="cb11-7"><a href="#cb11-7"></a></span>
+<span id="cb11-8"><a href="#cb11-8"></a><span class="ot">orgMembers ::</span> <span class="dt">Account</span> <span class="dt">&#39;AOrg</span> <span class="ot">-&gt;</span> <span class="dt">Members</span></span>
+<span id="cb11-9"><a href="#cb11-9"></a>orgMembers (<span class="dt">Org</span> _ ms) <span class="ot">=</span> ms</span></code></pre></div>
+<p>Please note that in this case we made types belonging to our custom-made kind <code>AType</code> instances of typeclass <code>Acc</code>, rather than account types. We can neither extend data family <code>Account a</code> nor type class <code>Acc</code> without extending our kind <code>AType</code>.</p>
+<p>We still need to create an existential wrapper type to put users and orgs in the same list:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb12-1"><a href="#cb12-1"></a><span class="kw">data</span> <span class="dt">A</span> <span class="ot">=</span> <span class="kw">forall</span> a<span class="op">.</span> <span class="dt">Acc</span> a <span class="ot">=&gt;</span> <span class="dt">A</span> (<span class="dt">Account</span> a)</span>
+<span id="cb12-2"><a href="#cb12-2"></a><span class="kw">type</span> <span class="dt">Accounts</span> <span class="ot">=</span> [<span class="dt">A</span>]</span></code></pre></div>
+<p>We can use exactly the same code to process users and orgs as in approach #2.</p>
+<p>We have managed to restrict the types of accounts by defining a kind, but do we really need 2 different types and a typeclass, or is there a way to create just one, a more advanced type?</p>
+<h2 id="approach-4---gadts">Approach #4 - GADTs</h2>
+<p>We can achive the same flexibility using a generalised algebraic data type - support for such types is enabled with <a href="https://downloads.haskell.org/ghc/8.8.3/docs/html/users_guide/glasgow_exts.html#extension-GADTs">GADTs</a> extension.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb13-1"><a href="#cb13-1"></a><span class="kw">data</span> <span class="dt">AType</span> <span class="ot">=</span> <span class="dt">AUser</span> <span class="op">|</span> <span class="dt">AOrg</span> <span class="co">-- we still need DataKinds extension</span></span>
+<span id="cb13-2"><a href="#cb13-2"></a></span>
+<span id="cb13-3"><a href="#cb13-3"></a><span class="co">-- (a :: AType) here requires KindSignatures extension</span></span>
+<span id="cb13-4"><a href="#cb13-4"></a><span class="kw">data</span> <span class="dt">Account</span> (<span class="ot">a ::</span> <span class="dt">AType</span>) <span class="kw">where</span></span>
+<span id="cb13-5"><a href="#cb13-5"></a>  <span class="dt">User</span><span class="ot"> ::</span> <span class="dt">AInfo</span> <span class="ot">-&gt;</span> <span class="dt">Account</span> <span class="dt">&#39;AUser</span></span>
+<span id="cb13-6"><a href="#cb13-6"></a>  <span class="dt">Org</span><span class="ot"> ::</span> <span class="dt">AInfo</span> <span class="ot">-&gt;</span> <span class="dt">Members</span> <span class="ot">-&gt;</span> <span class="dt">Account</span> <span class="dt">&#39;AOrg</span></span>
+<span id="cb13-7"><a href="#cb13-7"></a></span>
+<span id="cb13-8"><a href="#cb13-8"></a><span class="kw">type</span> <span class="dt">Members</span> <span class="ot">=</span> [<span class="dt">Account</span> <span class="dt">&#39;AUser</span>] <span class="co">-- organisation members can be only users</span></span></code></pre></div>
+<p>Now that we have one parametrised type, we can define functions on this general type without a type class, using just pattern matching:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb14-1"><a href="#cb14-1"></a><span class="ot">accountName ::</span> <span class="dt">Account</span> a <span class="ot">-&gt;</span> <span class="dt">Text</span></span>
+<span id="cb14-2"><a href="#cb14-2"></a>accountName (<span class="dt">User</span> info) <span class="ot">=</span> name info</span>
+<span id="cb14-3"><a href="#cb14-3"></a>accountName (<span class="dt">Org</span> info _) <span class="ot">=</span> name info</span></code></pre></div>
+<p>We can also define functions on specific types:</p>
+<pre><code>orgMembers :: Account &#39;AOrg -&gt; Members
+orgMembers (Org _ ms) = ms</code></pre>
+<p>We still need an existential wrapper to put a general type in a list, but it is a bit simpler now, as we do not need a type class:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb16-1"><a href="#cb16-1"></a><span class="kw">data</span> <span class="dt">A</span> <span class="ot">=</span> <span class="kw">forall</span> a<span class="op">.</span> <span class="dt">A</span> (<span class="dt">Account</span> a)</span>
+<span id="cb16-2"><a href="#cb16-2"></a><span class="kw">type</span> <span class="dt">Accounts</span> <span class="ot">=</span> [<span class="dt">A</span>]</span></code></pre></div>
+<p>GADTs extension implies ExistentialQuantification, so we do not need to enable it separately.</p>
+<p>The same code as above can be used to process the list of users and orgs.</p>
+<h2 id="summary">Summary</h2>
+<p>Beyond basic types, we looked at three options that allow to define different entities with shared behaviours and to manage them in the same data structure:</p>
+<ol type="1">
+<li>Type classes - the most extensible option, that allows to define the behavior independently of its implementation. The classic scenario for type classes is some kind of widgets/shapes/etc.</li>
+<li>Data families restricted with data kinds. The advantage of such data families is that you can define its members in different parts of your code, but you have control of the list of allowed members in a single location using a custom data kind.</li>
+<li>GADTs - they provide a much bigger flexibility in defining your types, in many cases without the need for type classes. They allow different constructors of one parametrised type (of a higher kind) to return specific types (of basic kind).</li>
+</ol>
+<p>Haskell offers many different approaches to design your whole system, not just its data, in types. This post is just a small sample of what is possible with advanced Haskell types.</p>
+  </section>
+</article>
+]]></summary>
+</entry>
+<entry>
     <title>Haskell — a higher order language</title>
     <link href="http://poberezkin.com/posts/2020-03-15-haskell-a-higher-order-language.html" />
     <id>http://poberezkin.com/posts/2020-03-15-haskell-a-higher-order-language.html</id>

@@ -95,7 +95,6 @@ You just need to follow several simple steps:
 Code coverage as a metric is not perfect, and I often hear the following criticism:
 
 1. "It depends on code style". It is true, but it does not reduce the efficiency of code coverage as quality metric. Adopting consistent code style for the team makes code coverage measurement consistent as well.
-
 2. "100% coverage does not guarantee the absence of bugs". It is also true, but neither does following TDD. No sufficiently complex system is free of bugs. While the absence of bugs is theoretically possible to achieve, and even possible to prove in some cases, it is prohibitively expensive. On the other hand maintaining high code coverage dramatically reduces the number of bugs and the probability of regressions.
 
 ---

@@ -37,13 +37,13 @@ tagPages tags = tagsRules tags $ \tag ptrn -> do
   let title = "&#35;" ++ tag
   postList ptrn title "templates/tag.html"
 
-archive :: Rules ()
-archive = create ["archive.html"] $
-  postList "posts/*" "Archives" "templates/archive.html"
+blog :: Rules ()
+blog = create ["blog.html"] $
+  postList "posts/*" "Blog" "templates/blog.html"
 
 index :: Rules ()
 index = create ["index.html"] $
-  postList "posts/*" " " "templates/index.html"
+  postList "posts/*" "Welcome" "templates/index.html"
 
 templates :: Rules ()
 templates = match "templates/*" $ compile templateBodyCompiler
@@ -76,6 +76,6 @@ main = hakyllWith cfg $ do
   tags <- postTags
   postPages tags
   tagPages tags
-  archive
+  blog
   index
   templates

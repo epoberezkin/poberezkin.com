@@ -1,12 +1,12 @@
-name:                my-site
-version:             0.1.0.0
+name:          my-site
+version:       0.1.0.0
 #synopsis:
 #description:
-homepage:            https://github.com/epoberezkin/my-site
-license:             BSD3
-author:              Evgeny Poberezkin
-copyright:           2020 Evgeny Poberezkin
-category:            Web
+homepage:      https://github.com/epoberezkin/poberezkin.com
+license:       BSD3
+author:        Evgeny Poberezkin
+copyright:     2020 Evgeny Poberezkin
+category:      Web
 extra-source-files:
 - README.md
 
@@ -28,7 +28,6 @@ default-extensions:
   - OverloadedStrings
   - PartialTypeSignatures
 
-
 executables:
   my-site:
-    main:             site.hs
+    main: site.hs

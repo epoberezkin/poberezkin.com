@@ -15,7 +15,25 @@
     <id>http://poberezkin.com/posts/2020-03-15-haskell-a-higher-order-language.html</id>
     <published>2020-03-15T00:00:00Z</published>
     <updated>2020-03-15T00:00:00Z</updated>
-    <summary type="html"><![CDATA[<p><img src="/images/haskell.png" width="40%" style="float: left; margin: 20px 20px 10px 0;" /></p>
+    <summary type="html"><![CDATA[<article>
+  <section class="header">
+    <div class="info">
+      Posted on
+      
+        <a href="https://medium.com/@epoberezkin/haskell-a-higher-order-language-ade461d453c7">March 15, 2020</a>
+      
+      
+        by Evgeny Poberezkin
+      
+    </div>
+    <div class="info">
+      
+        Tags: <a title="All pages tagged &#39;haskell&#39;." href="/tags/haskell.html">haskell</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html">coding</a>
+      
+    </div>
+  </section>
+  <section>
+    <p><img src="/images/haskell.png" width="40%" style="float: left; margin: 20px 20px 10px 0;" /></p>
 <p>The thesis here is that Haskel is not just one of many functional programming languages — it is a different, more advanced programming paradigm.</p>
 <p>Haskell is indeed a functional language, but calling Haskell “a functional language” is like calling a skyscraper “a dwelling” — while technically correct, it does not describe how the latter is much more than just a place to live.</p>
 <p>What defines a programming language? From the point of view of category theory, there are two major components of each programming language: data types and transformations between them — in category theory terminology, “objects” and “morphisms”.</p>
@@ -101,7 +119,10 @@
 <span id="cb8-19"><a href="#cb8-19"></a>main <span class="ot">=</span> run <span class="dv">8080</span> app</span></code></pre></div>
 <p>The above does feel like magic!</p>
 <p>Morphism-based programming languages (i.e., all other languages) force programmers to model the whole system outside of the code — using SQL schema, JSON schema, diagrams, etc. Type-based languages (Haskell and Idris) allow for type-driven development, when the whole system can be modelled top-down with algebraic data types, rather than bottom-up with functions as in other languages.</p>
-<p>Haskell being type-based language with context-dependent semantics is a higher order language that is almost one of a kind — there seems to be no other mature programming language that allows the same level of expressiveness as Haskell does.</p>]]></summary>
+<p>Haskell being type-based language with context-dependent semantics is a higher order language that is almost one of a kind — there seems to be no other mature programming language that allows the same level of expressiveness as Haskell does.</p>
+  </section>
+</article>
+]]></summary>
 </entry>
 <entry>
     <title>Talk: Why you should Open-Source for Real</title>
@@ -109,7 +130,25 @@
     <id>http://poberezkin.com/posts/2019-07-10-talk-why-you-should-open-source-for-real.html</id>
     <published>2019-07-10T00:00:00Z</published>
     <updated>2019-07-10T00:00:00Z</updated>
-    <summary type="html"><![CDATA[<p>This is a <a href="https://skillsmatter.com/skillscasts/14213-lightning-talk-coding-you-either-love-or-hate-it-or-why-you-should-open-source-for-real">talk at FullStack London 2019</a>.</p>
+    <summary type="html"><![CDATA[<article>
+  <section class="header">
+    <div class="info">
+      Posted on
+      
+        <a href="https://skillsmatter.com/skillscasts/14213-lightning-talk-coding-you-either-love-or-hate-it-or-why-you-should-open-source-for-real">July 10, 2019</a>
+      
+      
+        by Evgeny Poberezkin
+      
+    </div>
+    <div class="info">
+      
+        Tags: <a title="All pages tagged &#39;talk&#39;." href="/tags/talk.html">talk</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html">coding</a>, <a title="All pages tagged &#39;open-source&#39;." href="/tags/open-source.html">open-source</a>
+      
+    </div>
+  </section>
+  <section>
+    <p>This is a <a href="https://skillsmatter.com/skillscasts/14213-lightning-talk-coding-you-either-love-or-hate-it-or-why-you-should-open-source-for-real">talk at FullStack London 2019</a>.</p>
 <p><a href="https://skillsmatter.com/skillscasts/14213-lightning-talk-coding-you-either-love-or-hate-it-or-why-you-should-open-source-for-real"> <img src="/images/talk2019.jpg" alt="Why You Should Open-Source For Real" width="100%"> </a></p>
 <blockquote>
 <p>Coding is hard but you still love it. But you also hate it, at least on some days.</p>
@@ -119,7 +158,10 @@
 </blockquote>
 <blockquote>
 <p>Open-source contribution is a complete waste of time. But it is also the best investment of time you can make to become a better engineer and it will also make you a better human being (maybe).</p>
-</blockquote>]]></summary>
+</blockquote>
+  </section>
+</article>
+]]></summary>
 </entry>
 <entry>
     <title>Locked in the Narrative?</title>
@@ -127,14 +169,35 @@
     <id>http://poberezkin.com/posts/2019-05-31-locked-in-the-narrative.html</id>
     <published>2019-05-31T00:00:00Z</published>
     <updated>2019-05-31T00:00:00Z</updated>
-    <summary type="html"><![CDATA[<p>When we are children, we choose the stories of our future lives. “I will be a cosmonaut.” Or “I will be a doctor”. Our stories are supported by parents — toys fuel our fantasies until they burn out and we move on.</p>
+    <summary type="html"><![CDATA[<article>
+  <section class="header">
+    <div class="info">
+      Posted on
+      
+        <a href="https://medium.com/@epoberezkin/locked-in-the-narrative-921bc45006dd">May 31, 2019</a>
+      
+      
+        by Evgeny Poberezkin
+      
+    </div>
+    <div class="info">
+      
+        Tags: <a title="All pages tagged &#39;essay&#39;." href="/tags/essay.html">essay</a>
+      
+    </div>
+  </section>
+  <section>
+    <p>When we are children, we choose the stories of our future lives. “I will be a cosmonaut.” Or “I will be a doctor”. Our stories are supported by parents — toys fuel our fantasies until they burn out and we move on.</p>
 <p>For most of us these stories change many times as we grow up. Few stay fixated on the story to live it, fewer turn out to be happy when they do.</p>
 <p>As we become older we continue choosing such stories. “I want to be a manager.” Or “I want to create tools for other engineers.” Or “The people have voted, we must respect it.”</p>
 <p>Led by these stories, we often get from being unhappy to being miserable. And the cycle repeats again — we choose a new story to believe in.</p>
 <p>We complain about lacking freedom, but the strongest prison is the one we put ourselves in without knowing it exists. We are pressured to make choices all our life. “Will you have tea or coffee?” “What college did you apply to?” “What is your next career step?” “How have you invested your money?”</p>
 <p>Making these decisions is important, but when they are not rooted in the reality of who we are and instead based on the stories we chose to believe, we can’t be happy. The best decision you can make, is to not make the decision until it is your own and not led by your current story. But resisting the urge to make the decision is hard — it takes growing up.</p>
 <p>To be free we need to remember that most of our ideas about the world and about ourselves are just stories re-told by other people. Very rarely we hear an original story, and when we do, we often just ignore it.</p>
-<p>We can discover our own truths about who we are, what we want and to write the story of our life ourselves. Until then, we can follow the opportunities and keep our options open — the story of our life may just write itself.</p>]]></summary>
+<p>We can discover our own truths about who we are, what we want and to write the story of our life ourselves. Until then, we can follow the opportunities and keep our options open — the story of our life may just write itself.</p>
+  </section>
+</article>
+]]></summary>
 </entry>
 <entry>
     <title>Talk: Auditing development guidelines in GitHub repos</title>
@@ -142,7 +205,25 @@
     <id>http://poberezkin.com/posts/2017-07-12-talk-auditing-development-guidelines-in-github-repositories.html</id>
     <published>2017-07-12T00:00:00Z</published>
     <updated>2017-07-12T00:00:00Z</updated>
-    <summary type="html"><![CDATA[<p>This is a <a href="https://skillsmatter.com/skillscasts/10399-auditing-development-guidelines-in-github-repositories">talk at FullStack London 2017</a>.</p>
+    <summary type="html"><![CDATA[<article>
+  <section class="header">
+    <div class="info">
+      Posted on
+      
+        <a href="https://skillsmatter.com/skillscasts/10399-auditing-development-guidelines-in-github-repositories">July 12, 2017</a>
+      
+      
+        by Evgeny Poberezkin
+      
+    </div>
+    <div class="info">
+      
+        Tags: <a title="All pages tagged &#39;talk&#39;." href="/tags/talk.html">talk</a>, <a title="All pages tagged &#39;github&#39;." href="/tags/github.html">github</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html">coding</a>
+      
+    </div>
+  </section>
+  <section>
+    <p>This is a <a href="https://skillsmatter.com/skillscasts/10399-auditing-development-guidelines-in-github-repositories">talk at FullStack London 2017</a>.</p>
 <p><a href="https://skillsmatter.com/skillscasts/10399-auditing-development-guidelines-in-github-repositories"> <img src="/images/talk2017_2.jpg" alt="Auditing Development Guidelines in GitHub Repositories" width="100%"> </a></p>
 <blockquote>
 <p>If your organisation has hundreds of code repositories you probably have some guidelines for them: how they are documented, how branches are protected, whether direct commits to master branch are allowed or only PRs should be used and all PRs should be reviewed, whether tests are run and code coverage is reported to PRs, etc.</p>
@@ -155,7 +236,10 @@
 </blockquote>
 <blockquote>
 <p>Meet <a href="https://github.com/MailOnline/gh-lint">gh-lint</a> - a rule-based command-line utility that audits all your GitHub repositories generating results in TAP (Test Anything Protocol) format that can be consumed by <a href="https://github.com/MailOnline/tap-github-issues">tap-github-issues</a> reporter that can create, update and close issues in GitHub repositories.</p>
-</blockquote>]]></summary>
+</blockquote>
+  </section>
+</article>
+]]></summary>
 </entry>
 <entry>
     <title>Talk: WTF is Reactive Programming</title>
@@ -163,7 +247,25 @@
     <id>http://poberezkin.com/posts/2017-04-28-talk-wtf-is-reactive-programming.html</id>
     <published>2017-04-28T00:00:00Z</published>
     <updated>2017-04-28T00:00:00Z</updated>
-    <summary type="html"><![CDATA[<p>This is a <a href="https://www.infoq.com/presentations/reactive-programming-evolution/">talk at Progscon 2017</a>.</p>
+    <summary type="html"><![CDATA[<article>
+  <section class="header">
+    <div class="info">
+      Posted on
+      
+        April 28, 2017
+      
+      
+        by Evgeny Poberezkin
+      
+    </div>
+    <div class="info">
+      
+        Tags: <a title="All pages tagged &#39;talk&#39;." href="/tags/talk.html">talk</a>, <a title="All pages tagged &#39;reactive&#39;." href="/tags/reactive.html">reactive</a>
+      
+    </div>
+  </section>
+  <section>
+    <p>This is a <a href="https://www.infoq.com/presentations/reactive-programming-evolution/">talk at Progscon 2017</a>.</p>
 <p>Slides are available in <a href="https://www.slideshare.net/epoberezkin/wtf-is-reactive-programming-75512905">slideshare</a>.</p>
 <p><a href="https://www.infoq.com/presentations/reactive-programming-evolution/"> <img src="/images/talk2017_1.png" alt="WTF is Reactive Programming" width="100%"> </a></p>
 <blockquote>
@@ -174,7 +276,10 @@
 </blockquote>
 <blockquote>
 <p>I am going to talk about the past, present and possible futures of reactive programming and how you can survive it all.</p>
-</blockquote>]]></summary>
+</blockquote>
+  </section>
+</article>
+]]></summary>
 </entry>
 <entry>
     <title>TDD doesn’t work… Maybe CDD would?</title>
@@ -182,7 +287,25 @@
     <id>http://poberezkin.com/posts/2017-02-19-tdd-doesnt-work-maybe-cdd-would.html</id>
     <published>2017-02-19T00:00:00Z</published>
     <updated>2017-02-19T00:00:00Z</updated>
-    <summary type="html"><![CDATA[<p>Test Driven Development existed long before the term itself. It’s been “rediscovered” and popularised by Kent Beck, the creator of Extreme Programming. He wrote on Quora:</p>
+    <summary type="html"><![CDATA[<article>
+  <section class="header">
+    <div class="info">
+      Posted on
+      
+        <a href="https://medium.com/@epoberezkin/tdd-doesnt-work-maybe-cdd-would-1fd756d2ca4b">February 19, 2017</a>
+      
+      
+        by Evgeny Poberezkin
+      
+    </div>
+    <div class="info">
+      
+        Tags: <a title="All pages tagged &#39;tests&#39;." href="/tags/tests.html">tests</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html">coding</a>
+      
+    </div>
+  </section>
+  <section>
+    <p>Test Driven Development existed long before the term itself. It’s been “rediscovered” and popularised by Kent Beck, the creator of Extreme Programming. He wrote on Quora:</p>
 <p><img src="/images/tdd1.png" alt="Kent Beck on Quora" title="...How else could you program?"></p>
 <p>The complexity of software systems since those ancient times has evolved to a point when it is no longer possible to define the expected application behaviours in as simple terms as “the output tape you expect”.</p>
 <p>The software development community is split, with opinions ranging from “<a href="https://dhh.dk/2014/tdd-is-dead-long-live-testing.html">TDD is dead. Long live testing</a>” (by <a href="https://dhh.dk/">David Heinemeier Hansson</a>, the creator of Ruby on Rails and the founder &amp; CTO of Basecamp):</p>
@@ -243,7 +366,10 @@
 </ol>
 <hr />
 <p>If you are not using code coverage as part of your development process, it’s definitely worth trying. If nothing else, it will give you an increased satisfaction from writing tests. And all developers seem to agree that we should write tests to reduce the cost of software.</p>
-<p><img src="/images/tdd5.png" alt="Acheived 100% code coverage" title="… but the bug is still there" max-width="100%"></p>]]></summary>
+<p><img src="/images/tdd5.png" alt="Acheived 100% code coverage" title="… but the bug is still there" max-width="100%"></p>
+  </section>
+</article>
+]]></summary>
 </entry>
 <entry>
     <title>Eval is evil, but not why you may think</title>
@@ -251,7 +377,25 @@
     <id>http://poberezkin.com/posts/2016-09-10-eval-is-evil-but-not-why-you-may-think.html</id>
     <published>2016-09-10T00:00:00Z</published>
     <updated>2016-09-10T00:00:00Z</updated>
-    <summary type="html"><![CDATA[<p>I have been hearing the mantra “eval is evil” for many years by now and none of the arguments presented to support it made any sense until very recently. Let’s explore the myths of eval, uncover the real evil behind it and find out the alternative way to reap eval’s benefits without its evilness.</p>
+    <summary type="html"><![CDATA[<article>
+  <section class="header">
+    <div class="info">
+      Posted on
+      
+        <a href="https://medium.com/mail-online/eval-is-evil-but-not-why-you-may-think-25961f9b01bb">September 10, 2016</a>
+      
+      
+        by Evgeny Poberezkin
+      
+    </div>
+    <div class="info">
+      
+        Tags: <a title="All pages tagged &#39;javascript&#39;." href="/tags/javascript.html">javascript</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html">coding</a>
+      
+    </div>
+  </section>
+  <section>
+    <p>I have been hearing the mantra “eval is evil” for many years by now and none of the arguments presented to support it made any sense until very recently. Let’s explore the myths of eval, uncover the real evil behind it and find out the alternative way to reap eval’s benefits without its evilness.</p>
 <p>All the code examples below are available in <a href="https://github.com/epoberezkin/eval-is-evil">eval-is-evil</a> repository.</p>
 <h2 id="myth-1-eval-is-bad-for-performance">Myth #1: Eval Is Bad For Performance</h2>
 <p>This statement is usually supported by some trivial example like this:</p>
@@ -437,7 +581,10 @@
 <p>As you can see <em>Function</em> constructor is used to create a function that returns a closure that has access to <em>formats</em>, but not to anything else:</p>
 <p><img src="/images/eval2.png" alt="Function constructor closure" title="Function constructor allows to control closure"></p>
 <p>Although this code is more verbose than with <em>eval</em> it doesn’t have the issue that makes <em>eval</em> really evil — <strong>retaining access to everything in all scopes</strong> from the current to the global.</p>
-<p>So while code generation can be used to achieve serious performance benefits, direct calls to <em>eval</em> should be avoided. Instead <em>Function</em> constructor (or at least <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval">indirect calls</a> to <em>eval</em>) should be used.</p>]]></summary>
+<p>So while code generation can be used to achieve serious performance benefits, direct calls to <em>eval</em> should be avoided. Instead <em>Function</em> constructor (or at least <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval">indirect calls</a> to <em>eval</em>) should be used.</p>
+  </section>
+</article>
+]]></summary>
 </entry>
 <entry>
     <title>Talk: Batch API requests with JSONScript</title>
@@ -445,7 +592,25 @@
     <id>http://poberezkin.com/posts/2016-07-13-talk-batch-execution-existing-endpoints-services-jsonscript.html</id>
     <published>2016-07-13T00:00:00Z</published>
     <updated>2016-07-13T00:00:00Z</updated>
-    <summary type="html"><![CDATA[<p>This is a <a href="https://skillsmatter.com/skillscasts/8395-batch-execution-of-existing-endpoints-and-services-with-jsonscript">talk at FullStack London 2016</a>.</p>
+    <summary type="html"><![CDATA[<article>
+  <section class="header">
+    <div class="info">
+      Posted on
+      
+        <a href="https://skillsmatter.com/skillscasts/8395-batch-execution-of-existing-endpoints-and-services-with-jsonscript">July 13, 2016</a>
+      
+      
+        by Evgeny Poberezkin
+      
+    </div>
+    <div class="info">
+      
+        Tags: <a title="All pages tagged &#39;talk&#39;." href="/tags/talk.html">talk</a>, <a title="All pages tagged &#39;javascript&#39;." href="/tags/javascript.html">javascript</a>
+      
+    </div>
+  </section>
+  <section>
+    <p>This is a <a href="https://skillsmatter.com/skillscasts/8395-batch-execution-of-existing-endpoints-and-services-with-jsonscript">talk at FullStack London 2016</a>.</p>
 <p><a href="https://skillsmatter.com/skillscasts/8395-batch-execution-of-existing-endpoints-and-services-with-jsonscript"> <img src="/images/talk2016.jpg" alt="Batch API requests with JSONScript" width="100%"> </a></p>
 <blockquote>
 <p>A very common situation in web development: you need to make multiple requests, often with some conditions and logic between calls, to get the required result.</p>
@@ -465,7 +630,10 @@
 </blockquote>
 <blockquote>
 <p>It is currently implemented in express middleware that allows to add JSONScript batch endpoint in a single line of code.</p>
-</blockquote>]]></summary>
+</blockquote>
+  </section>
+</article>
+]]></summary>
 </entry>
 <entry>
     <title>Validating data with JSON-schema</title>
@@ -473,13 +641,34 @@
     <id>http://poberezkin.com/posts/2016-03-03-validating-data-with-json-schema.html</id>
     <published>2016-03-03T00:00:00Z</published>
     <updated>2016-03-03T00:00:00Z</updated>
-    <summary type="html"><![CDATA[<p>Tutsplus.com published my <a href="https://code.tutsplus.com/tutorials/validating-data-with-json-schema-part-1--cms-25343">2 part tutorial</a> on how to use JSON-schemas and also about some other related stuff:</p>
+    <summary type="html"><![CDATA[<article>
+  <section class="header">
+    <div class="info">
+      Posted on
+      
+        March  3, 2016
+      
+      
+        by Evgeny Poberezkin
+      
+    </div>
+    <div class="info">
+      
+        Tags: <a title="All pages tagged &#39;json-schema&#39;." href="/tags/json-schema.html">json-schema</a>, <a title="All pages tagged &#39;tutorial&#39;." href="/tags/tutorial.html">tutorial</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html">coding</a>
+      
+    </div>
+  </section>
+  <section>
+    <p>Tutsplus.com published my <a href="https://code.tutsplus.com/tutorials/validating-data-with-json-schema-part-1--cms-25343">2 part tutorial</a> on how to use JSON-schemas and also about some other related stuff:</p>
 <ul>
 <li>use schemas to define default values and to filter data</li>
 <li>version 5 proposals for the JSON-schema standard</li>
 <li>define custom validation keywords</li>
 <li>JSON-schema validators comparison (so far my <a href="https://github.com/epoberezkin/ajv">Ajv</a> is ahead :)</li>
-</ul>]]></summary>
+</ul>
+  </section>
+</article>
+]]></summary>
 </entry>
 
 </feed>

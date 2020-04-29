@@ -28,6 +28,7 @@ postPages :: Tags -> Rules ()
 postPages tags = match "posts/*" $ do
   route $ setExtension "html"
   compile $ pandocCompiler
+    >>= saveSnapshot "content"
     >>= loadAndApplyTemplate "templates/post.html" (postCtxWithTags tags)
     >>= loadAndApplyTemplate "templates/default.html" (postCtxWithTags tags)
     >>= relativizeUrls
@@ -65,6 +66,27 @@ postCtxWithTags :: Tags -> Context String
 postCtxWithTags tags = tagsField "tags" tags
                        `mappend` postCtx
 
+feeds :: Rules ()
+feeds = do
+  feed renderAtom "feed.atom"
+  feed renderRss "feed.rss"
+  where
+    getPosts = recentFirst =<< loadAllSnapshots "posts/*" "content"
+    config = FeedConfiguration
+              { feedAuthorEmail = "evgeny@poberezkin.com"
+              , feedAuthorName = "Evgeny Poberezkin"
+              , feedDescription = "Evgeny Poberezkin's blog."
+              , feedRoot = "http://poberezkin.com"
+              , feedTitle = "Evgeny Poberezkin"
+              }
+    ctx = bodyField "description"
+          `mappend` postCtx
+    feed render name = create [name] $ do
+      route idRoute
+      compile $ do
+        posts <- getPosts
+        render config ctx posts
+
 main :: IO ()
 main = hakyllWith cfg $ do
   static
@@ -72,5 +94,6 @@ main = hakyllWith cfg $ do
   tags <- postTags
   postPages tags
   tagPages tags
+  feeds
   index
   templates

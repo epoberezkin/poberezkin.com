@@ -3,9 +3,9 @@ version:       0.1.0.0
 #synopsis:
 #description:
 homepage:      https://github.com/epoberezkin/poberezkin.com
-license:       BSD3
+license:       MIT
 author:        Evgeny Poberezkin
-copyright:     2020 Evgeny Poberezkin
+copyright:     2016-2020 Evgeny Poberezkin
 category:      Web
 extra-source-files:
 - README.md

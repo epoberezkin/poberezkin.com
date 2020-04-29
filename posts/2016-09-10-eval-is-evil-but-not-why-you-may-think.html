@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Evgeny Poberezkin - Eval is evil, but not why you may think</title>
+        <link rel="stylesheet" href="../css/default.css" />
+    </head>
+    <body>
+        <header>
+            <div class="logo">
+                <a href="../">Evgeny Poberezkin</a>
+            </div>
+            <nav>
+                <a href="../">Home</a>
+                <a href="../about.html">About</a>
+                <a href="../archive.html">Archive</a>
+            </nav>
+        </header>
+
+        <main role="main">
+            <h1>Eval is evil, but not why you may think</h1>
+            <article>
+    <section class="header">
+        <div class="info">
+            Posted on
+            
+                <a href="https://medium.com/mail-online/eval-is-evil-but-not-why-you-may-think-25961f9b01bb">September 10, 2016</a>
+            
+            
+                by Evgeny Poberezkin
+            
+        </div>
+        <div class="info">
+            
+                Tags: <a title="All pages tagged 'javascript'." href="../tags/javascript.html">javascript</a>, <a title="All pages tagged 'coding'." href="../tags/coding.html">coding</a>
+            
+        </div>
+    </section>
+    <section>
+        <p>I have been hearing the mantra “eval is evil” for many years by now and none of the arguments presented to support it made any sense until very recently. Let’s explore the myths of eval, uncover the real evil behind it and find out the alternative way to reap eval’s benefits without its evilness.</p>
+<p>All the code examples below are available in <a href="https://github.com/epoberezkin/eval-is-evil">eval-is-evil</a> repository.</p>
+<h2 id="myth-1-eval-is-bad-for-performance">Myth #1: Eval Is Bad For Performance</h2>
+<p>This statement is usually supported by some trivial example like this:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">var</span> foo <span class="op">=</span> <span class="pp">eval</span>(<span class="st">'bar.'</span> <span class="op">+</span> x)<span class="op">;</span></span></code></pre></div>
+<p>This code can be used to access bar object property which name is stored in the variable x. Instead, the author would argue, you should use the code below to access such property:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">var</span> foo <span class="op">=</span> bar[x]<span class="op">;</span></span></code></pre></div>
+<p>Although this way of using eval indeed reduces execution speed, I cannot imagine any JavaScript developer, however unexperienced, who would think of using eval in this case.</p>
+<p>Let’s consider another example that also involves property accesses but <strong>where using <em>eval</em> dramatically improves performance</strong>.</p>
+<p>We have some nested object and we need to define some transformation of this object to a shallow object. We want to define such transformation using configuration rather than just writing code. It can be preferable if we want to be able to dynamically change such configuration and in many other scenarios. So if our nested object looks something like this:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">var</span> source <span class="op">=</span> {</span>
+<span id="cb3-2"><a href="#cb3-2"></a>  <span class="dt">services</span><span class="op">:</span> {</span>
+<span id="cb3-3"><a href="#cb3-3"></a>    <span class="dt">db</span><span class="op">:</span> {</span>
+<span id="cb3-4"><a href="#cb3-4"></a>      <span class="dt">host</span><span class="op">:</span> <span class="st">'db.example.com'</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a>    }<span class="op">,</span></span>
+<span id="cb3-6"><a href="#cb3-6"></a>    <span class="dt">audit</span><span class="op">:</span> {</span>
+<span id="cb3-7"><a href="#cb3-7"></a>      <span class="dt">host</span><span class="op">:</span> <span class="st">'audit.example.com'</span></span>
+<span id="cb3-8"><a href="#cb3-8"></a>    }</span>
+<span id="cb3-9"><a href="#cb3-9"></a>  }</span>
+<span id="cb3-10"><a href="#cb3-10"></a>}<span class="op">;</span></span></code></pre></div>
+<p>and the shallow object we want to have should look this way:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">var</span> result <span class="op">=</span> {</span>
+<span id="cb4-2"><a href="#cb4-2"></a>  <span class="dt">db</span><span class="op">:</span> <span class="st">'db.example.com'</span><span class="op">,</span></span>
+<span id="cb4-3"><a href="#cb4-3"></a>  <span class="dt">audit</span><span class="op">:</span> <span class="st">'audit.example.com'</span></span>
+<span id="cb4-4"><a href="#cb4-4"></a>}<span class="op">;</span></span></code></pre></div>
+<p>the transformation from nested to shallow object could look as this one:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">var</span> transformation <span class="op">=</span> {</span>
+<span id="cb5-2"><a href="#cb5-2"></a>  <span class="dt">db</span><span class="op">:</span> <span class="st">'/services/db/host'</span><span class="op">,</span></span>
+<span id="cb5-3"><a href="#cb5-3"></a>  <span class="dt">audit</span><span class="op">:</span> <span class="st">'/services/audit/host'</span></span>
+<span id="cb5-4"><a href="#cb5-4"></a>}<span class="op">;</span></span></code></pre></div>
+<p>By the way, the format of the string defining the location of the data in the nested object is called <a href="https://tools.ietf.org/html/rfc6901">JSON pointer</a>.</p>
+<p>Ok, so if we had such transformation, how would we write the code to transform a nested object to a shallow one? One approach is to simply iterate properties in the transformation and generate the resulting object:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb6-1"><a href="#cb6-1"></a><span class="kw">function</span> <span class="fu">transform</span>(source) {</span>
+<span id="cb6-2"><a href="#cb6-2"></a>  <span class="kw">var</span> result <span class="op">=</span> {}<span class="op">;</span></span>
+<span id="cb6-3"><a href="#cb6-3"></a>  <span class="cf">for</span> (<span class="kw">var</span> key <span class="kw">in</span> transformation) {</span>
+<span id="cb6-4"><a href="#cb6-4"></a>    <span class="kw">var</span> path <span class="op">=</span> transformation[key]<span class="op">;</span></span>
+<span id="cb6-5"><a href="#cb6-5"></a>    <span class="kw">var</span> segments <span class="op">=</span> path<span class="op">.</span><span class="fu">split</span>(<span class="st">'/'</span>)<span class="op">;</span></span>
+<span id="cb6-6"><a href="#cb6-6"></a>    <span class="kw">var</span> data <span class="op">=</span> source<span class="op">;</span></span>
+<span id="cb6-7"><a href="#cb6-7"></a>    <span class="cf">for</span> (<span class="kw">var</span> i<span class="op">=</span><span class="dv">1</span><span class="op">;</span> i<span class="op">&lt;</span>segments<span class="op">.</span><span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) {</span>
+<span id="cb6-8"><a href="#cb6-8"></a>      data <span class="op">=</span> data <span class="op">&amp;&amp;</span> data[segments[i]]<span class="op">;</span></span>
+<span id="cb6-9"><a href="#cb6-9"></a>    }</span>
+<span id="cb6-10"><a href="#cb6-10"></a>    result[key] <span class="op">=</span> data<span class="op">;</span></span>
+<span id="cb6-11"><a href="#cb6-11"></a>  }</span>
+<span id="cb6-12"><a href="#cb6-12"></a>  <span class="cf">return</span> result<span class="op">;</span></span>
+<span id="cb6-13"><a href="#cb6-13"></a>}</span></code></pre></div>
+<p>Although this code works, it is not very efficient if the transformation has to be performed on the server many times.</p>
+<p>Another approach would be to <strong>generate</strong> the code that performs the transformation and convert this code into a function using eval (or Function constructor):</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb7-1"><a href="#cb7-1"></a><span class="kw">var</span> code <span class="op">=</span> <span class="st">'return { '</span><span class="op">;</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a><span class="cf">for</span> (<span class="kw">var</span> key <span class="kw">in</span> transformation) {</span>
+<span id="cb7-3"><a href="#cb7-3"></a>  <span class="kw">var</span> path <span class="op">=</span> transformation[key]<span class="op">;</span></span>
+<span id="cb7-4"><a href="#cb7-4"></a>  <span class="kw">var</span> segments <span class="op">=</span> path<span class="op">.</span><span class="fu">split</span>(<span class="st">'/'</span>)<span class="op">;</span></span>
+<span id="cb7-5"><a href="#cb7-5"></a>  <span class="kw">var</span> data <span class="op">=</span> <span class="st">'source'</span><span class="op">;</span></span>
+<span id="cb7-6"><a href="#cb7-6"></a>  <span class="kw">var</span> expr <span class="op">=</span> data<span class="op">;</span></span>
+<span id="cb7-7"><a href="#cb7-7"></a>  <span class="cf">for</span> (<span class="kw">var</span> i<span class="op">=</span><span class="dv">1</span><span class="op">;</span> i<span class="op">&lt;</span>segments<span class="op">.</span><span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) {</span>
+<span id="cb7-8"><a href="#cb7-8"></a>    data <span class="op">+=</span> <span class="st">'.'</span> <span class="op">+</span> segments[i]<span class="op">;</span></span>
+<span id="cb7-9"><a href="#cb7-9"></a>    expr <span class="op">+=</span> <span class="st">' &amp;&amp; '</span> <span class="op">+</span> data<span class="op">;</span></span>
+<span id="cb7-10"><a href="#cb7-10"></a>  }</span>
+<span id="cb7-11"><a href="#cb7-11"></a>  code <span class="op">+=</span> key <span class="op">+</span> <span class="st">': '</span> <span class="op">+</span> expr <span class="op">+</span> <span class="st">', '</span><span class="op">;</span></span>
+<span id="cb7-12"><a href="#cb7-12"></a>}</span>
+<span id="cb7-13"><a href="#cb7-13"></a>code <span class="op">+=</span> <span class="st">'};'</span></span>
+<span id="cb7-14"><a href="#cb7-14"></a></span>
+<span id="cb7-15"><a href="#cb7-15"></a><span class="kw">var</span> transform <span class="op">=</span> <span class="pp">eval</span>(<span class="st">'(function(source) { '</span> <span class="op">+</span> code <span class="op">+</span> <span class="st">' })'</span>)<span class="op">;</span></span></code></pre></div>
+<p>The last line can be replaced with:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb8-1"><a href="#cb8-1"></a><span class="kw">var</span> transform <span class="op">=</span> <span class="kw">new</span> <span class="bu">Function</span>(<span class="st">'source'</span><span class="op">,</span> code)<span class="op">;</span></span></code></pre></div>
+<p>For our transformation the generated function will be:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb9-1"><a href="#cb9-1"></a><span class="kw">function</span> (source) {</span>
+<span id="cb9-2"><a href="#cb9-2"></a>  <span class="cf">return</span> {</span>
+<span id="cb9-3"><a href="#cb9-3"></a>    <span class="dt">db</span><span class="op">:</span> source <span class="op">&amp;&amp;</span> source<span class="op">.</span><span class="at">services</span> <span class="op">&amp;&amp;</span> source<span class="op">.</span><span class="at">services</span><span class="op">.</span><span class="at">db</span> <span class="op">&amp;&amp;</span> source<span class="op">.</span><span class="at">services</span><span class="op">.</span><span class="at">db</span><span class="op">.</span><span class="at">host</span><span class="op">,</span></span>
+<span id="cb9-4"><a href="#cb9-4"></a>    <span class="dt">audit</span><span class="op">:</span> source <span class="op">&amp;&amp;</span> source<span class="op">.</span><span class="at">services</span> <span class="op">&amp;&amp;</span> source<span class="op">.</span><span class="at">services</span><span class="op">.</span><span class="at">audit</span> <span class="op">&amp;&amp;</span> source<span class="op">.</span><span class="at">services</span><span class="op">.</span><span class="at">audit</span><span class="op">.</span><span class="at">host</span><span class="op">,</span></span>
+<span id="cb9-5"><a href="#cb9-5"></a>  }<span class="op">;</span></span>
+<span id="cb9-6"><a href="#cb9-6"></a>}</span></code></pre></div>
+<p>This dynamically generated code will execute many times faster than the first example where the transformation is performed using a loop. Creating this function takes some execution time but it happens only once.</p>
+<p>This example shows that you can substantially improve the performance of your application using dynamic code generation and eval. The same approach is used for generating model accessor methods (get, set, etc.) in <a href="https://github.com/milojs/milo">milo.js</a> framework.</p>
+<h2 id="myth-2-eval-is-security-risk">Myth #2: Eval Is Security Risk</h2>
+<p>This statement probably assumes that you would receive JavaScript code in the request to the server and execute it using eval:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb10-1"><a href="#cb10-1"></a>app<span class="op">.</span><span class="fu">get</span>(<span class="st">'/execute'</span><span class="op">,</span> <span class="kw">function</span>(req<span class="op">,</span> res) {</span>
+<span id="cb10-2"><a href="#cb10-2"></a>  res<span class="op">.</span><span class="fu">send</span>(<span class="pp">eval</span>(req<span class="op">.</span><span class="at">body</span><span class="op">.</span><span class="at">code</span>))<span class="op">;</span></span>
+<span id="cb10-3"><a href="#cb10-3"></a>})<span class="op">;</span></span></code></pre></div>
+<p>The code above indeed has some problems. If <code>req.body.code</code> were <code>process.exit(1)</code> the application would exit with error. Some worse things may easily happen too. But I cannot see how anybody could write code like this. User input is usually sanitised, particularly in cases when this input is used for code execution/generation.</p>
+<p>Let’s consider another example. Say, we have a mass mailing application that sends the messages to the list of recipients and we require that the message that the user submits is a template using available fields from a recipient record:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb11-1"><a href="#cb11-1"></a><span class="kw">var</span> recipients <span class="op">=</span> [</span>
+<span id="cb11-2"><a href="#cb11-2"></a>  { <span class="dt">first_name</span><span class="op">:</span> <span class="st">'John'</span><span class="op">,</span> <span class="dt">last_name</span><span class="op">:</span> <span class="st">'Smith'</span> }<span class="op">,</span></span>
+<span id="cb11-3"><a href="#cb11-3"></a>  { <span class="dt">first_name</span><span class="op">:</span> <span class="st">'Jane'</span><span class="op">,</span> <span class="dt">last_name</span><span class="op">:</span> <span class="st">'Doe'</span> }</span>
+<span id="cb11-4"><a href="#cb11-4"></a>]<span class="op">;</span></span>
+<span id="cb11-5"><a href="#cb11-5"></a></span>
+<span id="cb11-6"><a href="#cb11-6"></a><span class="kw">var</span> messageTemplate <span class="op">=</span> <span class="st">'Hello {{first_name}} {{last_name}}!'</span><span class="op">;</span></span></code></pre></div>
+<p>We could create the actual messages to all users in a loop:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb12-1"><a href="#cb12-1"></a><span class="kw">var</span> messages <span class="op">=</span> recipients<span class="op">.</span><span class="fu">map</span>(createMessage)<span class="op">;</span></span>
+<span id="cb12-2"><a href="#cb12-2"></a></span>
+<span id="cb12-3"><a href="#cb12-3"></a><span class="kw">function</span> <span class="fu">createMessage</span>(recipient) {</span>
+<span id="cb12-4"><a href="#cb12-4"></a>  <span class="cf">return</span> messageTemplate<span class="op">.</span><span class="fu">replace</span>(<span class="ss">/{{</span><span class="sc">([a-z_]+)</span><span class="ss">}}/ig</span><span class="op">,</span></span>
+<span id="cb12-5"><a href="#cb12-5"></a>    <span class="kw">function</span>(match<span class="op">,</span> key) {</span>
+<span id="cb12-6"><a href="#cb12-6"></a>      <span class="cf">return</span> recipients[key]<span class="op">;</span></span>
+<span id="cb12-7"><a href="#cb12-7"></a>    }</span>
+<span id="cb12-8"><a href="#cb12-8"></a>  )<span class="op">;</span></span>
+<span id="cb12-9"><a href="#cb12-9"></a>}</span></code></pre></div>
+<p>The code above will create all the messages we need, but there is a much faster way to achieve it. We can generate the function createMessage. It doesn’t have any security implications even though messageTemplate is received from the user:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb13-1"><a href="#cb13-1"></a><span class="kw">var</span> code <span class="op">=</span> <span class="st">'return &quot;'</span><span class="op">;</span></span>
+<span id="cb13-2"><a href="#cb13-2"></a>code <span class="op">+=</span> messageTemplate<span class="op">.</span><span class="fu">replace</span>(<span class="ss">/{{</span><span class="sc">([a-z_]+)</span><span class="ss">}}/ig</span><span class="op">,</span></span>
+<span id="cb13-3"><a href="#cb13-3"></a>  <span class="kw">function</span>(match<span class="op">,</span> key) {</span>
+<span id="cb13-4"><a href="#cb13-4"></a>    <span class="cf">return</span> <span class="st">'&quot; + data.'</span> <span class="op">+</span> key <span class="op">+</span> <span class="st">' + &quot;'</span><span class="op">;</span></span>
+<span id="cb13-5"><a href="#cb13-5"></a>  }</span>
+<span id="cb13-6"><a href="#cb13-6"></a>)<span class="op">;</span></span>
+<span id="cb13-7"><a href="#cb13-7"></a>code <span class="op">+=</span> <span class="st">'&quot;;'</span></span>
+<span id="cb13-8"><a href="#cb13-8"></a></span>
+<span id="cb13-9"><a href="#cb13-9"></a><span class="kw">var</span> createMessage <span class="op">=</span> <span class="pp">eval</span>(<span class="st">'(function(data) { '</span> <span class="op">+</span> code <span class="op">+</span> <span class="st">' })'</span>)<span class="op">;</span></span>
+<span id="cb13-10"><a href="#cb13-10"></a><span class="co">// or new Function('data', code);</span></span></code></pre></div>
+<p>In a few lines of code we have created a super-simple “templating engine” that compiles templates into JavaScript functions.</p>
+<p>The template <code>"Hello {{first_name}} {{last_name}}!"</code> will be compiled to:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb14-1"><a href="#cb14-1"></a><span class="kw">function</span>(data) {</span>
+<span id="cb14-2"><a href="#cb14-2"></a>  <span class="cf">return</span> <span class="st">&quot;Hello &quot;</span> <span class="op">+</span> data<span class="op">.</span><span class="at">first_name</span> <span class="op">+</span> <span class="st">&quot; &quot;</span> <span class="op">+</span> data<span class="op">.</span><span class="at">last_name</span> <span class="op">+</span> <span class="st">&quot;!&quot;</span><span class="op">;</span></span>
+<span id="cb14-3"><a href="#cb14-3"></a>}</span></code></pre></div>
+<p>Executing the function above is hundreds (if not thousands) times faster than the code that does not use eval. Creating this function is always safe — if some unsafe code is used inside curly braces it will not be executed because the regular expression won’t match. For example, the template</p>
+<pre><code>&quot;Hello {{process.exit(1)}}!&quot;</code></pre>
+<p>will generate this function:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb16-1"><a href="#cb16-1"></a><span class="kw">function</span>(data) {</span>
+<span id="cb16-2"><a href="#cb16-2"></a>  <span class="cf">return</span> <span class="st">&quot;Hello {{process.exit(1)}}!&quot;</span><span class="op">;</span></span>
+<span id="cb16-3"><a href="#cb16-3"></a>}</span></code></pre></div>
+<p>i.e. an unsafe interpolation was not replaced with the code.</p>
+<p>The same approach to compiling templates into JavaScript functions is used in the fastest and the most concise <a href="https://github.com/olado/doT">templating engine doT</a>.</p>
+<h2 id="myth-3-eval-is-difficult-to-debug">Myth #3: Eval Is Difficult To Debug</h2>
+<p>I am not sure where this is coming from. The code passed to eval is a normal JavaScript code — you can add breakpoints, inspect variables, etc. Debugging code passed to eval or to Function constructor is not that much different from debugging any JavaScript code, you just need to either format it during code generation or to use <a href="https://github.com/beautify-web/js-beautify">js-beautify</a> package.</p>
+<p>Let’s consider one more example when you want to define a super-simple schema for your object (not <a href="http://json-schema.org/">JSON-schema</a>!) and validate it according to this schema:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb17-1"><a href="#cb17-1"></a><span class="kw">var</span> schema <span class="op">=</span> {</span>
+<span id="cb17-2"><a href="#cb17-2"></a>  <span class="dt">foo</span><span class="op">:</span> <span class="st">'identifier'</span><span class="op">,</span></span>
+<span id="cb17-3"><a href="#cb17-3"></a>  <span class="dt">bar</span><span class="op">:</span> <span class="st">'date'</span></span>
+<span id="cb17-4"><a href="#cb17-4"></a>}<span class="op">;</span></span></code></pre></div>
+<p>We assume here that all properties should be strings and they should match some known formats (<code>identifier</code> and <code>date</code> in this case).</p>
+<p>Our formats can be defined as regular expressions:</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb18-1"><a href="#cb18-1"></a><span class="kw">var</span> formats <span class="op">=</span> {</span>
+<span id="cb18-2"><a href="#cb18-2"></a>  <span class="dt">identifier</span><span class="op">:</span> <span class="ss">/</span><span class="sc">^[a-z_$][a-z0-9_$]*$</span><span class="ss">/i</span><span class="op">,</span></span>
+<span id="cb18-3"><a href="#cb18-3"></a>  <span class="dt">date</span><span class="op">:</span> <span class="ss">/</span><span class="sc">^\d{2}\/\d{2}\/\d{4}$</span><span class="ss">/</span></span>
+<span id="cb18-4"><a href="#cb18-4"></a>}<span class="op">;</span></span></code></pre></div>
+<p>The data that we want to validate:</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb19-1"><a href="#cb19-1"></a><span class="kw">var</span> validData <span class="op">=</span> {</span>
+<span id="cb19-2"><a href="#cb19-2"></a>  <span class="dt">foo</span><span class="op">:</span> <span class="st">'abc'</span><span class="op">,</span></span>
+<span id="cb19-3"><a href="#cb19-3"></a>  <span class="dt">bar</span><span class="op">:</span> <span class="st">'15/09/2016'</span></span>
+<span id="cb19-4"><a href="#cb19-4"></a>}<span class="op">;</span></span>
+<span id="cb19-5"><a href="#cb19-5"></a></span>
+<span id="cb19-6"><a href="#cb19-6"></a><span class="kw">var</span> invalidData <span class="op">=</span> {</span>
+<span id="cb19-7"><a href="#cb19-7"></a>  <span class="dt">foo</span><span class="op">:</span> <span class="st">'1'</span><span class="op">,</span></span>
+<span id="cb19-8"><a href="#cb19-8"></a>  <span class="dt">bar</span><span class="op">:</span> <span class="st">'15-09-2016'</span></span>
+<span id="cb19-9"><a href="#cb19-9"></a>}<span class="op">;</span></span></code></pre></div>
+<p>We can validate the data by iterating the properties in the schema and checking the data properties against the formats:</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb20-1"><a href="#cb20-1"></a><span class="kw">function</span> <span class="fu">validate</span>(schema<span class="op">,</span> data) {</span>
+<span id="cb20-2"><a href="#cb20-2"></a>  <span class="cf">for</span> (<span class="kw">var</span> prop <span class="kw">in</span> schema) {</span>
+<span id="cb20-3"><a href="#cb20-3"></a>    <span class="kw">var</span> value <span class="op">=</span> data[prop]<span class="op">;</span></span>
+<span id="cb20-4"><a href="#cb20-4"></a>    <span class="cf">if</span> (<span class="kw">typeof</span> value <span class="op">!=</span> <span class="st">'string'</span>) <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb20-5"><a href="#cb20-5"></a>    <span class="kw">var</span> pattern <span class="op">=</span> formats[schema[prop]]<span class="op">;</span></span>
+<span id="cb20-6"><a href="#cb20-6"></a>    <span class="cf">if</span> (<span class="op">!</span>pattern<span class="op">.</span><span class="fu">test</span>(value)) <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb20-7"><a href="#cb20-7"></a>  }</span>
+<span id="cb20-8"><a href="#cb20-8"></a>  <span class="cf">return</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb20-9"><a href="#cb20-9"></a>}</span></code></pre></div>
+<p>An alternative approach is to generate the code of the validating function from the schema and create this function using <em>eval</em>:</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb21-1"><a href="#cb21-1"></a><span class="kw">var</span> code <span class="op">=</span> <span class="st">''</span><span class="op">;</span></span>
+<span id="cb21-2"><a href="#cb21-2"></a><span class="cf">for</span> (<span class="kw">var</span> prop <span class="kw">in</span> schema) {</span>
+<span id="cb21-3"><a href="#cb21-3"></a>  <span class="kw">var</span> data <span class="op">=</span> <span class="st">'data.'</span> <span class="op">+</span> prop<span class="op">;</span></span>
+<span id="cb21-4"><a href="#cb21-4"></a>  code <span class="op">+=</span> <span class="st">'if (typeof '</span> <span class="op">+</span> data <span class="op">+</span> <span class="st">' != &quot;string&quot;) return false;'</span><span class="op">;</span></span>
+<span id="cb21-5"><a href="#cb21-5"></a>  code <span class="op">+=</span> <span class="st">'if (!formats.'</span> <span class="op">+</span> schema[prop] <span class="op">+</span> <span class="st">'.test('</span></span>
+<span id="cb21-6"><a href="#cb21-6"></a>            <span class="op">+</span> data <span class="op">+</span> <span class="st">')) return false;'</span><span class="op">;</span></span>
+<span id="cb21-7"><a href="#cb21-7"></a>}</span>
+<span id="cb21-8"><a href="#cb21-8"></a>code <span class="op">+=</span> <span class="st">'return true;'</span><span class="op">;</span></span>
+<span id="cb21-9"><a href="#cb21-9"></a><span class="kw">var</span> validate <span class="op">=</span> <span class="pp">eval</span>(<span class="st">'(function(data) { '</span> <span class="op">+</span> code <span class="op">+</span> <span class="st">' })'</span>)<span class="op">;</span></span></code></pre></div>
+<p>Our simple schema above would “compile” to this function:</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb22-1"><a href="#cb22-1"></a><span class="kw">function</span> (data) {</span>
+<span id="cb22-2"><a href="#cb22-2"></a>  <span class="cf">if</span> (<span class="kw">typeof</span> data<span class="op">.</span><span class="at">foo</span> <span class="op">!=</span> <span class="st">&quot;string&quot;</span>) <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb22-3"><a href="#cb22-3"></a>  <span class="cf">if</span> (<span class="op">!</span>formats<span class="op">.</span><span class="at">identifier</span><span class="op">.</span><span class="fu">test</span>(data<span class="op">.</span><span class="at">foo</span>)) <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb22-4"><a href="#cb22-4"></a>  <span class="cf">if</span> (<span class="kw">typeof</span> data<span class="op">.</span><span class="at">bar</span> <span class="op">!=</span> <span class="st">&quot;string&quot;</span>) <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb22-5"><a href="#cb22-5"></a>  <span class="cf">if</span> (<span class="op">!</span>formats<span class="op">.</span><span class="at">date</span><span class="op">.</span><span class="fu">test</span>(data<span class="op">.</span><span class="at">bar</span>)) <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb22-6"><a href="#cb22-6"></a>  <span class="cf">return</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb22-7"><a href="#cb22-7"></a>}</span></code></pre></div>
+<p>This approach to data validation when the schema is compiled to a JavaScript function is used in several JSON-Schema validators, including the fastest one — <a href="https://github.com/epoberezkin/ajv">Ajv</a> that I have created.</p>
+<h2 id="so-why-eval-is-evil">So Why Eval Is Evil?</h2>
+<p><em>Eval</em> can dramatically improve performance, it doesn’t create security risks if used properly and it can be debugged without any problems. Why it should never be used then?</p>
+<p>The problem with eval is that whenever eval creates a function, it becomes a closure that retains access to ALL variables in the current and in ALL parent scopes, regardless whether they are used by this closure or not. If you debug <code>validate</code> function from the third example in the chrome inspector you will see it:</p>
+<p><img src="../images/eval1.png" alt="eval closure" title="eval creates big closure"></p>
+<p>Unlike <em>eval</em>, <em>Function</em> constructor doesn’t have this problem, the function that it returns is created in the global scope and it is not a closure.</p>
+<p>Vyacheslav Egorov <a href="https://mrale.ph/blog/2012/09/23/grokking-v8-closures-for-fun.html">wrote about it</a> 4 years ago and it is still the case today — eval is not optimised in node.js and browsers in the way normal closures are, that only retain access to the scope variables they use.</p>
+<p>This issue has been pointed out by <a href="https://github.com/rf">Russ Frank</a> who has recently submitted a <a href="https://github.com/epoberezkin/ajv/pull/293">PR to Ajv</a> that replaced <em>eval</em> with <em>Function</em> constructor to reduce memory utilisation.</p>
+<p>In all examples but the last one we could easily replace <em>eval</em> with <em>new Function</em>. In the last example though the generated function should be a closure — it needs access to <em>formats</em> that are defined in the parent scope. So if we simply use <em>Function</em> constructor in the same way as before it won’t work. Instead we can do this:</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb23-1"><a href="#cb23-1"></a><span class="kw">var</span> createValidate <span class="op">=</span> <span class="kw">new</span> <span class="bu">Function</span>(<span class="st">'formats'</span><span class="op">,</span></span>
+<span id="cb23-2"><a href="#cb23-2"></a>                       <span class="st">'return function(data) { '</span> <span class="op">+</span> code <span class="op">+</span> <span class="st">' }'</span>)<span class="op">;</span></span>
+<span id="cb23-3"><a href="#cb23-3"></a><span class="kw">var</span> validate <span class="op">=</span> createValidate(formats)<span class="op">;</span></span></code></pre></div>
+<p>As you can see <em>Function</em> constructor is used to create a function that returns a closure that has access to <em>formats</em>, but not to anything else:</p>
+<p><img src="../images/eval2.png" alt="Function constructor closure" title="Function constructor allows to control closure"></p>
+<p>Although this code is more verbose than with <em>eval</em> it doesn’t have the issue that makes <em>eval</em> really evil — <strong>retaining access to everything in all scopes</strong> from the current to the global.</p>
+<p>So while code generation can be used to achieve serious performance benefits, direct calls to <em>eval</em> should be avoided. Instead <em>Function</em> constructor (or at least <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval">indirect calls</a> to <em>eval</em>) should be used.</p>
+    </section>
+</article>
+
+        </main>
+
+        <footer>
+            Site generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </footer>
+    </body>
+</html>

@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Evgeny Poberezkin - Haskell — a higher order language</title>
+        <link rel="stylesheet" href="../css/default.css" />
+    </head>
+    <body>
+        <header>
+            <div class="logo">
+                <a href="../">Evgeny Poberezkin</a>
+            </div>
+            <nav>
+                <a href="../">Home</a>
+                <a href="../about.html">About</a>
+                <a href="../archive.html">Archive</a>
+            </nav>
+        </header>
+
+        <main role="main">
+            <h1>Haskell — a higher order language</h1>
+            <article>
+    <section class="header">
+        <div class="info">
+            Posted on
+            
+                <a href="https://medium.com/@epoberezkin/haskell-a-higher-order-language-ade461d453c7">March 15, 2020</a>
+            
+            
+                by Evgeny Poberezkin
+            
+        </div>
+        <div class="info">
+            
+                Tags: <a title="All pages tagged 'haskell'." href="../tags/haskell.html">haskell</a>, <a title="All pages tagged 'coding'." href="../tags/coding.html">coding</a>
+            
+        </div>
+    </section>
+    <section>
+        <p><img src="../images/haskell.png" width="40%" style="float: left; margin: 20px 20px 10px 0;" /></p>
+<p>The thesis here is that Haskel is not just one of many functional programming languages — it is a different, more advanced programming paradigm.</p>
+<p>Haskell is indeed a functional language, but calling Haskell “a functional language” is like calling a skyscraper “a dwelling” — while technically correct, it does not describe how the latter is much more than just a place to live.</p>
+<p>What defines a programming language? From the point of view of category theory, there are two major components of each programming language: data types and transformations between them — in category theory terminology, “objects” and “morphisms”.</p>
+<p><strong>The first claim</strong> here (that must be challenged) is that all programming languages but Haskell (and more recent Idris) are based on “morphisms” — code, procedures or functions that transform and manipulate the data. Data types in these languages play the secondary role — to ensure validity and to improve predictability of the “morphisms”.</p>
+<p>Haskell, being a functional language, counterintuitively, is not based on functions — it is based on types, or “objects” in category theory terminology. Types ensuring the validity of transformations almost seems secondary in Haskell (however useful), while the primary purpose of types is to formally describe the system model and the relationship between the elements of the system (including functions that also have types).</p>
+<p>But a bigger distinction between Haskell and other languages is in the nature of the language semantics. <strong>The second claim</strong> (that also must be challenged) is that while other languages have semantics tightly coupled with the syntax — the meaning of the code is defined by its grammar, Haskell semantics is defined by the combination of code and context (e.g., created by the types that belong to Monad class). In this way, Haskell is much closer than other programming languages to the natural human languages that also have semantics defined by the combination of grammar and context (see interpretive and generative semantics of human languages).</p>
+<p>For example, a simple <code>sequence</code> function that is defined as:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1"></a><span class="fu">sequence</span><span class="ot"> ::</span> <span class="dt">Monad</span> m <span class="ot">=&gt;</span> [m a] <span class="ot">-&gt;</span> m [a]</span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="fu">sequence</span> ms <span class="ot">=</span> <span class="fu">foldr</span> k (<span class="fu">return</span> []) ms</span>
+<span id="cb1-3"><a href="#cb1-3"></a>            <span class="kw">where</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a>              k m m' <span class="ot">=</span> <span class="kw">do</span> { x <span class="ot">&lt;-</span> m; xs <span class="ot">&lt;-</span> m'; <span class="fu">return</span> (x<span class="op">:</span>xs) }</span></code></pre></div>
+<p>can mean different things depending on the context that is defined by <code>m</code>.</p>
+<p>Applied to IO it can mean performing IO actions in sequence:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1"></a><span class="fu">sequence</span> [<span class="fu">getLine</span>, <span class="fu">getLine</span>]</span></code></pre></div>
+<p>returns a single IO action that resolves into the list of 2 strings.</p>
+<p>Applied to the list of instances of <code>Maybe</code> type, it would check that all of them contain some value and either return <code>Just</code> list of these value or Nothing if any of them is <code>Nothing</code>:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1"></a><span class="fu">sequence</span> [<span class="dt">Just</span> <span class="dv">1</span>, <span class="dt">Just</span> <span class="dv">2</span>, <span class="dt">Just</span> <span class="dv">3</span>] <span class="ot">=</span> <span class="dt">Just</span> [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>]</span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="fu">sequence</span> [<span class="dt">Just</span> <span class="dv">1</span>, <span class="dt">Just</span> <span class="dv">2</span>, <span class="dt">Nothing</span>] <span class="ot">=</span> <span class="dt">Nothing</span></span></code></pre></div>
+<p>Applied to the list of 2 lists, it will perform indeterminate computation and return all possible permutations of list items where the first item comes from the first list, and the second — from the second list:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1"></a><span class="fu">sequence</span> [[<span class="dv">1</span>,<span class="dv">2</span>],[<span class="dv">3</span>,<span class="dv">4</span>]] <span class="ot">=</span> [[<span class="dv">1</span>,<span class="dv">3</span>],[<span class="dv">1</span>,<span class="dv">4</span>],[<span class="dv">2</span>,<span class="dv">3</span>],[<span class="dv">2</span>,<span class="dv">4</span>]]</span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="fu">sequence</span> [[<span class="dv">1</span>,<span class="dv">2</span>],[<span class="dv">3</span>,<span class="dv">4</span>], []] <span class="ot">=</span> [] <span class="co">-- [] is &quot;undefined&quot; in this context</span></span></code></pre></div>
+<p>Context-dependent semantics of Haskell code makes Haskell more difficult to learn. As the same syntax can mean many different things, achieving fluency requires more effort than with other languages. But it also makes Haskell infinitely more expressive than any other language — you can implement any new semantics you want by adding the new context to the same code. Therefore, while Haskell requires more investment from you than other programming languages, the return on this investment is infinitely higher.</p>
+<p>Some Haskell books (e.g. <a href="http://learnyouahaskell.com/">LYAH</a>) and lectures (e.g <a href="https://www.seas.upenn.edu/~cis194/fall16/index.html">Penn course</a>) do not capture this fundamental distinction well enough. Instead, they focus on the functional nature of Haskell, and present Monad as almost some work-around to allow using pure functions for context-aware computations (IO, State, indeterminism, etc.). Unfortunately, it creates a barrier to entry for the new developers, because when people are asked to make a larger than usual investment to learn yet one more functional programming language with quirky syntax, this investment is difficult to justify without understanding first that Haskell is a more powerful programming paradigm. How many people abandoned Haskell before grasping its power?</p>
+<p>A good book that explains how Haskel is a higher order language is <a href="https://en.wikibooks.org/wiki/Haskell">Haskell</a> in wiki-books. Once you get over “<a href="https://en.wikibooks.org/wiki/Haskell/Understanding_monads">Understanding monads</a>” section, the Haskell advantage should become apparent.</p>
+<p>If you want to see some relatively simple magic you can do with Haskell, watch the talk by <a href="https://github.com/EncodePanda">Paweł Szulc</a> at Lambda World’19, particularly where he <a href="https://www.youtube.com/watch?v=idU7GdlfP9Q&amp;feature=youtu.be&amp;t=625">talks about Servant</a> — the library to create REST APIs in Haskell. Before you write a single line of implementation code, you can get the whole API definition from a single type definition (I am replacing alpacas from Paweł’s farm with users here):</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">type</span> <span class="dt">User</span> <span class="ot">=</span> <span class="dt">User</span> {</span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="ot">    name  ::</span> <span class="dt">String</span></span>
+<span id="cb5-3"><a href="#cb5-3"></a>}</span>
+<span id="cb5-4"><a href="#cb5-4"></a> </span>
+<span id="cb5-5"><a href="#cb5-5"></a><span class="kw">type</span> <span class="dt">UserAPI</span> <span class="ot">=</span></span>
+<span id="cb5-6"><a href="#cb5-6"></a>       <span class="st">&quot;user&quot;</span> <span class="op">:&gt;</span> <span class="dt">Get</span> '[<span class="dt">JSON</span>] (<span class="dt">M.Map</span> <span class="dt">Int</span> <span class="dt">User</span>)</span>
+<span id="cb5-7"><a href="#cb5-7"></a>  <span class="op">:&lt;|&gt;</span> <span class="st">&quot;user&quot;</span> <span class="op">:&gt;</span> <span class="dt">Capture</span> <span class="st">&quot;userId&quot;</span> <span class="dt">Int</span></span>
+<span id="cb5-8"><a href="#cb5-8"></a>              <span class="op">:&gt;</span> <span class="dt">Get</span> '[<span class="dt">JSON</span>] <span class="dt">User</span></span>
+<span id="cb5-9"><a href="#cb5-9"></a>  <span class="op">:&lt;|&gt;</span> <span class="st">&quot;user&quot;</span> <span class="op">:&gt;</span> <span class="dt">Capture</span> <span class="st">&quot;userId&quot;</span> <span class="dt">Int</span></span>
+<span id="cb5-10"><a href="#cb5-10"></a>              <span class="op">:&gt;</span> <span class="dt">ReqBody</span> '[<span class="dt">JSON</span>] <span class="dt">User</span></span>
+<span id="cb5-11"><a href="#cb5-11"></a>              <span class="op">:&gt;</span> <span class="dt">PutCreated</span> '[<span class="dt">JSON</span>] <span class="dt">NoContent</span><span class="co">-- UserAPI type defines this API:</span></span>
+<span id="cb5-12"><a href="#cb5-12"></a><span class="co">-- GET /user   - Response: {&quot;1&quot;:{&quot;name&quot;:&quot;jane&quot;}}, 200</span></span>
+<span id="cb5-13"><a href="#cb5-13"></a><span class="co">-- GET /user/1 - Response: {&quot;name&quot;:&quot;jane&quot;}, 200</span></span>
+<span id="cb5-14"><a href="#cb5-14"></a><span class="co">-- PUT /user/2 Body: {&quot;name&quot;:&quot;John D.&quot;} - Response: NoContent, 201</span></span></code></pre></div>
+<p>And before you even start implementing this API you can get client functions to call this API with a few lines of code:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb6-1"><a href="#cb6-1"></a><span class="ot">userApi ::</span> <span class="dt">Proxy</span> <span class="dt">UserAPI</span></span>
+<span id="cb6-2"><a href="#cb6-2"></a>userApi <span class="ot">=</span> <span class="dt">Proxy</span></span>
+<span id="cb6-3"><a href="#cb6-3"></a>getAll <span class="op">:&lt;|&gt;</span> getUser <span class="op">:&lt;|&gt;</span> putUser <span class="ot">=</span> client userApi</span>
+<span id="cb6-4"><a href="#cb6-4"></a> </span>
+<span id="cb6-5"><a href="#cb6-5"></a><span class="co">-- client functions types:</span></span>
+<span id="cb6-6"><a href="#cb6-6"></a><span class="ot">getAll ::</span> <span class="dt">ClientM</span> (<span class="dt">M.Map</span> <span class="dt">Int</span> <span class="dt">User</span>)</span>
+<span id="cb6-7"><a href="#cb6-7"></a><span class="ot">getUser ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">ClientM</span> <span class="dt">User</span></span>
+<span id="cb6-8"><a href="#cb6-8"></a><span class="ot">putUser ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">User</span> <span class="ot">-&gt;</span> <span class="dt">ClientM</span> <span class="dt">User</span></span></code></pre></div>
+<p>With just a few annotations you can generate API docs from UserAPI type:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1"></a><span class="kw">instance</span> <span class="dt">ToCapture</span> (<span class="dt">Capture</span> <span class="st">&quot;userId&quot;</span> <span class="dt">Int</span>) <span class="kw">where</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a>  toCapture _ <span class="ot">=</span></span>
+<span id="cb7-3"><a href="#cb7-3"></a>    <span class="dt">DocCapture</span> <span class="st">&quot;userId&quot;</span></span>
+<span id="cb7-4"><a href="#cb7-4"></a>               <span class="st">&quot;Id that uniquely identifies a user in the system&quot;</span></span>
+<span id="cb7-5"><a href="#cb7-5"></a> </span>
+<span id="cb7-6"><a href="#cb7-6"></a><span class="kw">instance</span> <span class="dt">ToSample</span> (<span class="dt">User</span>) <span class="kw">where</span></span>
+<span id="cb7-7"><a href="#cb7-7"></a>  toSamples _ <span class="ot">=</span> singleSample <span class="op">$</span> <span class="dt">User</span> <span class="st">&quot;Jane&quot;</span></span>
+<span id="cb7-8"><a href="#cb7-8"></a> </span>
+<span id="cb7-9"><a href="#cb7-9"></a><span class="kw">instance</span> <span class="dt">ToSample</span> (<span class="dt">M.Map</span> <span class="dt">Int</span> <span class="dt">User</span>) <span class="kw">where</span></span>
+<span id="cb7-10"><a href="#cb7-10"></a>  toSamples _ <span class="ot">=</span> singleSample <span class="op">$</span> M.singleton <span class="dv">1</span> (<span class="dt">User</span> <span class="st">&quot;Jane&quot;</span>)</span>
+<span id="cb7-11"><a href="#cb7-11"></a> </span>
+<span id="cb7-12"><a href="#cb7-12"></a><span class="ot">apiDocs ::</span> <span class="dt">API</span></span>
+<span id="cb7-13"><a href="#cb7-13"></a>apiDocs <span class="ot">=</span> docs<span class="ot"> userApimain ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb7-14"><a href="#cb7-14"></a>main <span class="ot">=</span> (<span class="fu">writeFile</span> <span class="st">&quot;docs.md&quot;</span> <span class="op">.</span> markdown) apiDocs</span></code></pre></div>
+<p>To run this server you just need to implement it, the mock implementation is very simple, but the Haskell type system ensures that the type of implementation is correct (<code>Server UserAPI</code> that is based on <code>UserAPI</code> type):</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb8-1"><a href="#cb8-1"></a>dummy <span class="ot">=</span> <span class="dt">User</span> <span class="st">&quot;Jane&quot;</span> <span class="st">&quot;jane@example.com&quot;</span></span>
+<span id="cb8-2"><a href="#cb8-2"></a> </span>
+<span id="cb8-3"><a href="#cb8-3"></a><span class="ot">fetchAll ::</span> <span class="dt">Monad</span> m <span class="ot">=&gt;</span> m (<span class="dt">M.Map</span> <span class="dt">Int</span> <span class="dt">User</span>)</span>
+<span id="cb8-4"><a href="#cb8-4"></a>fetchAll <span class="ot">=</span> <span class="fu">pure</span> <span class="op">$</span> M.singleton <span class="dv">1</span> dummy</span>
+<span id="cb8-5"><a href="#cb8-5"></a> </span>
+<span id="cb8-6"><a href="#cb8-6"></a><span class="ot">fetch ::</span> <span class="dt">Monad</span> m <span class="ot">=&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> m <span class="dt">User</span></span>
+<span id="cb8-7"><a href="#cb8-7"></a>fetch <span class="fu">id</span> <span class="ot">=</span> <span class="fu">pure</span> dummy</span>
+<span id="cb8-8"><a href="#cb8-8"></a> </span>
+<span id="cb8-9"><a href="#cb8-9"></a><span class="ot">insert ::</span> <span class="dt">Monad</span> m <span class="ot">=&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">User</span> <span class="ot">-&gt;</span> m <span class="dt">NoContent</span></span>
+<span id="cb8-10"><a href="#cb8-10"></a>insert <span class="fu">id</span> user <span class="ot">=</span> <span class="fu">pure</span> <span class="dt">NoContent</span></span>
+<span id="cb8-11"><a href="#cb8-11"></a> </span>
+<span id="cb8-12"><a href="#cb8-12"></a><span class="ot">server ::</span> <span class="dt">Server</span> <span class="dt">UserAPI</span></span>
+<span id="cb8-13"><a href="#cb8-13"></a>server <span class="ot">=</span> fetchAll <span class="op">:&lt;|&gt;</span> fetch <span class="op">:&lt;|&gt;</span> insert</span>
+<span id="cb8-14"><a href="#cb8-14"></a> </span>
+<span id="cb8-15"><a href="#cb8-15"></a><span class="ot">app ::</span> <span class="dt">Application</span></span>
+<span id="cb8-16"><a href="#cb8-16"></a>app <span class="ot">=</span> serve userApi server</span>
+<span id="cb8-17"><a href="#cb8-17"></a> </span>
+<span id="cb8-18"><a href="#cb8-18"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb8-19"><a href="#cb8-19"></a>main <span class="ot">=</span> run <span class="dv">8080</span> app</span></code></pre></div>
+<p>The above does feel like magic!</p>
+<p>Morphism-based programming languages (i.e., all other languages) force programmers to model the whole system outside of the code — using SQL schema, JSON schema, diagrams, etc. Type-based languages (Haskell and Idris) allow for type-driven development, when the whole system can be modelled top-down with algebraic data types, rather than bottom-up with functions as in other languages.</p>
+<p>Haskell being type-based language with context-dependent semantics is a higher order language that is almost one of a kind — there seems to be no other mature programming language that allows the same level of expressiveness as Haskell does.</p>
+    </section>
+</article>
+
+        </main>
+
+        <footer>
+            Site generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </footer>
+    </body>
+</html>

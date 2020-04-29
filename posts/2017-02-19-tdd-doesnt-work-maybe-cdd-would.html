@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Evgeny Poberezkin - TDD doesn’t work… Maybe CDD would?</title>
+        <link rel="stylesheet" href="../css/default.css" />
+    </head>
+    <body>
+        <header>
+            <div class="logo">
+                <a href="../">Evgeny Poberezkin</a>
+            </div>
+            <nav>
+                <a href="../">Home</a>
+                <a href="../about.html">About</a>
+                <a href="../archive.html">Archive</a>
+            </nav>
+        </header>
+
+        <main role="main">
+            <h1>TDD doesn’t work… Maybe CDD would?</h1>
+            <article>
+    <section class="header">
+        <div class="info">
+            Posted on
+            
+                <a href="https://medium.com/@epoberezkin/tdd-doesnt-work-maybe-cdd-would-1fd756d2ca4b">February 19, 2017</a>
+            
+            
+                by Evgeny Poberezkin
+            
+        </div>
+        <div class="info">
+            
+                Tags: <a title="All pages tagged 'tests'." href="../tags/tests.html">tests</a>, <a title="All pages tagged 'coding'." href="../tags/coding.html">coding</a>
+            
+        </div>
+    </section>
+    <section>
+        <p>Test Driven Development existed long before the term itself. It’s been “rediscovered” and popularised by Kent Beck, the creator of Extreme Programming. He wrote on Quora:</p>
+<p><img src="../images/tdd1.png" alt="Kent Beck on Quora" title="...How else could you program?"></p>
+<p>The complexity of software systems since those ancient times has evolved to a point when it is no longer possible to define the expected application behaviours in as simple terms as “the output tape you expect”.</p>
+<p>The software development community is split, with opinions ranging from “<a href="https://dhh.dk/2014/tdd-is-dead-long-live-testing.html">TDD is dead. Long live testing</a>” (by <a href="https://dhh.dk/">David Heinemeier Hansson</a>, the creator of Ruby on Rails and the founder &amp; CTO of Basecamp):</p>
+<blockquote>
+<p><em>Test-first fundamentalism is like abstinence-only sex ed: An unrealistic, ineffective morality campaign for self-loathing and shaming.</em></p>
+</blockquote>
+<p>to “<a href="https://dzone.com/articles/whats-wrong-test-driven">What’s Wrong with Test-Driven Development (TDD)</a>”:</p>
+<blockquote>
+<p><em>[TDD] is a powerful methodology that helped me combat “analysis paralysis”, create robust, maintainable code and there’s the added benefit of the resulting unit tests which provide a safety-net against regression bugs.</em></p>
+</blockquote>
+<p>The latter one says that TDD is nearly perfect, we are simply doing it wrong, being scared to leave our comfort zones and to watch our tests fail… I wish it were as simple as that.</p>
+<p><img src="../images/tdd2.png" alt="If it's so simple, why doesn't everybody doing it?" width="100%"></p>
+<p>Really, why?</p>
+<p>There is also no consensus about how software should be designed, even among developers who preach and practice TDD. Some moderate believers say that <a href="https://vladikk.com/2016/01/22/tdd-what-went-wrong/">TDD is NOT “Test Driven Design”</a>, that it should be used together with Domain Driven Design and call for reformation into TDD 2.0. Zealots insist that “<a href="https://dzone.com/articles/whats-wrong-test-driven">TDD is a design methodology - the unit tests are just a by-product of the process</a>”.</p>
+<hr />
+<p>Ok, let’s step back from the heat of the battle and ask ourselves what objectives we want to achieve, with or without TDD?</p>
+<p>At a high level, software developers in both camps want to have lower costs of creating and using software. It means:</p>
+<ol type="1">
+<li>Reducing the number of bugs</li>
+<li>Making changes with minimal regressions</li>
+<li>Releasing changes with lower risk of failures</li>
+<li>Maintaining code easily and running tests quickly</li>
+<li>etc.</li>
+</ol>
+<p>We definitely need team-wide processes for the development project success. <a href="http://blog.cleancoder.com/uncle-bob/2014/06/17/IsTddDeadFinalThoughts.html">Uncle Bob writes</a> that if only a part of the team does TDD and another one doesn’t it will lead to divorce. But do we really need an industry-wide standard development process to achieve those objectives?</p>
+<p>Software development projects are as diverse as businesses. As the complexity of the businesses was growing they in many cases transitioned from process management to <a href="https://en.wikipedia.org/wiki/Management_by_objectives">management by objectives</a>.</p>
+<p>So what metrics in software development should we manage to achieve a higher level objective of reducing the costs?</p>
+<p>I can see a strong inverse correlation between number of costly issues (bugs, regressions) and code coverage. That’s exactly the reason why a majority of popular open-source projects display this metric. A higher code coverage is usually seen as a higher reliability of the code, both by developers who follow TDD and those who don’t.</p>
+<p><img src="../images/tdd3.png" alt="inverse correlation of bugs and code coverage" title="It's only a picture for 'inverse correlation', not the result of some research" width="100%"></p>
+<hr />
+<p>My development process aims to achieve an effective design and high code coverage. It could be called <strong>Coverage Driven Development</strong> and consists of three phases:</p>
+<h3 id="plan-design">1. Plan &amp; Design</h3>
+<p>I make a list of features and requirements for a both minimal and viable implementation that can be given to the end-users. The plan allows to foresee external dependencies and all requirements that the application should satisfy, and the design should be coordinated with this plan.</p>
+<p>At this point there are no (or very few) external constraints to help structure the code. So I quickly iterate code to figure out how basic models, APIs, functions and classes should look. I am not worried if my code even works, and I usually don’t write tests during this phase, they only hinder the understanding of what the right design is.</p>
+<p>Iterating code allows to avoid unnecessary intermediary abstractions that often plague TDD-written code and achieves a robust foundation of code structure. And it helps to transfer a visual image of the system that only exists in the the sketches or in the mind into the code and see if this picture still makes sense and whether it supports the whole plan. If it does, I go to the next phase, in not - I continue iterating the code until it does. Depending on the complexity of the system this phase can take from a couple of hours to a couple of days, or even weeks in a really big project.</p>
+<h3 id="develop">2. Develop</h3>
+<p>Before development continues, I write tests for all the code written in design phase to achieve code coverage of 95%+.</p>
+<p>Each feature in the plan (that continues to evolve) requires some design thinking so I continue rapid code iteration and refactoring and in most cases I write tests only after code, getting to 95%+ code coverage before going to the next feature.</p>
+<p>Depending on your quality requirements and the code size you can set a higher threshold for code coverage in your project, but the cost or writing and maintaining the tests grows very quickly as you approach 100%.</p>
+<h3 id="maintain">3. Maintain</h3>
+<p>This phase starts long before MVP is complete. In case when bugs are discovered or some simple changes should be made I almost always write a failing test BEFORE writing any code, exactly as TDD instructs. In this phase it just makes more sense. During the implementation of the fix I often discover some other issues and do some refactoring, but I don’t always write tests for them as I fix them - switching context damages focus and speed. Once the implementation is done I write additional tests to maintain code coverage at 95%+ level.</p>
+<p><img src="../images/tdd4.png" alt="Coverage Driven Development phases" width="100%"></p>
+<hr />
+<p>This is not a linear process, it is a cycle that repeats multiple times, even before the application reaches the end-users. Also these phases are not strictly separated in time, they are more like “modes of operation” that can overlap.</p>
+<p>The whole development process is driven by a single objective quality metric - code coverage. Uncle Bob sees TDD as a pre-requisite to achieving high code coverage (see “<a href="http://blog.cleancoder.com/uncle-bob/2014/06/17/IsTddDeadFinalThoughts.html#a-team-divided">Is TDD Dead?</a>”). But it’s not the case, you can maintain high code coverage without practicing TDD all the time.</p>
+<p>You just need to follow several simple steps:</p>
+<ol type="1">
+<li>Implement code coverage measurement as early as possible.</li>
+<li>Make the measurement run on every build.</li>
+<li>Make coverage visible in your source code repository.</li>
+<li>Make coverage change visible in PRs.</li>
+<li>Only merge PRs if they increase the coverage or if it is already higher than the threshold agreed with the team for the project.</li>
+</ol>
+<p>Code coverage as a metric is not perfect, and I often hear the following criticism:</p>
+<ol type="1">
+<li><p>“It depends on code style”. It is true, but it does not reduce the efficiency of code coverage as quality metric. Adopting consistent code style for the team makes code coverage measurement consistent as well.</p></li>
+<li><p>“100% coverage does not guarantee the absence of bugs”. It is also true, but neither does following TDD. No sufficiently complex system is free of bugs. While the absence of bugs is theoretically possible to achieve, and even possible to prove in some cases, it is prohibitively expensive. On the other hand maintaining high code coverage dramatically reduces the number of bugs and the probability of regressions.</p></li>
+</ol>
+<hr />
+<p>If you are not using code coverage as part of your development process, it’s definitely worth trying. If nothing else, it will give you an increased satisfaction from writing tests. And all developers seem to agree that we should write tests to reduce the cost of software.</p>
+<p><img src="../images/tdd5.png" alt="Acheived 100% code coverage" title="… but the bug is still there" max-width="100%"></p>
+    </section>
+</article>
+
+        </main>
+
+        <footer>
+            Site generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </footer>
+    </body>
+</html>

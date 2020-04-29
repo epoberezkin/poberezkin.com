@@ -9,7 +9,7 @@ I delivered secure enterprise-level distributed systems with high availability a
 I lead the technology team at [Threads](https://www.threadsstyling.com/) (@[threadsstyling](https://www.instagram.com/threadsstyling/)) - luxury chat-commerce business with a global reach.
 We are providing the world's best luxury shopping experience.
 
-[GitHub](https://github.com/epoberezkin/ajv)
+[GitHub](https://github.com/epoberezkin)
 
 [Twitter](https://twitter.com/epoberezkin)
 

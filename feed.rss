@@ -1,0 +1,485 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"
+    xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <channel>
+        <title>Evgeny Poberezkin</title>
+        <link>http://poberezkin.com</link>
+        <description><![CDATA[Evgeny Poberezkin's blog.]]></description>
+        <atom:link href="http://poberezkin.com/feed.rss" rel="self"
+                   type="application/rss+xml" />
+        <lastBuildDate>Sun, 15 Mar 2020 00:00:00 UT</lastBuildDate>
+        <item>
+    <title>Haskell — a higher order language</title>
+    <link>http://poberezkin.com/posts/2020-03-15-haskell-a-higher-order-language.html</link>
+    <description><![CDATA[<p><img src="/images/haskell.png" width="40%" style="float: left; margin: 20px 20px 10px 0;" /></p>
+<p>The thesis here is that Haskel is not just one of many functional programming languages — it is a different, more advanced programming paradigm.</p>
+<p>Haskell is indeed a functional language, but calling Haskell “a functional language” is like calling a skyscraper “a dwelling” — while technically correct, it does not describe how the latter is much more than just a place to live.</p>
+<p>What defines a programming language? From the point of view of category theory, there are two major components of each programming language: data types and transformations between them — in category theory terminology, “objects” and “morphisms”.</p>
+<p><strong>The first claim</strong> here (that must be challenged) is that all programming languages but Haskell (and more recent Idris) are based on “morphisms” — code, procedures or functions that transform and manipulate the data. Data types in these languages play the secondary role — to ensure validity and to improve predictability of the “morphisms”.</p>
+<p>Haskell, being a functional language, counterintuitively, is not based on functions — it is based on types, or “objects” in category theory terminology. Types ensuring the validity of transformations almost seems secondary in Haskell (however useful), while the primary purpose of types is to formally describe the system model and the relationship between the elements of the system (including functions that also have types).</p>
+<p>But a bigger distinction between Haskell and other languages is in the nature of the language semantics. <strong>The second claim</strong> (that also must be challenged) is that while other languages have semantics tightly coupled with the syntax — the meaning of the code is defined by its grammar, Haskell semantics is defined by the combination of code and context (e.g., created by the types that belong to Monad class). In this way, Haskell is much closer than other programming languages to the natural human languages that also have semantics defined by the combination of grammar and context (see interpretive and generative semantics of human languages).</p>
+<p>For example, a simple <code>sequence</code> function that is defined as:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1"></a><span class="fu">sequence</span><span class="ot"> ::</span> <span class="dt">Monad</span> m <span class="ot">=&gt;</span> [m a] <span class="ot">-&gt;</span> m [a]</span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="fu">sequence</span> ms <span class="ot">=</span> <span class="fu">foldr</span> k (<span class="fu">return</span> []) ms</span>
+<span id="cb1-3"><a href="#cb1-3"></a>            <span class="kw">where</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a>              k m m&#39; <span class="ot">=</span> <span class="kw">do</span> { x <span class="ot">&lt;-</span> m; xs <span class="ot">&lt;-</span> m&#39;; <span class="fu">return</span> (x<span class="op">:</span>xs) }</span></code></pre></div>
+<p>can mean different things depending on the context that is defined by <code>m</code>.</p>
+<p>Applied to IO it can mean performing IO actions in sequence:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1"></a><span class="fu">sequence</span> [<span class="fu">getLine</span>, <span class="fu">getLine</span>]</span></code></pre></div>
+<p>returns a single IO action that resolves into the list of 2 strings.</p>
+<p>Applied to the list of instances of <code>Maybe</code> type, it would check that all of them contain some value and either return <code>Just</code> list of these value or Nothing if any of them is <code>Nothing</code>:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1"></a><span class="fu">sequence</span> [<span class="dt">Just</span> <span class="dv">1</span>, <span class="dt">Just</span> <span class="dv">2</span>, <span class="dt">Just</span> <span class="dv">3</span>] <span class="ot">=</span> <span class="dt">Just</span> [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>]</span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="fu">sequence</span> [<span class="dt">Just</span> <span class="dv">1</span>, <span class="dt">Just</span> <span class="dv">2</span>, <span class="dt">Nothing</span>] <span class="ot">=</span> <span class="dt">Nothing</span></span></code></pre></div>
+<p>Applied to the list of 2 lists, it will perform indeterminate computation and return all possible permutations of list items where the first item comes from the first list, and the second — from the second list:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1"></a><span class="fu">sequence</span> [[<span class="dv">1</span>,<span class="dv">2</span>],[<span class="dv">3</span>,<span class="dv">4</span>]] <span class="ot">=</span> [[<span class="dv">1</span>,<span class="dv">3</span>],[<span class="dv">1</span>,<span class="dv">4</span>],[<span class="dv">2</span>,<span class="dv">3</span>],[<span class="dv">2</span>,<span class="dv">4</span>]]</span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="fu">sequence</span> [[<span class="dv">1</span>,<span class="dv">2</span>],[<span class="dv">3</span>,<span class="dv">4</span>], []] <span class="ot">=</span> [] <span class="co">-- [] is &quot;undefined&quot; in this context</span></span></code></pre></div>
+<p>Context-dependent semantics of Haskell code makes Haskell more difficult to learn. As the same syntax can mean many different things, achieving fluency requires more effort than with other languages. But it also makes Haskell infinitely more expressive than any other language — you can implement any new semantics you want by adding the new context to the same code. Therefore, while Haskell requires more investment from you than other programming languages, the return on this investment is infinitely higher.</p>
+<p>Some Haskell books (e.g. <a href="http://learnyouahaskell.com/">LYAH</a>) and lectures (e.g <a href="https://www.seas.upenn.edu/~cis194/fall16/index.html">Penn course</a>) do not capture this fundamental distinction well enough. Instead, they focus on the functional nature of Haskell, and present Monad as almost some work-around to allow using pure functions for context-aware computations (IO, State, indeterminism, etc.). Unfortunately, it creates a barrier to entry for the new developers, because when people are asked to make a larger than usual investment to learn yet one more functional programming language with quirky syntax, this investment is difficult to justify without understanding first that Haskell is a more powerful programming paradigm. How many people abandoned Haskell before grasping its power?</p>
+<p>A good book that explains how Haskel is a higher order language is <a href="https://en.wikibooks.org/wiki/Haskell">Haskell</a> in wiki-books. Once you get over “<a href="https://en.wikibooks.org/wiki/Haskell/Understanding_monads">Understanding monads</a>” section, the Haskell advantage should become apparent.</p>
+<p>If you want to see some relatively simple magic you can do with Haskell, watch the talk by <a href="https://github.com/EncodePanda">Paweł Szulc</a> at Lambda World’19, particularly where he <a href="https://www.youtube.com/watch?v=idU7GdlfP9Q&amp;feature=youtu.be&amp;t=625">talks about Servant</a> — the library to create REST APIs in Haskell. Before you write a single line of implementation code, you can get the whole API definition from a single type definition (I am replacing alpacas from Paweł’s farm with users here):</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">type</span> <span class="dt">User</span> <span class="ot">=</span> <span class="dt">User</span> {</span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="ot">    name  ::</span> <span class="dt">String</span></span>
+<span id="cb5-3"><a href="#cb5-3"></a>}</span>
+<span id="cb5-4"><a href="#cb5-4"></a> </span>
+<span id="cb5-5"><a href="#cb5-5"></a><span class="kw">type</span> <span class="dt">UserAPI</span> <span class="ot">=</span></span>
+<span id="cb5-6"><a href="#cb5-6"></a>       <span class="st">&quot;user&quot;</span> <span class="op">:&gt;</span> <span class="dt">Get</span> &#39;[<span class="dt">JSON</span>] (<span class="dt">M.Map</span> <span class="dt">Int</span> <span class="dt">User</span>)</span>
+<span id="cb5-7"><a href="#cb5-7"></a>  <span class="op">:&lt;|&gt;</span> <span class="st">&quot;user&quot;</span> <span class="op">:&gt;</span> <span class="dt">Capture</span> <span class="st">&quot;userId&quot;</span> <span class="dt">Int</span></span>
+<span id="cb5-8"><a href="#cb5-8"></a>              <span class="op">:&gt;</span> <span class="dt">Get</span> &#39;[<span class="dt">JSON</span>] <span class="dt">User</span></span>
+<span id="cb5-9"><a href="#cb5-9"></a>  <span class="op">:&lt;|&gt;</span> <span class="st">&quot;user&quot;</span> <span class="op">:&gt;</span> <span class="dt">Capture</span> <span class="st">&quot;userId&quot;</span> <span class="dt">Int</span></span>
+<span id="cb5-10"><a href="#cb5-10"></a>              <span class="op">:&gt;</span> <span class="dt">ReqBody</span> &#39;[<span class="dt">JSON</span>] <span class="dt">User</span></span>
+<span id="cb5-11"><a href="#cb5-11"></a>              <span class="op">:&gt;</span> <span class="dt">PutCreated</span> &#39;[<span class="dt">JSON</span>] <span class="dt">NoContent</span><span class="co">-- UserAPI type defines this API:</span></span>
+<span id="cb5-12"><a href="#cb5-12"></a><span class="co">-- GET /user   - Response: {&quot;1&quot;:{&quot;name&quot;:&quot;jane&quot;}}, 200</span></span>
+<span id="cb5-13"><a href="#cb5-13"></a><span class="co">-- GET /user/1 - Response: {&quot;name&quot;:&quot;jane&quot;}, 200</span></span>
+<span id="cb5-14"><a href="#cb5-14"></a><span class="co">-- PUT /user/2 Body: {&quot;name&quot;:&quot;John D.&quot;} - Response: NoContent, 201</span></span></code></pre></div>
+<p>And before you even start implementing this API you can get client functions to call this API with a few lines of code:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb6-1"><a href="#cb6-1"></a><span class="ot">userApi ::</span> <span class="dt">Proxy</span> <span class="dt">UserAPI</span></span>
+<span id="cb6-2"><a href="#cb6-2"></a>userApi <span class="ot">=</span> <span class="dt">Proxy</span></span>
+<span id="cb6-3"><a href="#cb6-3"></a>getAll <span class="op">:&lt;|&gt;</span> getUser <span class="op">:&lt;|&gt;</span> putUser <span class="ot">=</span> client userApi</span>
+<span id="cb6-4"><a href="#cb6-4"></a> </span>
+<span id="cb6-5"><a href="#cb6-5"></a><span class="co">-- client functions types:</span></span>
+<span id="cb6-6"><a href="#cb6-6"></a><span class="ot">getAll ::</span> <span class="dt">ClientM</span> (<span class="dt">M.Map</span> <span class="dt">Int</span> <span class="dt">User</span>)</span>
+<span id="cb6-7"><a href="#cb6-7"></a><span class="ot">getUser ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">ClientM</span> <span class="dt">User</span></span>
+<span id="cb6-8"><a href="#cb6-8"></a><span class="ot">putUser ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">User</span> <span class="ot">-&gt;</span> <span class="dt">ClientM</span> <span class="dt">User</span></span></code></pre></div>
+<p>With just a few annotations you can generate API docs from UserAPI type:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1"></a><span class="kw">instance</span> <span class="dt">ToCapture</span> (<span class="dt">Capture</span> <span class="st">&quot;userId&quot;</span> <span class="dt">Int</span>) <span class="kw">where</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a>  toCapture _ <span class="ot">=</span></span>
+<span id="cb7-3"><a href="#cb7-3"></a>    <span class="dt">DocCapture</span> <span class="st">&quot;userId&quot;</span></span>
+<span id="cb7-4"><a href="#cb7-4"></a>               <span class="st">&quot;Id that uniquely identifies a user in the system&quot;</span></span>
+<span id="cb7-5"><a href="#cb7-5"></a> </span>
+<span id="cb7-6"><a href="#cb7-6"></a><span class="kw">instance</span> <span class="dt">ToSample</span> (<span class="dt">User</span>) <span class="kw">where</span></span>
+<span id="cb7-7"><a href="#cb7-7"></a>  toSamples _ <span class="ot">=</span> singleSample <span class="op">$</span> <span class="dt">User</span> <span class="st">&quot;Jane&quot;</span></span>
+<span id="cb7-8"><a href="#cb7-8"></a> </span>
+<span id="cb7-9"><a href="#cb7-9"></a><span class="kw">instance</span> <span class="dt">ToSample</span> (<span class="dt">M.Map</span> <span class="dt">Int</span> <span class="dt">User</span>) <span class="kw">where</span></span>
+<span id="cb7-10"><a href="#cb7-10"></a>  toSamples _ <span class="ot">=</span> singleSample <span class="op">$</span> M.singleton <span class="dv">1</span> (<span class="dt">User</span> <span class="st">&quot;Jane&quot;</span>)</span>
+<span id="cb7-11"><a href="#cb7-11"></a> </span>
+<span id="cb7-12"><a href="#cb7-12"></a><span class="ot">apiDocs ::</span> <span class="dt">API</span></span>
+<span id="cb7-13"><a href="#cb7-13"></a>apiDocs <span class="ot">=</span> docs<span class="ot"> userApimain ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb7-14"><a href="#cb7-14"></a>main <span class="ot">=</span> (<span class="fu">writeFile</span> <span class="st">&quot;docs.md&quot;</span> <span class="op">.</span> markdown) apiDocs</span></code></pre></div>
+<p>To run this server you just need to implement it, the mock implementation is very simple, but the Haskell type system ensures that the type of implementation is correct (<code>Server UserAPI</code> that is based on <code>UserAPI</code> type):</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb8-1"><a href="#cb8-1"></a>dummy <span class="ot">=</span> <span class="dt">User</span> <span class="st">&quot;Jane&quot;</span> <span class="st">&quot;jane@example.com&quot;</span></span>
+<span id="cb8-2"><a href="#cb8-2"></a> </span>
+<span id="cb8-3"><a href="#cb8-3"></a><span class="ot">fetchAll ::</span> <span class="dt">Monad</span> m <span class="ot">=&gt;</span> m (<span class="dt">M.Map</span> <span class="dt">Int</span> <span class="dt">User</span>)</span>
+<span id="cb8-4"><a href="#cb8-4"></a>fetchAll <span class="ot">=</span> <span class="fu">pure</span> <span class="op">$</span> M.singleton <span class="dv">1</span> dummy</span>
+<span id="cb8-5"><a href="#cb8-5"></a> </span>
+<span id="cb8-6"><a href="#cb8-6"></a><span class="ot">fetch ::</span> <span class="dt">Monad</span> m <span class="ot">=&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> m <span class="dt">User</span></span>
+<span id="cb8-7"><a href="#cb8-7"></a>fetch <span class="fu">id</span> <span class="ot">=</span> <span class="fu">pure</span> dummy</span>
+<span id="cb8-8"><a href="#cb8-8"></a> </span>
+<span id="cb8-9"><a href="#cb8-9"></a><span class="ot">insert ::</span> <span class="dt">Monad</span> m <span class="ot">=&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">User</span> <span class="ot">-&gt;</span> m <span class="dt">NoContent</span></span>
+<span id="cb8-10"><a href="#cb8-10"></a>insert <span class="fu">id</span> user <span class="ot">=</span> <span class="fu">pure</span> <span class="dt">NoContent</span></span>
+<span id="cb8-11"><a href="#cb8-11"></a> </span>
+<span id="cb8-12"><a href="#cb8-12"></a><span class="ot">server ::</span> <span class="dt">Server</span> <span class="dt">UserAPI</span></span>
+<span id="cb8-13"><a href="#cb8-13"></a>server <span class="ot">=</span> fetchAll <span class="op">:&lt;|&gt;</span> fetch <span class="op">:&lt;|&gt;</span> insert</span>
+<span id="cb8-14"><a href="#cb8-14"></a> </span>
+<span id="cb8-15"><a href="#cb8-15"></a><span class="ot">app ::</span> <span class="dt">Application</span></span>
+<span id="cb8-16"><a href="#cb8-16"></a>app <span class="ot">=</span> serve userApi server</span>
+<span id="cb8-17"><a href="#cb8-17"></a> </span>
+<span id="cb8-18"><a href="#cb8-18"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb8-19"><a href="#cb8-19"></a>main <span class="ot">=</span> run <span class="dv">8080</span> app</span></code></pre></div>
+<p>The above does feel like magic!</p>
+<p>Morphism-based programming languages (i.e., all other languages) force programmers to model the whole system outside of the code — using SQL schema, JSON schema, diagrams, etc. Type-based languages (Haskell and Idris) allow for type-driven development, when the whole system can be modelled top-down with algebraic data types, rather than bottom-up with functions as in other languages.</p>
+<p>Haskell being type-based language with context-dependent semantics is a higher order language that is almost one of a kind — there seems to be no other mature programming language that allows the same level of expressiveness as Haskell does.</p>]]></description>
+    <pubDate>Sun, 15 Mar 2020 00:00:00 UT</pubDate>
+    <guid>http://poberezkin.com/posts/2020-03-15-haskell-a-higher-order-language.html</guid>
+    <dc:creator>Evgeny Poberezkin</dc:creator>
+</item>
+<item>
+    <title>Talk: Why you should Open-Source for Real</title>
+    <link>http://poberezkin.com/posts/2019-07-10-talk-why-you-should-open-source-for-real.html</link>
+    <description><![CDATA[<p>This is a <a href="https://skillsmatter.com/skillscasts/14213-lightning-talk-coding-you-either-love-or-hate-it-or-why-you-should-open-source-for-real">talk at FullStack London 2019</a>.</p>
+<p><a href="https://skillsmatter.com/skillscasts/14213-lightning-talk-coding-you-either-love-or-hate-it-or-why-you-should-open-source-for-real"> <img src="/images/talk2019.jpg" alt="Why You Should Open-Source For Real" width="100%"> </a></p>
+<blockquote>
+<p>Coding is hard but you still love it. But you also hate it, at least on some days.</p>
+</blockquote>
+<blockquote>
+<p>Humans are unpredictable so you chose to work with code and computers. But code outcomes are becoming increasingly unpredictable, and to succeed in coding you need to succeed with other humans.</p>
+</blockquote>
+<blockquote>
+<p>Open-source contribution is a complete waste of time. But it is also the best investment of time you can make to become a better engineer and it will also make you a better human being (maybe).</p>
+</blockquote>]]></description>
+    <pubDate>Wed, 10 Jul 2019 00:00:00 UT</pubDate>
+    <guid>http://poberezkin.com/posts/2019-07-10-talk-why-you-should-open-source-for-real.html</guid>
+    <dc:creator>Evgeny Poberezkin</dc:creator>
+</item>
+<item>
+    <title>Locked in the Narrative?</title>
+    <link>http://poberezkin.com/posts/2019-05-31-locked-in-the-narrative.html</link>
+    <description><![CDATA[<p>When we are children, we choose the stories of our future lives. “I will be a cosmonaut.” Or “I will be a doctor”. Our stories are supported by parents — toys fuel our fantasies until they burn out and we move on.</p>
+<p>For most of us these stories change many times as we grow up. Few stay fixated on the story to live it, fewer turn out to be happy when they do.</p>
+<p>As we become older we continue choosing such stories. “I want to be a manager.” Or “I want to create tools for other engineers.” Or “The people have voted, we must respect it.”</p>
+<p>Led by these stories, we often get from being unhappy to being miserable. And the cycle repeats again — we choose a new story to believe in.</p>
+<p>We complain about lacking freedom, but the strongest prison is the one we put ourselves in without knowing it exists. We are pressured to make choices all our life. “Will you have tea or coffee?” “What college did you apply to?” “What is your next career step?” “How have you invested your money?”</p>
+<p>Making these decisions is important, but when they are not rooted in the reality of who we are and instead based on the stories we chose to believe, we can’t be happy. The best decision you can make, is to not make the decision until it is your own and not led by your current story. But resisting the urge to make the decision is hard — it takes growing up.</p>
+<p>To be free we need to remember that most of our ideas about the world and about ourselves are just stories re-told by other people. Very rarely we hear an original story, and when we do, we often just ignore it.</p>
+<p>We can discover our own truths about who we are, what we want and to write the story of our life ourselves. Until then, we can follow the opportunities and keep our options open — the story of our life may just write itself.</p>]]></description>
+    <pubDate>Fri, 31 May 2019 00:00:00 UT</pubDate>
+    <guid>http://poberezkin.com/posts/2019-05-31-locked-in-the-narrative.html</guid>
+    <dc:creator>Evgeny Poberezkin</dc:creator>
+</item>
+<item>
+    <title>Talk: Auditing development guidelines in GitHub repos</title>
+    <link>http://poberezkin.com/posts/2017-07-12-talk-auditing-development-guidelines-in-github-repositories.html</link>
+    <description><![CDATA[<p>This is a <a href="https://skillsmatter.com/skillscasts/10399-auditing-development-guidelines-in-github-repositories">talk at FullStack London 2017</a>.</p>
+<p><a href="https://skillsmatter.com/skillscasts/10399-auditing-development-guidelines-in-github-repositories"> <img src="/images/talk2017_2.jpg" alt="Auditing Development Guidelines in GitHub Repositories" width="100%"> </a></p>
+<blockquote>
+<p>If your organisation has hundreds of code repositories you probably have some guidelines for them: how they are documented, how branches are protected, whether direct commits to master branch are allowed or only PRs should be used and all PRs should be reviewed, whether tests are run and code coverage is reported to PRs, etc.</p>
+</blockquote>
+<blockquote>
+<p>Making sure that those guidelines are followed is a difficult task - even if all team members agree to do so, sometimes we simply forget or don’t have time to implement the necessary changes.</p>
+</blockquote>
+<blockquote>
+<p>Once we’ve agreed on our development guidelines, I was looking for a tool to automate such auditing for our team, so that in the same way as eslint can be used for testing code guidelines based on the rules, we could use this tool to audit our repositories in GitHub organisations. I couldn’t find one so I created it.</p>
+</blockquote>
+<blockquote>
+<p>Meet <a href="https://github.com/MailOnline/gh-lint">gh-lint</a> - a rule-based command-line utility that audits all your GitHub repositories generating results in TAP (Test Anything Protocol) format that can be consumed by <a href="https://github.com/MailOnline/tap-github-issues">tap-github-issues</a> reporter that can create, update and close issues in GitHub repositories.</p>
+</blockquote>]]></description>
+    <pubDate>Wed, 12 Jul 2017 00:00:00 UT</pubDate>
+    <guid>http://poberezkin.com/posts/2017-07-12-talk-auditing-development-guidelines-in-github-repositories.html</guid>
+    <dc:creator>Evgeny Poberezkin</dc:creator>
+</item>
+<item>
+    <title>Talk: WTF is Reactive Programming</title>
+    <link>http://poberezkin.com/posts/2017-04-28-talk-wtf-is-reactive-programming.html</link>
+    <description><![CDATA[<p>This is a <a href="https://www.infoq.com/presentations/reactive-programming-evolution/">talk at Progscon 2017</a>.</p>
+<p>Slides are available in <a href="https://www.slideshare.net/epoberezkin/wtf-is-reactive-programming-75512905">slideshare</a>.</p>
+<p><a href="https://www.infoq.com/presentations/reactive-programming-evolution/"> <img src="/images/talk2017_1.png" alt="WTF is Reactive Programming" width="100%"> </a></p>
+<blockquote>
+<p>This is a journey through the evolution of both the definition and implementations of Reactive Programming and how they have been converging in a quest to make building responsive applications a sane process.</p>
+</blockquote>
+<blockquote>
+<p>We are still at the point where there is no complete consensus on what a reactive application is; I will explore how this consensus is evolving and what problems it brings.</p>
+</blockquote>
+<blockquote>
+<p>I am going to talk about the past, present and possible futures of reactive programming and how you can survive it all.</p>
+</blockquote>]]></description>
+    <pubDate>Fri, 28 Apr 2017 00:00:00 UT</pubDate>
+    <guid>http://poberezkin.com/posts/2017-04-28-talk-wtf-is-reactive-programming.html</guid>
+    <dc:creator>Evgeny Poberezkin</dc:creator>
+</item>
+<item>
+    <title>TDD doesn’t work… Maybe CDD would?</title>
+    <link>http://poberezkin.com/posts/2017-02-19-tdd-doesnt-work-maybe-cdd-would.html</link>
+    <description><![CDATA[<p>Test Driven Development existed long before the term itself. It’s been “rediscovered” and popularised by Kent Beck, the creator of Extreme Programming. He wrote on Quora:</p>
+<p><img src="/images/tdd1.png" alt="Kent Beck on Quora" title="...How else could you program?"></p>
+<p>The complexity of software systems since those ancient times has evolved to a point when it is no longer possible to define the expected application behaviours in as simple terms as “the output tape you expect”.</p>
+<p>The software development community is split, with opinions ranging from “<a href="https://dhh.dk/2014/tdd-is-dead-long-live-testing.html">TDD is dead. Long live testing</a>” (by <a href="https://dhh.dk/">David Heinemeier Hansson</a>, the creator of Ruby on Rails and the founder &amp; CTO of Basecamp):</p>
+<blockquote>
+<p><em>Test-first fundamentalism is like abstinence-only sex ed: An unrealistic, ineffective morality campaign for self-loathing and shaming.</em></p>
+</blockquote>
+<p>to “<a href="https://dzone.com/articles/whats-wrong-test-driven">What’s Wrong with Test-Driven Development (TDD)</a>”:</p>
+<blockquote>
+<p><em>[TDD] is a powerful methodology that helped me combat “analysis paralysis”, create robust, maintainable code and there’s the added benefit of the resulting unit tests which provide a safety-net against regression bugs.</em></p>
+</blockquote>
+<p>The latter one says that TDD is nearly perfect, we are simply doing it wrong, being scared to leave our comfort zones and to watch our tests fail… I wish it were as simple as that.</p>
+<p><img src="/images/tdd2.png" alt="If it's so simple, why doesn't everybody doing it?" width="100%"></p>
+<p>Really, why?</p>
+<p>There is also no consensus about how software should be designed, even among developers who preach and practice TDD. Some moderate believers say that <a href="https://vladikk.com/2016/01/22/tdd-what-went-wrong/">TDD is NOT “Test Driven Design”</a>, that it should be used together with Domain Driven Design and call for reformation into TDD 2.0. Zealots insist that “<a href="https://dzone.com/articles/whats-wrong-test-driven">TDD is a design methodology - the unit tests are just a by-product of the process</a>”.</p>
+<hr />
+<p>Ok, let’s step back from the heat of the battle and ask ourselves what objectives we want to achieve, with or without TDD?</p>
+<p>At a high level, software developers in both camps want to have lower costs of creating and using software. It means:</p>
+<ol type="1">
+<li>Reducing the number of bugs</li>
+<li>Making changes with minimal regressions</li>
+<li>Releasing changes with lower risk of failures</li>
+<li>Maintaining code easily and running tests quickly</li>
+<li>etc.</li>
+</ol>
+<p>We definitely need team-wide processes for the development project success. <a href="http://blog.cleancoder.com/uncle-bob/2014/06/17/IsTddDeadFinalThoughts.html">Uncle Bob writes</a> that if only a part of the team does TDD and another one doesn’t it will lead to divorce. But do we really need an industry-wide standard development process to achieve those objectives?</p>
+<p>Software development projects are as diverse as businesses. As the complexity of the businesses was growing they in many cases transitioned from process management to <a href="https://en.wikipedia.org/wiki/Management_by_objectives">management by objectives</a>.</p>
+<p>So what metrics in software development should we manage to achieve a higher level objective of reducing the costs?</p>
+<p>I can see a strong inverse correlation between number of costly issues (bugs, regressions) and code coverage. That’s exactly the reason why a majority of popular open-source projects display this metric. A higher code coverage is usually seen as a higher reliability of the code, both by developers who follow TDD and those who don’t.</p>
+<p><img src="/images/tdd3.png" alt="inverse correlation of bugs and code coverage" title="It's only a picture for 'inverse correlation', not the result of some research" width="100%"></p>
+<hr />
+<p>My development process aims to achieve an effective design and high code coverage. It could be called <strong>Coverage Driven Development</strong> and consists of three phases:</p>
+<h3 id="plan-design">1. Plan &amp; Design</h3>
+<p>I make a list of features and requirements for a both minimal and viable implementation that can be given to the end-users. The plan allows to foresee external dependencies and all requirements that the application should satisfy, and the design should be coordinated with this plan.</p>
+<p>At this point there are no (or very few) external constraints to help structure the code. So I quickly iterate code to figure out how basic models, APIs, functions and classes should look. I am not worried if my code even works, and I usually don’t write tests during this phase, they only hinder the understanding of what the right design is.</p>
+<p>Iterating code allows to avoid unnecessary intermediary abstractions that often plague TDD-written code and achieves a robust foundation of code structure. And it helps to transfer a visual image of the system that only exists in the the sketches or in the mind into the code and see if this picture still makes sense and whether it supports the whole plan. If it does, I go to the next phase, in not - I continue iterating the code until it does. Depending on the complexity of the system this phase can take from a couple of hours to a couple of days, or even weeks in a really big project.</p>
+<h3 id="develop">2. Develop</h3>
+<p>Before development continues, I write tests for all the code written in design phase to achieve code coverage of 95%+.</p>
+<p>Each feature in the plan (that continues to evolve) requires some design thinking so I continue rapid code iteration and refactoring and in most cases I write tests only after code, getting to 95%+ code coverage before going to the next feature.</p>
+<p>Depending on your quality requirements and the code size you can set a higher threshold for code coverage in your project, but the cost or writing and maintaining the tests grows very quickly as you approach 100%.</p>
+<h3 id="maintain">3. Maintain</h3>
+<p>This phase starts long before MVP is complete. In case when bugs are discovered or some simple changes should be made I almost always write a failing test BEFORE writing any code, exactly as TDD instructs. In this phase it just makes more sense. During the implementation of the fix I often discover some other issues and do some refactoring, but I don’t always write tests for them as I fix them - switching context damages focus and speed. Once the implementation is done I write additional tests to maintain code coverage at 95%+ level.</p>
+<p><img src="/images/tdd4.png" alt="Coverage Driven Development phases" width="100%"></p>
+<hr />
+<p>This is not a linear process, it is a cycle that repeats multiple times, even before the application reaches the end-users. Also these phases are not strictly separated in time, they are more like “modes of operation” that can overlap.</p>
+<p>The whole development process is driven by a single objective quality metric - code coverage. Uncle Bob sees TDD as a pre-requisite to achieving high code coverage (see “<a href="http://blog.cleancoder.com/uncle-bob/2014/06/17/IsTddDeadFinalThoughts.html#a-team-divided">Is TDD Dead?</a>”). But it’s not the case, you can maintain high code coverage without practicing TDD all the time.</p>
+<p>You just need to follow several simple steps:</p>
+<ol type="1">
+<li>Implement code coverage measurement as early as possible.</li>
+<li>Make the measurement run on every build.</li>
+<li>Make coverage visible in your source code repository.</li>
+<li>Make coverage change visible in PRs.</li>
+<li>Only merge PRs if they increase the coverage or if it is already higher than the threshold agreed with the team for the project.</li>
+</ol>
+<p>Code coverage as a metric is not perfect, and I often hear the following criticism:</p>
+<ol type="1">
+<li>“It depends on code style”. It is true, but it does not reduce the efficiency of code coverage as quality metric. Adopting consistent code style for the team makes code coverage measurement consistent as well.</li>
+<li>“100% coverage does not guarantee the absence of bugs”. It is also true, but neither does following TDD. No sufficiently complex system is free of bugs. While the absence of bugs is theoretically possible to achieve, and even possible to prove in some cases, it is prohibitively expensive. On the other hand maintaining high code coverage dramatically reduces the number of bugs and the probability of regressions.</li>
+</ol>
+<hr />
+<p>If you are not using code coverage as part of your development process, it’s definitely worth trying. If nothing else, it will give you an increased satisfaction from writing tests. And all developers seem to agree that we should write tests to reduce the cost of software.</p>
+<p><img src="/images/tdd5.png" alt="Acheived 100% code coverage" title="… but the bug is still there" max-width="100%"></p>]]></description>
+    <pubDate>Sun, 19 Feb 2017 00:00:00 UT</pubDate>
+    <guid>http://poberezkin.com/posts/2017-02-19-tdd-doesnt-work-maybe-cdd-would.html</guid>
+    <dc:creator>Evgeny Poberezkin</dc:creator>
+</item>
+<item>
+    <title>Eval is evil, but not why you may think</title>
+    <link>http://poberezkin.com/posts/2016-09-10-eval-is-evil-but-not-why-you-may-think.html</link>
+    <description><![CDATA[<p>I have been hearing the mantra “eval is evil” for many years by now and none of the arguments presented to support it made any sense until very recently. Let’s explore the myths of eval, uncover the real evil behind it and find out the alternative way to reap eval’s benefits without its evilness.</p>
+<p>All the code examples below are available in <a href="https://github.com/epoberezkin/eval-is-evil">eval-is-evil</a> repository.</p>
+<h2 id="myth-1-eval-is-bad-for-performance">Myth #1: Eval Is Bad For Performance</h2>
+<p>This statement is usually supported by some trivial example like this:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">var</span> foo <span class="op">=</span> <span class="pp">eval</span>(<span class="st">&#39;bar.&#39;</span> <span class="op">+</span> x)<span class="op">;</span></span></code></pre></div>
+<p>This code can be used to access bar object property which name is stored in the variable x. Instead, the author would argue, you should use the code below to access such property:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">var</span> foo <span class="op">=</span> bar[x]<span class="op">;</span></span></code></pre></div>
+<p>Although this way of using eval indeed reduces execution speed, I cannot imagine any JavaScript developer, however unexperienced, who would think of using eval in this case.</p>
+<p>Let’s consider another example that also involves property accesses but <strong>where using <em>eval</em> dramatically improves performance</strong>.</p>
+<p>We have some nested object and we need to define some transformation of this object to a shallow object. We want to define such transformation using configuration rather than just writing code. It can be preferable if we want to be able to dynamically change such configuration and in many other scenarios. So if our nested object looks something like this:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">var</span> source <span class="op">=</span> {</span>
+<span id="cb3-2"><a href="#cb3-2"></a>  <span class="dt">services</span><span class="op">:</span> {</span>
+<span id="cb3-3"><a href="#cb3-3"></a>    <span class="dt">db</span><span class="op">:</span> {</span>
+<span id="cb3-4"><a href="#cb3-4"></a>      <span class="dt">host</span><span class="op">:</span> <span class="st">&#39;db.example.com&#39;</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a>    }<span class="op">,</span></span>
+<span id="cb3-6"><a href="#cb3-6"></a>    <span class="dt">audit</span><span class="op">:</span> {</span>
+<span id="cb3-7"><a href="#cb3-7"></a>      <span class="dt">host</span><span class="op">:</span> <span class="st">&#39;audit.example.com&#39;</span></span>
+<span id="cb3-8"><a href="#cb3-8"></a>    }</span>
+<span id="cb3-9"><a href="#cb3-9"></a>  }</span>
+<span id="cb3-10"><a href="#cb3-10"></a>}<span class="op">;</span></span></code></pre></div>
+<p>and the shallow object we want to have should look this way:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">var</span> result <span class="op">=</span> {</span>
+<span id="cb4-2"><a href="#cb4-2"></a>  <span class="dt">db</span><span class="op">:</span> <span class="st">&#39;db.example.com&#39;</span><span class="op">,</span></span>
+<span id="cb4-3"><a href="#cb4-3"></a>  <span class="dt">audit</span><span class="op">:</span> <span class="st">&#39;audit.example.com&#39;</span></span>
+<span id="cb4-4"><a href="#cb4-4"></a>}<span class="op">;</span></span></code></pre></div>
+<p>the transformation from nested to shallow object could look as this one:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">var</span> transformation <span class="op">=</span> {</span>
+<span id="cb5-2"><a href="#cb5-2"></a>  <span class="dt">db</span><span class="op">:</span> <span class="st">&#39;/services/db/host&#39;</span><span class="op">,</span></span>
+<span id="cb5-3"><a href="#cb5-3"></a>  <span class="dt">audit</span><span class="op">:</span> <span class="st">&#39;/services/audit/host&#39;</span></span>
+<span id="cb5-4"><a href="#cb5-4"></a>}<span class="op">;</span></span></code></pre></div>
+<p>By the way, the format of the string defining the location of the data in the nested object is called <a href="https://tools.ietf.org/html/rfc6901">JSON pointer</a>.</p>
+<p>Ok, so if we had such transformation, how would we write the code to transform a nested object to a shallow one? One approach is to simply iterate properties in the transformation and generate the resulting object:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb6-1"><a href="#cb6-1"></a><span class="kw">function</span> <span class="fu">transform</span>(source) {</span>
+<span id="cb6-2"><a href="#cb6-2"></a>  <span class="kw">var</span> result <span class="op">=</span> {}<span class="op">;</span></span>
+<span id="cb6-3"><a href="#cb6-3"></a>  <span class="cf">for</span> (<span class="kw">var</span> key <span class="kw">in</span> transformation) {</span>
+<span id="cb6-4"><a href="#cb6-4"></a>    <span class="kw">var</span> path <span class="op">=</span> transformation[key]<span class="op">;</span></span>
+<span id="cb6-5"><a href="#cb6-5"></a>    <span class="kw">var</span> segments <span class="op">=</span> path<span class="op">.</span><span class="fu">split</span>(<span class="st">&#39;/&#39;</span>)<span class="op">;</span></span>
+<span id="cb6-6"><a href="#cb6-6"></a>    <span class="kw">var</span> data <span class="op">=</span> source<span class="op">;</span></span>
+<span id="cb6-7"><a href="#cb6-7"></a>    <span class="cf">for</span> (<span class="kw">var</span> i<span class="op">=</span><span class="dv">1</span><span class="op">;</span> i<span class="op">&lt;</span>segments<span class="op">.</span><span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) {</span>
+<span id="cb6-8"><a href="#cb6-8"></a>      data <span class="op">=</span> data <span class="op">&amp;&amp;</span> data[segments[i]]<span class="op">;</span></span>
+<span id="cb6-9"><a href="#cb6-9"></a>    }</span>
+<span id="cb6-10"><a href="#cb6-10"></a>    result[key] <span class="op">=</span> data<span class="op">;</span></span>
+<span id="cb6-11"><a href="#cb6-11"></a>  }</span>
+<span id="cb6-12"><a href="#cb6-12"></a>  <span class="cf">return</span> result<span class="op">;</span></span>
+<span id="cb6-13"><a href="#cb6-13"></a>}</span></code></pre></div>
+<p>Although this code works, it is not very efficient if the transformation has to be performed on the server many times.</p>
+<p>Another approach would be to <strong>generate</strong> the code that performs the transformation and convert this code into a function using eval (or Function constructor):</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb7-1"><a href="#cb7-1"></a><span class="kw">var</span> code <span class="op">=</span> <span class="st">&#39;return { &#39;</span><span class="op">;</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a><span class="cf">for</span> (<span class="kw">var</span> key <span class="kw">in</span> transformation) {</span>
+<span id="cb7-3"><a href="#cb7-3"></a>  <span class="kw">var</span> path <span class="op">=</span> transformation[key]<span class="op">;</span></span>
+<span id="cb7-4"><a href="#cb7-4"></a>  <span class="kw">var</span> segments <span class="op">=</span> path<span class="op">.</span><span class="fu">split</span>(<span class="st">&#39;/&#39;</span>)<span class="op">;</span></span>
+<span id="cb7-5"><a href="#cb7-5"></a>  <span class="kw">var</span> data <span class="op">=</span> <span class="st">&#39;source&#39;</span><span class="op">;</span></span>
+<span id="cb7-6"><a href="#cb7-6"></a>  <span class="kw">var</span> expr <span class="op">=</span> data<span class="op">;</span></span>
+<span id="cb7-7"><a href="#cb7-7"></a>  <span class="cf">for</span> (<span class="kw">var</span> i<span class="op">=</span><span class="dv">1</span><span class="op">;</span> i<span class="op">&lt;</span>segments<span class="op">.</span><span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) {</span>
+<span id="cb7-8"><a href="#cb7-8"></a>    data <span class="op">+=</span> <span class="st">&#39;.&#39;</span> <span class="op">+</span> segments[i]<span class="op">;</span></span>
+<span id="cb7-9"><a href="#cb7-9"></a>    expr <span class="op">+=</span> <span class="st">&#39; &amp;&amp; &#39;</span> <span class="op">+</span> data<span class="op">;</span></span>
+<span id="cb7-10"><a href="#cb7-10"></a>  }</span>
+<span id="cb7-11"><a href="#cb7-11"></a>  code <span class="op">+=</span> key <span class="op">+</span> <span class="st">&#39;: &#39;</span> <span class="op">+</span> expr <span class="op">+</span> <span class="st">&#39;, &#39;</span><span class="op">;</span></span>
+<span id="cb7-12"><a href="#cb7-12"></a>}</span>
+<span id="cb7-13"><a href="#cb7-13"></a>code <span class="op">+=</span> <span class="st">&#39;};&#39;</span></span>
+<span id="cb7-14"><a href="#cb7-14"></a></span>
+<span id="cb7-15"><a href="#cb7-15"></a><span class="kw">var</span> transform <span class="op">=</span> <span class="pp">eval</span>(<span class="st">&#39;(function(source) { &#39;</span> <span class="op">+</span> code <span class="op">+</span> <span class="st">&#39; })&#39;</span>)<span class="op">;</span></span></code></pre></div>
+<p>The last line can be replaced with:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb8-1"><a href="#cb8-1"></a><span class="kw">var</span> transform <span class="op">=</span> <span class="kw">new</span> <span class="bu">Function</span>(<span class="st">&#39;source&#39;</span><span class="op">,</span> code)<span class="op">;</span></span></code></pre></div>
+<p>For our transformation the generated function will be:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb9-1"><a href="#cb9-1"></a><span class="kw">function</span> (source) {</span>
+<span id="cb9-2"><a href="#cb9-2"></a>  <span class="cf">return</span> {</span>
+<span id="cb9-3"><a href="#cb9-3"></a>    <span class="dt">db</span><span class="op">:</span> source <span class="op">&amp;&amp;</span> source<span class="op">.</span><span class="at">services</span> <span class="op">&amp;&amp;</span> source<span class="op">.</span><span class="at">services</span><span class="op">.</span><span class="at">db</span> <span class="op">&amp;&amp;</span> source<span class="op">.</span><span class="at">services</span><span class="op">.</span><span class="at">db</span><span class="op">.</span><span class="at">host</span><span class="op">,</span></span>
+<span id="cb9-4"><a href="#cb9-4"></a>    <span class="dt">audit</span><span class="op">:</span> source <span class="op">&amp;&amp;</span> source<span class="op">.</span><span class="at">services</span> <span class="op">&amp;&amp;</span> source<span class="op">.</span><span class="at">services</span><span class="op">.</span><span class="at">audit</span> <span class="op">&amp;&amp;</span> source<span class="op">.</span><span class="at">services</span><span class="op">.</span><span class="at">audit</span><span class="op">.</span><span class="at">host</span><span class="op">,</span></span>
+<span id="cb9-5"><a href="#cb9-5"></a>  }<span class="op">;</span></span>
+<span id="cb9-6"><a href="#cb9-6"></a>}</span></code></pre></div>
+<p>This dynamically generated code will execute many times faster than the first example where the transformation is performed using a loop. Creating this function takes some execution time but it happens only once.</p>
+<p>This example shows that you can substantially improve the performance of your application using dynamic code generation and eval. The same approach is used for generating model accessor methods (get, set, etc.) in <a href="https://github.com/milojs/milo">milo.js</a> framework.</p>
+<h2 id="myth-2-eval-is-security-risk">Myth #2: Eval Is Security Risk</h2>
+<p>This statement probably assumes that you would receive JavaScript code in the request to the server and execute it using eval:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb10-1"><a href="#cb10-1"></a>app<span class="op">.</span><span class="fu">get</span>(<span class="st">&#39;/execute&#39;</span><span class="op">,</span> <span class="kw">function</span>(req<span class="op">,</span> res) {</span>
+<span id="cb10-2"><a href="#cb10-2"></a>  res<span class="op">.</span><span class="fu">send</span>(<span class="pp">eval</span>(req<span class="op">.</span><span class="at">body</span><span class="op">.</span><span class="at">code</span>))<span class="op">;</span></span>
+<span id="cb10-3"><a href="#cb10-3"></a>})<span class="op">;</span></span></code></pre></div>
+<p>The code above indeed has some problems. If <code>req.body.code</code> were <code>process.exit(1)</code> the application would exit with error. Some worse things may easily happen too. But I cannot see how anybody could write code like this. User input is usually sanitised, particularly in cases when this input is used for code execution/generation.</p>
+<p>Let’s consider another example. Say, we have a mass mailing application that sends the messages to the list of recipients and we require that the message that the user submits is a template using available fields from a recipient record:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb11-1"><a href="#cb11-1"></a><span class="kw">var</span> recipients <span class="op">=</span> [</span>
+<span id="cb11-2"><a href="#cb11-2"></a>  { <span class="dt">first_name</span><span class="op">:</span> <span class="st">&#39;John&#39;</span><span class="op">,</span> <span class="dt">last_name</span><span class="op">:</span> <span class="st">&#39;Smith&#39;</span> }<span class="op">,</span></span>
+<span id="cb11-3"><a href="#cb11-3"></a>  { <span class="dt">first_name</span><span class="op">:</span> <span class="st">&#39;Jane&#39;</span><span class="op">,</span> <span class="dt">last_name</span><span class="op">:</span> <span class="st">&#39;Doe&#39;</span> }</span>
+<span id="cb11-4"><a href="#cb11-4"></a>]<span class="op">;</span></span>
+<span id="cb11-5"><a href="#cb11-5"></a></span>
+<span id="cb11-6"><a href="#cb11-6"></a><span class="kw">var</span> messageTemplate <span class="op">=</span> <span class="st">&#39;Hello {{first_name}} {{last_name}}!&#39;</span><span class="op">;</span></span></code></pre></div>
+<p>We could create the actual messages to all users in a loop:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb12-1"><a href="#cb12-1"></a><span class="kw">var</span> messages <span class="op">=</span> recipients<span class="op">.</span><span class="fu">map</span>(createMessage)<span class="op">;</span></span>
+<span id="cb12-2"><a href="#cb12-2"></a></span>
+<span id="cb12-3"><a href="#cb12-3"></a><span class="kw">function</span> <span class="fu">createMessage</span>(recipient) {</span>
+<span id="cb12-4"><a href="#cb12-4"></a>  <span class="cf">return</span> messageTemplate<span class="op">.</span><span class="fu">replace</span>(<span class="ss">/{{</span><span class="sc">([a-z_]+)</span><span class="ss">}}/ig</span><span class="op">,</span></span>
+<span id="cb12-5"><a href="#cb12-5"></a>    <span class="kw">function</span>(match<span class="op">,</span> key) {</span>
+<span id="cb12-6"><a href="#cb12-6"></a>      <span class="cf">return</span> recipients[key]<span class="op">;</span></span>
+<span id="cb12-7"><a href="#cb12-7"></a>    }</span>
+<span id="cb12-8"><a href="#cb12-8"></a>  )<span class="op">;</span></span>
+<span id="cb12-9"><a href="#cb12-9"></a>}</span></code></pre></div>
+<p>The code above will create all the messages we need, but there is a much faster way to achieve it. We can generate the function createMessage. It doesn’t have any security implications even though messageTemplate is received from the user:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb13-1"><a href="#cb13-1"></a><span class="kw">var</span> code <span class="op">=</span> <span class="st">&#39;return &quot;&#39;</span><span class="op">;</span></span>
+<span id="cb13-2"><a href="#cb13-2"></a>code <span class="op">+=</span> messageTemplate<span class="op">.</span><span class="fu">replace</span>(<span class="ss">/{{</span><span class="sc">([a-z_]+)</span><span class="ss">}}/ig</span><span class="op">,</span></span>
+<span id="cb13-3"><a href="#cb13-3"></a>  <span class="kw">function</span>(match<span class="op">,</span> key) {</span>
+<span id="cb13-4"><a href="#cb13-4"></a>    <span class="cf">return</span> <span class="st">&#39;&quot; + data.&#39;</span> <span class="op">+</span> key <span class="op">+</span> <span class="st">&#39; + &quot;&#39;</span><span class="op">;</span></span>
+<span id="cb13-5"><a href="#cb13-5"></a>  }</span>
+<span id="cb13-6"><a href="#cb13-6"></a>)<span class="op">;</span></span>
+<span id="cb13-7"><a href="#cb13-7"></a>code <span class="op">+=</span> <span class="st">&#39;&quot;;&#39;</span></span>
+<span id="cb13-8"><a href="#cb13-8"></a></span>
+<span id="cb13-9"><a href="#cb13-9"></a><span class="kw">var</span> createMessage <span class="op">=</span> <span class="pp">eval</span>(<span class="st">&#39;(function(data) { &#39;</span> <span class="op">+</span> code <span class="op">+</span> <span class="st">&#39; })&#39;</span>)<span class="op">;</span></span>
+<span id="cb13-10"><a href="#cb13-10"></a><span class="co">// or new Function(&#39;data&#39;, code);</span></span></code></pre></div>
+<p>In a few lines of code we have created a super-simple “templating engine” that compiles templates into JavaScript functions.</p>
+<p>The template <code>"Hello {{first_name}} {{last_name}}!"</code> will be compiled to:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb14-1"><a href="#cb14-1"></a><span class="kw">function</span>(data) {</span>
+<span id="cb14-2"><a href="#cb14-2"></a>  <span class="cf">return</span> <span class="st">&quot;Hello &quot;</span> <span class="op">+</span> data<span class="op">.</span><span class="at">first_name</span> <span class="op">+</span> <span class="st">&quot; &quot;</span> <span class="op">+</span> data<span class="op">.</span><span class="at">last_name</span> <span class="op">+</span> <span class="st">&quot;!&quot;</span><span class="op">;</span></span>
+<span id="cb14-3"><a href="#cb14-3"></a>}</span></code></pre></div>
+<p>Executing the function above is hundreds (if not thousands) times faster than the code that does not use eval. Creating this function is always safe — if some unsafe code is used inside curly braces it will not be executed because the regular expression won’t match. For example, the template</p>
+<pre><code>&quot;Hello {{process.exit(1)}}!&quot;</code></pre>
+<p>will generate this function:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb16-1"><a href="#cb16-1"></a><span class="kw">function</span>(data) {</span>
+<span id="cb16-2"><a href="#cb16-2"></a>  <span class="cf">return</span> <span class="st">&quot;Hello {{process.exit(1)}}!&quot;</span><span class="op">;</span></span>
+<span id="cb16-3"><a href="#cb16-3"></a>}</span></code></pre></div>
+<p>i.e. an unsafe interpolation was not replaced with the code.</p>
+<p>The same approach to compiling templates into JavaScript functions is used in the fastest and the most concise <a href="https://github.com/olado/doT">templating engine doT</a>.</p>
+<h2 id="myth-3-eval-is-difficult-to-debug">Myth #3: Eval Is Difficult To Debug</h2>
+<p>I am not sure where this is coming from. The code passed to eval is a normal JavaScript code — you can add breakpoints, inspect variables, etc. Debugging code passed to eval or to Function constructor is not that much different from debugging any JavaScript code, you just need to either format it during code generation or to use <a href="https://github.com/beautify-web/js-beautify">js-beautify</a> package.</p>
+<p>Let’s consider one more example when you want to define a super-simple schema for your object (not <a href="http://json-schema.org/">JSON-schema</a>!) and validate it according to this schema:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb17-1"><a href="#cb17-1"></a><span class="kw">var</span> schema <span class="op">=</span> {</span>
+<span id="cb17-2"><a href="#cb17-2"></a>  <span class="dt">foo</span><span class="op">:</span> <span class="st">&#39;identifier&#39;</span><span class="op">,</span></span>
+<span id="cb17-3"><a href="#cb17-3"></a>  <span class="dt">bar</span><span class="op">:</span> <span class="st">&#39;date&#39;</span></span>
+<span id="cb17-4"><a href="#cb17-4"></a>}<span class="op">;</span></span></code></pre></div>
+<p>We assume here that all properties should be strings and they should match some known formats (<code>identifier</code> and <code>date</code> in this case).</p>
+<p>Our formats can be defined as regular expressions:</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb18-1"><a href="#cb18-1"></a><span class="kw">var</span> formats <span class="op">=</span> {</span>
+<span id="cb18-2"><a href="#cb18-2"></a>  <span class="dt">identifier</span><span class="op">:</span> <span class="ss">/</span><span class="sc">^[a-z_$][a-z0-9_$]*$</span><span class="ss">/i</span><span class="op">,</span></span>
+<span id="cb18-3"><a href="#cb18-3"></a>  <span class="dt">date</span><span class="op">:</span> <span class="ss">/</span><span class="sc">^\d{2}\/\d{2}\/\d{4}$</span><span class="ss">/</span></span>
+<span id="cb18-4"><a href="#cb18-4"></a>}<span class="op">;</span></span></code></pre></div>
+<p>The data that we want to validate:</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb19-1"><a href="#cb19-1"></a><span class="kw">var</span> validData <span class="op">=</span> {</span>
+<span id="cb19-2"><a href="#cb19-2"></a>  <span class="dt">foo</span><span class="op">:</span> <span class="st">&#39;abc&#39;</span><span class="op">,</span></span>
+<span id="cb19-3"><a href="#cb19-3"></a>  <span class="dt">bar</span><span class="op">:</span> <span class="st">&#39;15/09/2016&#39;</span></span>
+<span id="cb19-4"><a href="#cb19-4"></a>}<span class="op">;</span></span>
+<span id="cb19-5"><a href="#cb19-5"></a></span>
+<span id="cb19-6"><a href="#cb19-6"></a><span class="kw">var</span> invalidData <span class="op">=</span> {</span>
+<span id="cb19-7"><a href="#cb19-7"></a>  <span class="dt">foo</span><span class="op">:</span> <span class="st">&#39;1&#39;</span><span class="op">,</span></span>
+<span id="cb19-8"><a href="#cb19-8"></a>  <span class="dt">bar</span><span class="op">:</span> <span class="st">&#39;15-09-2016&#39;</span></span>
+<span id="cb19-9"><a href="#cb19-9"></a>}<span class="op">;</span></span></code></pre></div>
+<p>We can validate the data by iterating the properties in the schema and checking the data properties against the formats:</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb20-1"><a href="#cb20-1"></a><span class="kw">function</span> <span class="fu">validate</span>(schema<span class="op">,</span> data) {</span>
+<span id="cb20-2"><a href="#cb20-2"></a>  <span class="cf">for</span> (<span class="kw">var</span> prop <span class="kw">in</span> schema) {</span>
+<span id="cb20-3"><a href="#cb20-3"></a>    <span class="kw">var</span> value <span class="op">=</span> data[prop]<span class="op">;</span></span>
+<span id="cb20-4"><a href="#cb20-4"></a>    <span class="cf">if</span> (<span class="kw">typeof</span> value <span class="op">!=</span> <span class="st">&#39;string&#39;</span>) <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb20-5"><a href="#cb20-5"></a>    <span class="kw">var</span> pattern <span class="op">=</span> formats[schema[prop]]<span class="op">;</span></span>
+<span id="cb20-6"><a href="#cb20-6"></a>    <span class="cf">if</span> (<span class="op">!</span>pattern<span class="op">.</span><span class="fu">test</span>(value)) <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb20-7"><a href="#cb20-7"></a>  }</span>
+<span id="cb20-8"><a href="#cb20-8"></a>  <span class="cf">return</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb20-9"><a href="#cb20-9"></a>}</span></code></pre></div>
+<p>An alternative approach is to generate the code of the validating function from the schema and create this function using <em>eval</em>:</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb21-1"><a href="#cb21-1"></a><span class="kw">var</span> code <span class="op">=</span> <span class="st">&#39;&#39;</span><span class="op">;</span></span>
+<span id="cb21-2"><a href="#cb21-2"></a><span class="cf">for</span> (<span class="kw">var</span> prop <span class="kw">in</span> schema) {</span>
+<span id="cb21-3"><a href="#cb21-3"></a>  <span class="kw">var</span> data <span class="op">=</span> <span class="st">&#39;data.&#39;</span> <span class="op">+</span> prop<span class="op">;</span></span>
+<span id="cb21-4"><a href="#cb21-4"></a>  code <span class="op">+=</span> <span class="st">&#39;if (typeof &#39;</span> <span class="op">+</span> data <span class="op">+</span> <span class="st">&#39; != &quot;string&quot;) return false;&#39;</span><span class="op">;</span></span>
+<span id="cb21-5"><a href="#cb21-5"></a>  code <span class="op">+=</span> <span class="st">&#39;if (!formats.&#39;</span> <span class="op">+</span> schema[prop] <span class="op">+</span> <span class="st">&#39;.test(&#39;</span></span>
+<span id="cb21-6"><a href="#cb21-6"></a>            <span class="op">+</span> data <span class="op">+</span> <span class="st">&#39;)) return false;&#39;</span><span class="op">;</span></span>
+<span id="cb21-7"><a href="#cb21-7"></a>}</span>
+<span id="cb21-8"><a href="#cb21-8"></a>code <span class="op">+=</span> <span class="st">&#39;return true;&#39;</span><span class="op">;</span></span>
+<span id="cb21-9"><a href="#cb21-9"></a><span class="kw">var</span> validate <span class="op">=</span> <span class="pp">eval</span>(<span class="st">&#39;(function(data) { &#39;</span> <span class="op">+</span> code <span class="op">+</span> <span class="st">&#39; })&#39;</span>)<span class="op">;</span></span></code></pre></div>
+<p>Our simple schema above would “compile” to this function:</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb22-1"><a href="#cb22-1"></a><span class="kw">function</span> (data) {</span>
+<span id="cb22-2"><a href="#cb22-2"></a>  <span class="cf">if</span> (<span class="kw">typeof</span> data<span class="op">.</span><span class="at">foo</span> <span class="op">!=</span> <span class="st">&quot;string&quot;</span>) <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb22-3"><a href="#cb22-3"></a>  <span class="cf">if</span> (<span class="op">!</span>formats<span class="op">.</span><span class="at">identifier</span><span class="op">.</span><span class="fu">test</span>(data<span class="op">.</span><span class="at">foo</span>)) <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb22-4"><a href="#cb22-4"></a>  <span class="cf">if</span> (<span class="kw">typeof</span> data<span class="op">.</span><span class="at">bar</span> <span class="op">!=</span> <span class="st">&quot;string&quot;</span>) <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb22-5"><a href="#cb22-5"></a>  <span class="cf">if</span> (<span class="op">!</span>formats<span class="op">.</span><span class="at">date</span><span class="op">.</span><span class="fu">test</span>(data<span class="op">.</span><span class="at">bar</span>)) <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb22-6"><a href="#cb22-6"></a>  <span class="cf">return</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb22-7"><a href="#cb22-7"></a>}</span></code></pre></div>
+<p>This approach to data validation when the schema is compiled to a JavaScript function is used in several JSON-Schema validators, including the fastest one — <a href="https://github.com/epoberezkin/ajv">Ajv</a> that I have created.</p>
+<h2 id="so-why-eval-is-evil">So Why Eval Is Evil?</h2>
+<p><em>Eval</em> can dramatically improve performance, it doesn’t create security risks if used properly and it can be debugged without any problems. Why it should never be used then?</p>
+<p>The problem with eval is that whenever eval creates a function, it becomes a closure that retains access to ALL variables in the current and in ALL parent scopes, regardless whether they are used by this closure or not. If you debug <code>validate</code> function from the third example in the chrome inspector you will see it:</p>
+<p><img src="/images/eval1.png" alt="eval closure" title="eval creates big closure"></p>
+<p>Unlike <em>eval</em>, <em>Function</em> constructor doesn’t have this problem, the function that it returns is created in the global scope and it is not a closure.</p>
+<p>Vyacheslav Egorov <a href="https://mrale.ph/blog/2012/09/23/grokking-v8-closures-for-fun.html">wrote about it</a> 4 years ago and it is still the case today — eval is not optimised in node.js and browsers in the way normal closures are, that only retain access to the scope variables they use.</p>
+<p>This issue has been pointed out by <a href="https://github.com/rf">Russ Frank</a> who has recently submitted a <a href="https://github.com/epoberezkin/ajv/pull/293">PR to Ajv</a> that replaced <em>eval</em> with <em>Function</em> constructor to reduce memory utilisation.</p>
+<p>In all examples but the last one we could easily replace <em>eval</em> with <em>new Function</em>. In the last example though the generated function should be a closure — it needs access to <em>formats</em> that are defined in the parent scope. So if we simply use <em>Function</em> constructor in the same way as before it won’t work. Instead we can do this:</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb23-1"><a href="#cb23-1"></a><span class="kw">var</span> createValidate <span class="op">=</span> <span class="kw">new</span> <span class="bu">Function</span>(<span class="st">&#39;formats&#39;</span><span class="op">,</span></span>
+<span id="cb23-2"><a href="#cb23-2"></a>                       <span class="st">&#39;return function(data) { &#39;</span> <span class="op">+</span> code <span class="op">+</span> <span class="st">&#39; }&#39;</span>)<span class="op">;</span></span>
+<span id="cb23-3"><a href="#cb23-3"></a><span class="kw">var</span> validate <span class="op">=</span> createValidate(formats)<span class="op">;</span></span></code></pre></div>
+<p>As you can see <em>Function</em> constructor is used to create a function that returns a closure that has access to <em>formats</em>, but not to anything else:</p>
+<p><img src="/images/eval2.png" alt="Function constructor closure" title="Function constructor allows to control closure"></p>
+<p>Although this code is more verbose than with <em>eval</em> it doesn’t have the issue that makes <em>eval</em> really evil — <strong>retaining access to everything in all scopes</strong> from the current to the global.</p>
+<p>So while code generation can be used to achieve serious performance benefits, direct calls to <em>eval</em> should be avoided. Instead <em>Function</em> constructor (or at least <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval">indirect calls</a> to <em>eval</em>) should be used.</p>]]></description>
+    <pubDate>Sat, 10 Sep 2016 00:00:00 UT</pubDate>
+    <guid>http://poberezkin.com/posts/2016-09-10-eval-is-evil-but-not-why-you-may-think.html</guid>
+    <dc:creator>Evgeny Poberezkin</dc:creator>
+</item>
+<item>
+    <title>Talk: Batch API requests with JSONScript</title>
+    <link>http://poberezkin.com/posts/2016-07-13-talk-batch-execution-existing-endpoints-services-jsonscript.html</link>
+    <description><![CDATA[<p>This is a <a href="https://skillsmatter.com/skillscasts/8395-batch-execution-of-existing-endpoints-and-services-with-jsonscript">talk at FullStack London 2016</a>.</p>
+<p><a href="https://skillsmatter.com/skillscasts/8395-batch-execution-of-existing-endpoints-and-services-with-jsonscript"> <img src="/images/talk2016.jpg" alt="Batch API requests with JSONScript" width="100%"> </a></p>
+<blockquote>
+<p>A very common situation in web development: you need to make multiple requests, often with some conditions and logic between calls, to get the required result.</p>
+</blockquote>
+<blockquote>
+<p>It can be achieved in three ways:</p>
+</blockquote>
+<blockquote>
+<ol type="1">
+<li>Sending multiple requests to the server and implementing all the processing logic in the client. The advantage of this approach is that the server remains unchanged and the client can easily change the logic and flow of requests. The disadvantage is the latency and the traffic - each request should travel via the network.</li>
+<li>Implementing additional methods/endpoints/parameters in the server. The advantage of this approach is that the client has to make only one request. The disadvantage is that it requires changing the server (= coding + testing + documenting + deploying + monitoring + supporting…). When it is possible, it inevitably leads to the growing complexity of the remote system as more and more specialised methods/APIs are added to it.</li>
+<li>Implement batch endpoints, e.g. using JSON RPC standard. While they allows to execute multiple calls in a single HTTP request, it doesn’t allow to implement any logic between the calls.</li>
+</ol>
+</blockquote>
+<blockquote>
+<p><a href="https://www.jsonscript.org/">JSONScript</a> is a simple tool that allows to create “a batch endpoint on steroids” - server-side scripted execution of existing endpoints and services.</p>
+</blockquote>
+<blockquote>
+<p>It is currently implemented in express middleware that allows to add JSONScript batch endpoint in a single line of code.</p>
+</blockquote>]]></description>
+    <pubDate>Wed, 13 Jul 2016 00:00:00 UT</pubDate>
+    <guid>http://poberezkin.com/posts/2016-07-13-talk-batch-execution-existing-endpoints-services-jsonscript.html</guid>
+    <dc:creator>Evgeny Poberezkin</dc:creator>
+</item>
+<item>
+    <title>Validating data with JSON-schema</title>
+    <link>http://poberezkin.com/posts/2016-03-03-validating-data-with-json-schema.html</link>
+    <description><![CDATA[<p>Tutsplus.com published my <a href="https://code.tutsplus.com/tutorials/validating-data-with-json-schema-part-1--cms-25343">2 part tutorial</a> on how to use JSON-schemas and also about some other related stuff:</p>
+<ul>
+<li>use schemas to define default values and to filter data</li>
+<li>version 5 proposals for the JSON-schema standard</li>
+<li>define custom validation keywords</li>
+<li>JSON-schema validators comparison (so far my <a href="https://github.com/epoberezkin/ajv">Ajv</a> is ahead :)</li>
+</ul>]]></description>
+    <pubDate>Thu, 03 Mar 2016 00:00:00 UT</pubDate>
+    <guid>http://poberezkin.com/posts/2016-03-03-validating-data-with-json-schema.html</guid>
+    <dc:creator>Evgeny Poberezkin</dc:creator>
+</item>
+
+    </channel>
+</rss>

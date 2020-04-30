@@ -51,8 +51,8 @@ postList ptrn title tmpl = do
   compile $ do
     posts <- recentFirst =<< loadAll ptrn
     let ctx = listField "posts" postCtx (return posts)
-              `mappend` constField "title" title
-              `mappend` defaultContext
+              <> constField "title" title
+              <> defaultContext
     makeItem ""
       >>= loadAndApplyTemplate tmpl ctx
       >>= loadAndApplyTemplate "templates/default.html" ctx
@@ -60,11 +60,11 @@ postList ptrn title tmpl = do
 
 postCtx :: Context String
 postCtx = dateField "date" "%B %e, %Y"
-          `mappend` defaultContext
+          <> defaultContext
 
 postCtxWithTags :: Tags -> Context String
 postCtxWithTags tags = tagsField "tags" tags
-                       `mappend` postCtx
+                       <> postCtx
 
 feeds :: Rules ()
 feeds = do
@@ -75,12 +75,12 @@ feeds = do
     config = FeedConfiguration
               { feedAuthorEmail = "evgeny@poberezkin.com"
               , feedAuthorName = "Evgeny Poberezkin"
-              , feedDescription = "Evgeny Poberezkin's blog."
+              , feedDescription = "Evgeny Poberezkin's blog"
               , feedRoot = "http://poberezkin.com"
               , feedTitle = "Evgeny Poberezkin"
               }
     ctx = bodyField "description"
-          `mappend` postCtx
+          <> postCtx
     feed render name = create [name] $ do
       route idRoute
       compile $ do

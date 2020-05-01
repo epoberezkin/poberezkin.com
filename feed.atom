@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
     <title>Evgeny Poberezkin</title>
-    <link href="http://poberezkin.com/feed.atom" rel="self" />
-    <link href="http://poberezkin.com" />
-    <id>http://poberezkin.com/feed.atom</id>
+    <link href="http://www.poberezkin.com/feed.atom" rel="self" />
+    <link href="http://www.poberezkin.com" />
+    <id>http://www.poberezkin.com/feed.atom</id>
     <author>
         <name>Evgeny Poberezkin</name>
         <email>evgeny@poberezkin.com</email>
@@ -11,8 +11,8 @@
     <updated>2020-04-29T00:00:00Z</updated>
     <entry>
     <title>Why use advanced Haskell types?</title>
-    <link href="http://poberezkin.com/posts/2020-04-29-why-use-advanced-haskell-types.html" />
-    <id>http://poberezkin.com/posts/2020-04-29-why-use-advanced-haskell-types.html</id>
+    <link href="http://www.poberezkin.com/posts/2020-04-29-why-use-advanced-haskell-types.html" />
+    <id>http://www.poberezkin.com/posts/2020-04-29-why-use-advanced-haskell-types.html</id>
     <published>2020-04-29T00:00:00Z</published>
     <updated>2020-04-29T00:00:00Z</updated>
     <summary type="html"><![CDATA[<article>
@@ -170,13 +170,19 @@ orgMembers (Org _ ms) = ms</code></pre>
 </ol>
 <p>Haskell offers many different approaches to design your whole system, not just its data, in types. This post is just a small sample of what is possible with advanced Haskell types.</p>
   </section>
+  <section class="links">
+    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Why%20use%20advanced%20Haskell%20types%3F&hashtags=haskell%2Ccoding&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2020-04-29-why-use-advanced-haskell-types.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2020-04-29-why-use-advanced-haskell-types.html" target="_blank"><img src="/images/tweet.png"></a>
+    
+      <a href="https://github.com/epoberezkin/advanced-haskell-types" target="_blank"><img src="/images/repo.png"></a>
+    
+  </section>
 </article>
 ]]></summary>
 </entry>
 <entry>
     <title>Haskell — a higher order language</title>
-    <link href="http://poberezkin.com/posts/2020-03-15-haskell-a-higher-order-language.html" />
-    <id>http://poberezkin.com/posts/2020-03-15-haskell-a-higher-order-language.html</id>
+    <link href="http://www.poberezkin.com/posts/2020-03-15-haskell-a-higher-order-language.html" />
+    <id>http://www.poberezkin.com/posts/2020-03-15-haskell-a-higher-order-language.html</id>
     <published>2020-03-15T00:00:00Z</published>
     <updated>2020-03-15T00:00:00Z</updated>
     <summary type="html"><![CDATA[<article>
@@ -285,13 +291,17 @@ orgMembers (Org _ ms) = ms</code></pre>
 <p>Morphism-based programming languages (i.e., all other languages) force programmers to model the whole system outside of the code — using SQL schema, JSON schema, diagrams, etc. Type-based languages (Haskell and Idris) allow for type-driven development, when the whole system can be modelled top-down with algebraic data types, rather than bottom-up with functions as in other languages.</p>
 <p>Haskell being type-based language with context-dependent semantics is a higher order language that is almost one of a kind — there seems to be no other mature programming language that allows the same level of expressiveness as Haskell does.</p>
   </section>
+  <section class="links">
+    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Haskell%20%E2%80%94%20a%20higher%20order%20language&hashtags=haskell%2Ccoding&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2020-03-15-haskell-a-higher-order-language.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2020-03-15-haskell-a-higher-order-language.html" target="_blank"><img src="/images/tweet.png"></a>
+    
+  </section>
 </article>
 ]]></summary>
 </entry>
 <entry>
     <title>Talk: Why you should Open-Source for Real</title>
-    <link href="http://poberezkin.com/posts/2019-07-10-talk-why-you-should-open-source-for-real.html" />
-    <id>http://poberezkin.com/posts/2019-07-10-talk-why-you-should-open-source-for-real.html</id>
+    <link href="http://www.poberezkin.com/posts/2019-07-10-talk-why-you-should-open-source-for-real.html" />
+    <id>http://www.poberezkin.com/posts/2019-07-10-talk-why-you-should-open-source-for-real.html</id>
     <published>2019-07-10T00:00:00Z</published>
     <updated>2019-07-10T00:00:00Z</updated>
     <summary type="html"><![CDATA[<article>
@@ -324,13 +334,17 @@ orgMembers (Org _ ms) = ms</code></pre>
 <p>Open-source contribution is a complete waste of time. But it is also the best investment of time you can make to become a better engineer and it will also make you a better human being (maybe).</p>
 </blockquote>
   </section>
+  <section class="links">
+    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Talk%3A%20Why%20you%20should%20Open-Source%20for%20Real&hashtags=talk%2Ccoding%2Copen-source&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2019-07-10-talk-why-you-should-open-source-for-real.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2019-07-10-talk-why-you-should-open-source-for-real.html" target="_blank"><img src="/images/tweet.png"></a>
+    
+  </section>
 </article>
 ]]></summary>
 </entry>
 <entry>
     <title>Locked in the Narrative?</title>
-    <link href="http://poberezkin.com/posts/2019-05-31-locked-in-the-narrative.html" />
-    <id>http://poberezkin.com/posts/2019-05-31-locked-in-the-narrative.html</id>
+    <link href="http://www.poberezkin.com/posts/2019-05-31-locked-in-the-narrative.html" />
+    <id>http://www.poberezkin.com/posts/2019-05-31-locked-in-the-narrative.html</id>
     <published>2019-05-31T00:00:00Z</published>
     <updated>2019-05-31T00:00:00Z</updated>
     <summary type="html"><![CDATA[<article>
@@ -360,13 +374,17 @@ orgMembers (Org _ ms) = ms</code></pre>
 <p>To be free we need to remember that most of our ideas about the world and about ourselves are just stories re-told by other people. Very rarely we hear an original story, and when we do, we often just ignore it.</p>
 <p>We can discover our own truths about who we are, what we want and to write the story of our life ourselves. Until then, we can follow the opportunities and keep our options open — the story of our life may just write itself.</p>
   </section>
+  <section class="links">
+    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Locked%20in%20the%20Narrative%3F&hashtags=essay&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2019-05-31-locked-in-the-narrative.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2019-05-31-locked-in-the-narrative.html" target="_blank"><img src="/images/tweet.png"></a>
+    
+  </section>
 </article>
 ]]></summary>
 </entry>
 <entry>
     <title>Talk: Auditing development guidelines in GitHub repos</title>
-    <link href="http://poberezkin.com/posts/2017-07-12-talk-auditing-development-guidelines-in-github-repositories.html" />
-    <id>http://poberezkin.com/posts/2017-07-12-talk-auditing-development-guidelines-in-github-repositories.html</id>
+    <link href="http://www.poberezkin.com/posts/2017-07-12-talk-auditing-development-guidelines-in-github-repositories.html" />
+    <id>http://www.poberezkin.com/posts/2017-07-12-talk-auditing-development-guidelines-in-github-repositories.html</id>
     <published>2017-07-12T00:00:00Z</published>
     <updated>2017-07-12T00:00:00Z</updated>
     <summary type="html"><![CDATA[<article>
@@ -382,7 +400,7 @@ orgMembers (Org _ ms) = ms</code></pre>
     </div>
     <div class="info">
       
-        Tags: <a title="All pages tagged &#39;talk&#39;." href="/tags/talk.html">talk</a>, <a title="All pages tagged &#39;github&#39;." href="/tags/github.html">github</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html">coding</a>
+        Tags: <a title="All pages tagged &#39;talk&#39;." href="/tags/talk.html">talk</a>, <a title="All pages tagged &#39;github&#39;." href="/tags/github.html">github</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html">coding</a>, <a title="All pages tagged &#39;open-source&#39;." href="/tags/open-source.html">open-source</a>
       
     </div>
   </section>
@@ -402,13 +420,19 @@ orgMembers (Org _ ms) = ms</code></pre>
 <p>Meet <a href="https://github.com/MailOnline/gh-lint">gh-lint</a> - a rule-based command-line utility that audits all your GitHub repositories generating results in TAP (Test Anything Protocol) format that can be consumed by <a href="https://github.com/MailOnline/tap-github-issues">tap-github-issues</a> reporter that can create, update and close issues in GitHub repositories.</p>
 </blockquote>
   </section>
+  <section class="links">
+    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Talk%3A%20Auditing%20development%20guidelines%20in%20GitHub%20repos&hashtags=talk%2Cgithub%2Ccoding%2Copen-source&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2017-07-12-talk-auditing-development-guidelines-in-github-repositories.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2017-07-12-talk-auditing-development-guidelines-in-github-repositories.html" target="_blank"><img src="/images/tweet.png"></a>
+    
+      <a href="https://github.com/mailonline/gh-lint" target="_blank"><img src="/images/repo.png"></a>
+    
+  </section>
 </article>
 ]]></summary>
 </entry>
 <entry>
     <title>Talk: WTF is Reactive Programming</title>
-    <link href="http://poberezkin.com/posts/2017-04-28-talk-wtf-is-reactive-programming.html" />
-    <id>http://poberezkin.com/posts/2017-04-28-talk-wtf-is-reactive-programming.html</id>
+    <link href="http://www.poberezkin.com/posts/2017-04-28-talk-wtf-is-reactive-programming.html" />
+    <id>http://www.poberezkin.com/posts/2017-04-28-talk-wtf-is-reactive-programming.html</id>
     <published>2017-04-28T00:00:00Z</published>
     <updated>2017-04-28T00:00:00Z</updated>
     <summary type="html"><![CDATA[<article>
@@ -442,13 +466,17 @@ orgMembers (Org _ ms) = ms</code></pre>
 <p>I am going to talk about the past, present and possible futures of reactive programming and how you can survive it all.</p>
 </blockquote>
   </section>
+  <section class="links">
+    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Talk%3A%20WTF%20is%20Reactive%20Programming&hashtags=talk%2Creactive&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2017-04-28-talk-wtf-is-reactive-programming.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2017-04-28-talk-wtf-is-reactive-programming.html" target="_blank"><img src="/images/tweet.png"></a>
+    
+  </section>
 </article>
 ]]></summary>
 </entry>
 <entry>
     <title>TDD doesn’t work… Maybe CDD would?</title>
-    <link href="http://poberezkin.com/posts/2017-02-19-tdd-doesnt-work-maybe-cdd-would.html" />
-    <id>http://poberezkin.com/posts/2017-02-19-tdd-doesnt-work-maybe-cdd-would.html</id>
+    <link href="http://www.poberezkin.com/posts/2017-02-19-tdd-doesnt-work-maybe-cdd-would.html" />
+    <id>http://www.poberezkin.com/posts/2017-02-19-tdd-doesnt-work-maybe-cdd-would.html</id>
     <published>2017-02-19T00:00:00Z</published>
     <updated>2017-02-19T00:00:00Z</updated>
     <summary type="html"><![CDATA[<article>
@@ -532,13 +560,17 @@ orgMembers (Org _ ms) = ms</code></pre>
 <p>If you are not using code coverage as part of your development process, it’s definitely worth trying. If nothing else, it will give you an increased satisfaction from writing tests. And all developers seem to agree that we should write tests to reduce the cost of software.</p>
 <p><img src="/images/tdd5.png" alt="Acheived 100% code coverage" title="… but the bug is still there" max-width="100%"></p>
   </section>
+  <section class="links">
+    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=TDD%20doesn%E2%80%99t%20work%E2%80%A6%20Maybe%20CDD%20would%3F&hashtags=tests%2Ccoding&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2017-02-19-tdd-doesnt-work-maybe-cdd-would.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2017-02-19-tdd-doesnt-work-maybe-cdd-would.html" target="_blank"><img src="/images/tweet.png"></a>
+    
+  </section>
 </article>
 ]]></summary>
 </entry>
 <entry>
     <title>Eval is evil, but not why you may think</title>
-    <link href="http://poberezkin.com/posts/2016-09-10-eval-is-evil-but-not-why-you-may-think.html" />
-    <id>http://poberezkin.com/posts/2016-09-10-eval-is-evil-but-not-why-you-may-think.html</id>
+    <link href="http://www.poberezkin.com/posts/2016-09-10-eval-is-evil-but-not-why-you-may-think.html" />
+    <id>http://www.poberezkin.com/posts/2016-09-10-eval-is-evil-but-not-why-you-may-think.html</id>
     <published>2016-09-10T00:00:00Z</published>
     <updated>2016-09-10T00:00:00Z</updated>
     <summary type="html"><![CDATA[<article>
@@ -747,13 +779,19 @@ orgMembers (Org _ ms) = ms</code></pre>
 <p>Although this code is more verbose than with <em>eval</em> it doesn’t have the issue that makes <em>eval</em> really evil — <strong>retaining access to everything in all scopes</strong> from the current to the global.</p>
 <p>So while code generation can be used to achieve serious performance benefits, direct calls to <em>eval</em> should be avoided. Instead <em>Function</em> constructor (or at least <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval">indirect calls</a> to <em>eval</em>) should be used.</p>
   </section>
+  <section class="links">
+    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Eval%20is%20evil%2C%20but%20not%20why%20you%20may%20think&hashtags=javascript%2Ccoding&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2016-09-10-eval-is-evil-but-not-why-you-may-think.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2016-09-10-eval-is-evil-but-not-why-you-may-think.html" target="_blank"><img src="/images/tweet.png"></a>
+    
+      <a href="https://github.com/epoberezkin/eval-is-evil" target="_blank"><img src="/images/repo.png"></a>
+    
+  </section>
 </article>
 ]]></summary>
 </entry>
 <entry>
     <title>Talk: Batch API requests with JSONScript</title>
-    <link href="http://poberezkin.com/posts/2016-07-13-talk-batch-execution-existing-endpoints-services-jsonscript.html" />
-    <id>http://poberezkin.com/posts/2016-07-13-talk-batch-execution-existing-endpoints-services-jsonscript.html</id>
+    <link href="http://www.poberezkin.com/posts/2016-07-13-talk-batch-execution-existing-endpoints-services-jsonscript.html" />
+    <id>http://www.poberezkin.com/posts/2016-07-13-talk-batch-execution-existing-endpoints-services-jsonscript.html</id>
     <published>2016-07-13T00:00:00Z</published>
     <updated>2016-07-13T00:00:00Z</updated>
     <summary type="html"><![CDATA[<article>
@@ -769,7 +807,7 @@ orgMembers (Org _ ms) = ms</code></pre>
     </div>
     <div class="info">
       
-        Tags: <a title="All pages tagged &#39;talk&#39;." href="/tags/talk.html">talk</a>, <a title="All pages tagged &#39;javascript&#39;." href="/tags/javascript.html">javascript</a>
+        Tags: <a title="All pages tagged &#39;talk&#39;." href="/tags/talk.html">talk</a>, <a title="All pages tagged &#39;javascript&#39;." href="/tags/javascript.html">javascript</a>, <a title="All pages tagged &#39;open-source&#39;." href="/tags/open-source.html">open-source</a>
       
     </div>
   </section>
@@ -796,13 +834,19 @@ orgMembers (Org _ ms) = ms</code></pre>
 <p>It is currently implemented in express middleware that allows to add JSONScript batch endpoint in a single line of code.</p>
 </blockquote>
   </section>
+  <section class="links">
+    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Talk%3A%20Batch%20API%20requests%20with%20JSONScript&hashtags=talk%2Cjavascript%2Copen-source&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2016-07-13-talk-batch-execution-existing-endpoints-services-jsonscript.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2016-07-13-talk-batch-execution-existing-endpoints-services-jsonscript.html" target="_blank"><img src="/images/tweet.png"></a>
+    
+      <a href="https://github.com/JSONScript/jsonscript" target="_blank"><img src="/images/repo.png"></a>
+    
+  </section>
 </article>
 ]]></summary>
 </entry>
 <entry>
     <title>Validating data with JSON-schema</title>
-    <link href="http://poberezkin.com/posts/2016-03-03-validating-data-with-json-schema.html" />
-    <id>http://poberezkin.com/posts/2016-03-03-validating-data-with-json-schema.html</id>
+    <link href="http://www.poberezkin.com/posts/2016-03-03-validating-data-with-json-schema.html" />
+    <id>http://www.poberezkin.com/posts/2016-03-03-validating-data-with-json-schema.html</id>
     <published>2016-03-03T00:00:00Z</published>
     <updated>2016-03-03T00:00:00Z</updated>
     <summary type="html"><![CDATA[<article>
@@ -830,6 +874,12 @@ orgMembers (Org _ ms) = ms</code></pre>
 <li>define custom validation keywords</li>
 <li>JSON-schema validators comparison (so far my <a href="https://github.com/epoberezkin/ajv">Ajv</a> is ahead :)</li>
 </ul>
+  </section>
+  <section class="links">
+    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Validating%20data%20with%20JSON-schema&hashtags=json-schema%2Ctutorial%2Ccoding&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2016-03-03-validating-data-with-json-schema.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2016-03-03-validating-data-with-json-schema.html" target="_blank"><img src="/images/tweet.png"></a>
+    
+      <a href="https://github.com/epoberezkin/tutsplus-json-schema" target="_blank"><img src="/images/repo.png"></a>
+    
   </section>
 </article>
 ]]></summary>

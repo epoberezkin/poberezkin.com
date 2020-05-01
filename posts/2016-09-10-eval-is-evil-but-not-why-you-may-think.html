@@ -5,6 +5,10 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Evgeny Poberezkin - Eval is evil, but not why you may think</title>
+    <meta name="description" content="Evgeny Poberezkin's blog">
+    <meta name="author" content="Evgeny Poberezkin">
+    <link rel="alternate" title="Evgeny Poberezkin" type="application/atom+xml" href="../feed.atom">
+    <link rel="alternate" title="Evgeny Poberezkin" type="application/rss+xml" href="../feed.rss">
     <link rel="stylesheet" href="../css/default.css" />
     <link rel="stylesheet" href="../css/syntax.css" />
   </head>
@@ -232,6 +236,12 @@
 <p><img src="../images/eval2.png" alt="Function constructor closure" title="Function constructor allows to control closure"></p>
 <p>Although this code is more verbose than with <em>eval</em> it doesn’t have the issue that makes <em>eval</em> really evil — <strong>retaining access to everything in all scopes</strong> from the current to the global.</p>
 <p>So while code generation can be used to achieve serious performance benefits, direct calls to <em>eval</em> should be avoided. Instead <em>Function</em> constructor (or at least <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval">indirect calls</a> to <em>eval</em>) should be used.</p>
+  </section>
+  <section class="links">
+    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Eval%20is%20evil%2C%20but%20not%20why%20you%20may%20think&hashtags=javascript%2Ccoding&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2016-09-10-eval-is-evil-but-not-why-you-may-think.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2016-09-10-eval-is-evil-but-not-why-you-may-think.html" target="_blank"><img src="../images/tweet.png"></a>
+    
+      <a href="https://github.com/epoberezkin/eval-is-evil" target="_blank"><img src="../images/repo.png"></a>
+    
   </section>
 </article>
 

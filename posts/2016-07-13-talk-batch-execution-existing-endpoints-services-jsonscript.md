@@ -1,8 +1,9 @@
 ---
 title: "Talk: Batch API requests with JSONScript"
 author: Evgeny Poberezkin
-tags: talk, javascript
+tags: talk, javascript, open-source
 ref: https://skillsmatter.com/skillscasts/8395-batch-execution-of-existing-endpoints-and-services-with-jsonscript
+github: JSONScript/jsonscript
 ---
 
 This is a [talk at FullStack London 2016](https://skillsmatter.com/skillscasts/8395-batch-execution-of-existing-endpoints-and-services-with-jsonscript).

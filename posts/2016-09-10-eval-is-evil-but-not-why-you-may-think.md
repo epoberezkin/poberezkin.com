@@ -3,6 +3,7 @@ title: Eval is evil, but not why you may think
 author: Evgeny Poberezkin
 tags: javascript, coding
 ref: https://medium.com/mail-online/eval-is-evil-but-not-why-you-may-think-25961f9b01bb
+github: epoberezkin/eval-is-evil
 ---
 
 I have been hearing the mantra “eval is evil” for many years by now and none of the arguments presented to support it made any sense until very recently. Let’s explore the myths of eval, uncover the real evil behind it and find out the alternative way to reap eval’s benefits without its evilness.

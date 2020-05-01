@@ -2,6 +2,7 @@
 title: Why use advanced Haskell types?
 author: Evgeny Poberezkin
 tags: haskell, coding
+github: epoberezkin/advanced-haskell-types
 ---
 
 Haskell type system has dramatically evolved, both with the language extensions and libraries. It can be a challenge to navigate this space. So why anything beyond basic types is needed?

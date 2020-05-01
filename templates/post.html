@@ -20,4 +20,10 @@
   <section>
     $body$
   </section>
+  <section class="links">
+    <a href="$twitter(url)$" target="_blank"><img src="/images/tweet.png"></a>
+    $if(github)$
+      <a href="https://github.com/$github$" target="_blank"><img src="/images/repo.png"></a>
+    $endif$
+  </section>
 </article>

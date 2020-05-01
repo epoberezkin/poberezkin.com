@@ -326,6 +326,21 @@ img.social {
   margin-right: 5px;
 }
 
+article {
+  margin-bottom: 3.0rem
+}
+
 article section.header {
   margin-bottom: 2.0rem;
+}
+
+article section.links {
+  margin-top: 2.0rem
+}
+
+article section.links a {
+  float: right;
+  margin-left: 6px;
+  margin-bottom: 3.0rem;
+  outline: none;
 }

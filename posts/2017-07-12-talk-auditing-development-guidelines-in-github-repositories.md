@@ -1,8 +1,9 @@
 ---
 title: "Talk: Auditing development guidelines in GitHub repos"
 author: Evgeny Poberezkin
-tags: talk, github, coding
+tags: talk, github, coding, open-source
 ref: https://skillsmatter.com/skillscasts/10399-auditing-development-guidelines-in-github-repositories
+github: mailonline/gh-lint
 ---
 
 This is a [talk at FullStack London 2017](https://skillsmatter.com/skillscasts/10399-auditing-development-guidelines-in-github-repositories).

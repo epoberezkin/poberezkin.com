@@ -1,4 +1,5 @@
 import Hakyll
+import Fields
 
 cfg :: Configuration
 cfg = defaultConfiguration
@@ -60,6 +61,7 @@ postList ptrn title tmpl = do
 
 postCtx :: Context String
 postCtx = dateField "date" "%B %e, %Y"
+          <> twitterShareIntentField "twitter" "https://www.poberezkin.com" "epoberezkin"
           <> defaultContext
 
 postCtxWithTags :: Tags -> Context String
@@ -76,7 +78,7 @@ feeds = do
               { feedAuthorEmail = "evgeny@poberezkin.com"
               , feedAuthorName = "Evgeny Poberezkin"
               , feedDescription = "Evgeny Poberezkin's blog"
-              , feedRoot = "http://poberezkin.com"
+              , feedRoot = "http://www.poberezkin.com"
               , feedTitle = "Evgeny Poberezkin"
               }
     ctx = bodyField "description"

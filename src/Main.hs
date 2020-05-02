@@ -62,6 +62,7 @@ postList ptrn title tmpl = do
 postCtx :: Context String
 postCtx = dateField "date" "%B %e, %Y"
           <> twitterShareIntentField "twitter" "https://www.poberezkin.com" "epoberezkin"
+          <> tagField "talk" "talk"
           <> defaultContext
 
 postCtxWithTags :: Tags -> Context String

@@ -1,5 +1,5 @@
 ---
-title: "Talk: Milo - The Reactive Javascript Framework"
+title: "Milo - The Reactive Javascript Framework"
 author: Jason Green and Evgeny Poberezkin
 tags: talk, javascript, open-source, reactive
 ref: https://skillsmatter.com/skillscasts/5857-milo-the-reactive-javascript-framework

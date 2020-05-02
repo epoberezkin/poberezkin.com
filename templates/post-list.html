@@ -1,6 +1,9 @@
 <ul class="posts">
   $for(posts)$
     <li>
+      $if(talk)$
+        <img src="/images/video.png" class="talk">
+      $endif$
       <a href="$url$">$title$</a> - $date$
     </li>
   $endfor$

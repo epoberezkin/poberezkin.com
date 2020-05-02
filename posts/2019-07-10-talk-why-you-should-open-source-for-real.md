@@ -1,5 +1,5 @@
 ---
-title: "Talk: Why you should Open-Source for Real"
+title: "Why you should Open-Source for Real"
 author: Evgeny Poberezkin
 tags: talk, coding, open-source
 ref: https://skillsmatter.com/skillscasts/14213-lightning-talk-coding-you-either-love-or-hate-it-or-why-you-should-open-source-for-real

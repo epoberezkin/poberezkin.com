@@ -344,3 +344,9 @@ article section.links a {
   margin-bottom: 3.0rem;
   outline: none;
 }
+
+img.talk {
+  vertical-align: -2px;
+  margin-right: 1px;
+  height: 12px;
+}

@@ -298,7 +298,7 @@ orgMembers (Org _ ms) = ms</code></pre>
     <dc:creator>Evgeny Poberezkin</dc:creator>
 </item>
 <item>
-    <title>Talk: Why you should Open-Source for Real</title>
+    <title>Why you should Open-Source for Real</title>
     <link>http://www.poberezkin.com/posts/2019-07-10-talk-why-you-should-open-source-for-real.html</link>
     <description><![CDATA[<article>
   <section class="header">
@@ -331,7 +331,7 @@ orgMembers (Org _ ms) = ms</code></pre>
 </blockquote>
   </section>
   <section class="links">
-    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Talk%3A%20Why%20you%20should%20Open-Source%20for%20Real&hashtags=talk%2Ccoding%2Copen-source&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2019-07-10-talk-why-you-should-open-source-for-real.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2019-07-10-talk-why-you-should-open-source-for-real.html" target="_blank"><img src="/images/tweet.png"></a>
+    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Why%20you%20should%20Open-Source%20for%20Real&hashtags=talk%2Ccoding%2Copen-source&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2019-07-10-talk-why-you-should-open-source-for-real.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2019-07-10-talk-why-you-should-open-source-for-real.html" target="_blank"><img src="/images/tweet.png"></a>
     
   </section>
 </article>
@@ -381,7 +381,7 @@ orgMembers (Org _ ms) = ms</code></pre>
     <dc:creator>Evgeny Poberezkin</dc:creator>
 </item>
 <item>
-    <title>Talk: Auditing development guidelines in GitHub repos</title>
+    <title>Auditing development guidelines in GitHub repos</title>
     <link>http://www.poberezkin.com/posts/2017-07-12-talk-auditing-development-guidelines-in-github-repositories.html</link>
     <description><![CDATA[<article>
   <section class="header">
@@ -417,7 +417,7 @@ orgMembers (Org _ ms) = ms</code></pre>
 </blockquote>
   </section>
   <section class="links">
-    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Talk%3A%20Auditing%20development%20guidelines%20in%20GitHub%20repos&hashtags=talk%2Cgithub%2Ccoding%2Copen-source&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2017-07-12-talk-auditing-development-guidelines-in-github-repositories.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2017-07-12-talk-auditing-development-guidelines-in-github-repositories.html" target="_blank"><img src="/images/tweet.png"></a>
+    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Auditing%20development%20guidelines%20in%20GitHub%20repos&hashtags=talk%2Cgithub%2Ccoding%2Copen-source&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2017-07-12-talk-auditing-development-guidelines-in-github-repositories.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2017-07-12-talk-auditing-development-guidelines-in-github-repositories.html" target="_blank"><img src="/images/tweet.png"></a>
     
       <a href="https://github.com/mailonline/gh-lint" target="_blank"><img src="/images/repo.png"></a>
     
@@ -429,7 +429,7 @@ orgMembers (Org _ ms) = ms</code></pre>
     <dc:creator>Evgeny Poberezkin</dc:creator>
 </item>
 <item>
-    <title>Talk: WTF is Reactive Programming</title>
+    <title>WTF is Reactive Programming</title>
     <link>http://www.poberezkin.com/posts/2017-04-28-talk-wtf-is-reactive-programming.html</link>
     <description><![CDATA[<article>
   <section class="header">
@@ -463,7 +463,7 @@ orgMembers (Org _ ms) = ms</code></pre>
 </blockquote>
   </section>
   <section class="links">
-    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Talk%3A%20WTF%20is%20Reactive%20Programming&hashtags=talk%2Creactive&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2017-04-28-talk-wtf-is-reactive-programming.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2017-04-28-talk-wtf-is-reactive-programming.html" target="_blank"><img src="/images/tweet.png"></a>
+    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=WTF%20is%20Reactive%20Programming&hashtags=talk%2Creactive&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2017-04-28-talk-wtf-is-reactive-programming.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2017-04-28-talk-wtf-is-reactive-programming.html" target="_blank"><img src="/images/tweet.png"></a>
     
   </section>
 </article>
@@ -788,7 +788,7 @@ orgMembers (Org _ ms) = ms</code></pre>
     <dc:creator>Evgeny Poberezkin</dc:creator>
 </item>
 <item>
-    <title>Talk: Batch API requests with JSONScript</title>
+    <title>Batch API requests with JSONScript</title>
     <link>http://www.poberezkin.com/posts/2016-07-13-talk-batch-execution-existing-endpoints-services-jsonscript.html</link>
     <description><![CDATA[<article>
   <section class="header">
@@ -831,7 +831,7 @@ orgMembers (Org _ ms) = ms</code></pre>
 </blockquote>
   </section>
   <section class="links">
-    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Talk%3A%20Batch%20API%20requests%20with%20JSONScript&hashtags=talk%2Cjavascript%2Copen-source&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2016-07-13-talk-batch-execution-existing-endpoints-services-jsonscript.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2016-07-13-talk-batch-execution-existing-endpoints-services-jsonscript.html" target="_blank"><img src="/images/tweet.png"></a>
+    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Batch%20API%20requests%20with%20JSONScript&hashtags=talk%2Cjavascript%2Copen-source&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2016-07-13-talk-batch-execution-existing-endpoints-services-jsonscript.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2016-07-13-talk-batch-execution-existing-endpoints-services-jsonscript.html" target="_blank"><img src="/images/tweet.png"></a>
     
       <a href="https://github.com/JSONScript/jsonscript" target="_blank"><img src="/images/repo.png"></a>
     
@@ -884,7 +884,7 @@ orgMembers (Org _ ms) = ms</code></pre>
     <dc:creator>Evgeny Poberezkin</dc:creator>
 </item>
 <item>
-    <title>Talk: Milo - The Reactive Javascript Framework</title>
+    <title>Milo - The Reactive Javascript Framework</title>
     <link>http://www.poberezkin.com/posts/2014-10-23-talk-milo-reactive-javascript-framework.html</link>
     <description><![CDATA[<article>
   <section class="header">
@@ -920,7 +920,7 @@ orgMembers (Org _ ms) = ms</code></pre>
 </blockquote>
   </section>
   <section class="links">
-    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Talk%3A%20Milo%20-%20The%20Reactive%20Javascript%20Framework&hashtags=talk%2Cjavascript%2Copen-source%2Creactive&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2014-10-23-talk-milo-reactive-javascript-framework.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2014-10-23-talk-milo-reactive-javascript-framework.html" target="_blank"><img src="/images/tweet.png"></a>
+    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Milo%20-%20The%20Reactive%20Javascript%20Framework&hashtags=talk%2Cjavascript%2Copen-source%2Creactive&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2014-10-23-talk-milo-reactive-javascript-framework.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2014-10-23-talk-milo-reactive-javascript-framework.html" target="_blank"><img src="/images/tweet.png"></a>
     
       <a href="https://github.com/milojs/milo" target="_blank"><img src="/images/repo.png"></a>
     

@@ -33,8 +33,9 @@
     </div>
   </section>
   <section>
-    <p>Haskell has a very advanced type system, but it does not yet have <a href="https://en.wikipedia.org/wiki/Dependent_type">dependent types</a>. Yet, singleton types and <a href="https://hackage.haskell.org/package/singletons">singletons library</a> provide a very good approximation of dependent types.</p>
-<p>Justin Le wrote a fantastic <a href="https://blog.jle.im/entry/introduction-to-singletons-1.html">introduction to singletons library</a> and dependent type programming with Haskell - if you did not use singletons library before, I highly recommended to read it.</p>
+    <p>Haskell has a very advanced type system, but it does not yet have <a href="https://en.wikipedia.org/wiki/Dependent_type">dependent types</a>. Yet, singleton types and <a href="https://hackage.haskell.org/package/singletons">singletons library</a> provide a very good approximation of dependent types, that is shown on this diagram - the explanations to follow.</p>
+<p><a href="https://github.com/epoberezkin/poberezkin.com/tree/master/dot/singletons1.gv"><img src="/images/singletons1.svg" title="source" alt="Singleton types" /></a></p>
+<p>Justin Le wrote a fantastic <a href="https://blog.jle.im/entry/introduction-to-singletons-1.html">introduction to singletons library</a> and dependent type programming with Haskell - if you did not use singletons library before, I highly recommended reading it.</p>
 <p>I’ve written this post to visualise the Haskell “problem” that prevents it from having dependent types, and the “solution” that singleton types offer.</p>
 <h2 id="the-problem">The problem</h2>
 <p>Haskell types can only have other types as their parameters, but not values. <a href="https://downloads.haskell.org/ghc/8.10.1/docs/html/users_guide/glasgow_exts.html#extension-DataKinds">DataKinds extension</a> automatically promotes all types to kinds and all constructors to types, in this way allowing other types depending on something that looks like values of another type. But there is no way to convert actual values to types, as promoted constructors are not connected to corresponding values and fully erased during compilation.</p>
@@ -43,8 +44,8 @@
 <span id="cb1-2"><a href="#cb1-2"></a></span>
 <span id="cb1-3"><a href="#cb1-3"></a><span class="kw">data</span> <span class="dt">Door</span> (<span class="ot">a ::</span> <span class="dt">DoorState</span>)<span class="ot"> ::</span> <span class="dt">Type</span> <span class="kw">where</span></span>
 <span id="cb1-4"><a href="#cb1-4"></a>  <span class="dt">MkDoor</span><span class="ot"> ::</span> <span class="dt">Door</span> a</span></code></pre></div>
-<p>These two declarations create kinds, types and values that are shown on this diagram:</p>
-<p><a href="https://github.com/epoberezkin/poberezkin.com/tree/master/dot/singletons1.gv"><img src="/images/singletons1.svg" title="source" alt="Types and kinds with DataKinds" /></a></p>
+<p>These two declarations create kinds, types and values that are shown on diagram 2:</p>
+<p><a href="https://github.com/epoberezkin/poberezkin.com/tree/master/dot/singletons2.gv"><img src="/images/singletons2.svg" title="source" alt="Types and kinds with DataKinds" /></a></p>
 <p>The <code>DoorState</code> type is automatically promoted to <code>DoorState</code> kind, and <code>Opened</code>/<code>Closed</code> values belonging to type <code>DoorState</code> are automatically promoted to <code>'Opened</code>/<code>'Closed</code> types belonging to kind <code>DoorState</code> - these types have no values in them (other than <code>undefined</code>).</p>
 <p>As you can see, the values <code>Opened</code>/<code>Closed</code> are not connected to the associated promoted constructors <code>'Opened</code>/<code>'Closed</code> - at the moment Haskell provides no way to connect them directly.</p>
 <h2 id="the-solution">The solution</h2>
@@ -56,8 +57,7 @@
 <span id="cb2-4"><a href="#cb2-4"></a></span>
 <span id="cb2-5"><a href="#cb2-5"></a><span class="kw">data</span> <span class="dt">Door</span> (<span class="ot">a ::</span> <span class="dt">DoorState</span>)<span class="ot"> ::</span> <span class="dt">Type</span> <span class="kw">where</span></span>
 <span id="cb2-6"><a href="#cb2-6"></a>  <span class="dt">MkDoor</span><span class="ot"> ::</span> <span class="dt">Sing</span> a <span class="ot">-&gt;</span> <span class="dt">Door</span> a</span></code></pre></div>
-<p>The <code>singletons</code> splice adds two singleton types with the necessary framework, as shown on diagram 2:</p>
-<p><a href="https://github.com/epoberezkin/poberezkin.com/tree/master/dot/singletons2.gv"><img src="/images/singletons2.svg" title="source" alt="Singleton types" /></a></p>
+<p>The <code>singletons</code> splice adds two singleton types with the necessary framework, as shown on diagram 1 on top of the post.</p>
 <p>Singleton types and values serve as an intermediary to link <code>Opened</code>/<code>Closed</code> values with <code>'Opened</code>/<code>'Closed</code> types that are used as parameters for the type <code>Door</code>, in this way making <code>Door</code> an equivalent of a dependent type.</p>
 <h2 id="the-future">The future</h2>
 <p>Using singleton types for dependent type programming in Haskell is a bit of a workaround, rather than a solution to the problem. It either requires an additional code to write or depends on singletons library templates to generate all the necessary code and on namespace conventions that users have to be aware of.</p>

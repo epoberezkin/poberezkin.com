@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Evgeny Poberezkin - Using dependent types in Haskell with singletons</title>
+    <meta name="description" content="Evgeny Poberezkin's blog">
+    <meta name="author" content="Evgeny Poberezkin">
+    <link rel="alternate" title="Evgeny Poberezkin" type="application/atom+xml" href="../feed.atom">
+    <link rel="alternate" title="Evgeny Poberezkin" type="application/rss+xml" href="../feed.rss">
+    <link rel="stylesheet" href="../css/default.css" />
+    <link rel="stylesheet" href="../css/syntax.css" />
+  </head>
+  <body>
+    <div class="container">
+      <nav role="navigation">
+        <div class="source">
+          <div><a href="https://github.com/epoberezkin/poberezkin.com">source code</a></div>
+          <div><a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA</a></div>
+        </div>
+        <div class="logo">
+          <a href="../">Evgeny Poberezkin</a>
+        </div>
+        <a class="nav" href="../">Blog</a>
+        <a class="nav" href="../tags/coding.html">#coding</a>
+        <a class="nav" href="../tags/haskell.html">#haskell</a>
+        <a class="nav" href="../tags/talk.html">#talk</a>
+        <a class="nav" href="../about.html">About</a>
+      </nav>
+
+      <main role="main">
+        <h1>Using dependent types in Haskell with singletons</h1>
+        <article>
+  <section class="header">
+    <div class="info">
+      Posted on
+      
+        May 17, 2020
+      
+      
+        by Evgeny Poberezkin
+      
+    </div>
+    <div class="info">
+      
+        Tags: <a title="All pages tagged 'haskell'." href="../tags/haskell.html">haskell</a>, <a title="All pages tagged 'coding'." href="../tags/coding.html">coding</a>
+      
+    </div>
+  </section>
+  <section>
+    <p>Haskell has a very advanced type system, but it does not yet have <a href="https://en.wikipedia.org/wiki/Dependent_type">dependent types</a>. Yet, singleton types and <a href="https://hackage.haskell.org/package/singletons">singletons library</a> provide a very good approximation of dependent types.</p>
+<p>Justin Le wrote a fantastic <a href="https://blog.jle.im/entry/introduction-to-singletons-1.html">introduction to singletons library</a> and dependent type programming with Haskell - if you did not use singletons library before, I highly recommended to read it.</p>
+<p>I’ve written this post to visualise the Haskell “problem” that prevents it from having dependent types, and the “solution” that singleton types offer.</p>
+<h2 id="the-problem">The problem</h2>
+<p>Haskell types can only have other types as their parameters, but not values. <a href="https://downloads.haskell.org/ghc/8.10.1/docs/html/users_guide/glasgow_exts.html#extension-DataKinds">DataKinds extension</a> automatically promotes all types to kinds and all constructors to types, in this way allowing other types depending on something that looks like values of another type. But there is no way to convert actual values to types, as promoted constructors are not connected to corresponding values and fully erased during compilation.</p>
+<p>This is best illustrated with a simple example from Justin’s post. Suppose we have type <code>Door</code> parametrised with the types of the kind <code>DoorState</code>:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">data</span> <span class="dt">DoorState</span> <span class="ot">=</span> <span class="dt">Opened</span> <span class="op">|</span> <span class="dt">Closed</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a></span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="kw">data</span> <span class="dt">Door</span> (<span class="ot">a ::</span> <span class="dt">DoorState</span>)<span class="ot"> ::</span> <span class="dt">Type</span> <span class="kw">where</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a>  <span class="dt">MkDoor</span><span class="ot"> ::</span> <span class="dt">Door</span> a</span></code></pre></div>
+<p>These two declarations create kinds, types and values that are shown on this diagram:</p>
+<p><a href="https://github.com/epoberezkin/poberezkin.com/tree/master/dot/singletons1.gv"><img src="../images/singletons1.svg" title="source" alt="Types and kinds with DataKinds" /></a></p>
+<p>The <code>DoorState</code> type is automatically promoted to <code>DoorState</code> kind, and <code>Opened</code>/<code>Closed</code> values belonging to type <code>DoorState</code> are automatically promoted to <code>'Opened</code>/<code>'Closed</code> types belonging to kind <code>DoorState</code> - these types have no values in them (other than <code>undefined</code>).</p>
+<p>As you can see, the values <code>Opened</code>/<code>Closed</code> are not connected to the associated promoted constructors <code>'Opened</code>/<code>'Closed</code> - at the moment Haskell provides no way to connect them directly.</p>
+<h2 id="the-solution">The solution</h2>
+<p>Singleton types allow creating this missing link between ordinary values and their associated promoted constructors. The idea here is that for each value we need to create a separate type that has only one value in it. In this way, if we connect values in these singleton types to ordinary values (via polymorphic functions), and the singleton types themselves to the promoted constructors (via type inference), we will have managed to link types to values, even though indirectly - so we can use the equivalent of the dependent types in Haskell.</p>
+<p>It does sound like a lot of boilerplate to write, but luckily singletons library automates the whole process by using Templage Haskell to generate it. To illustrate using the same example as above, but with the singleton types added:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1"></a><span class="op">$</span>(singletons [<span class="op">|</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a>  <span class="kw">data</span> <span class="dt">DoorState</span> <span class="ot">=</span> <span class="dt">Opened</span> <span class="op">|</span> <span class="dt">Closed</span></span>
+<span id="cb2-3"><a href="#cb2-3"></a>  <span class="op">|</span>])</span>
+<span id="cb2-4"><a href="#cb2-4"></a></span>
+<span id="cb2-5"><a href="#cb2-5"></a><span class="kw">data</span> <span class="dt">Door</span> (<span class="ot">a ::</span> <span class="dt">DoorState</span>)<span class="ot"> ::</span> <span class="dt">Type</span> <span class="kw">where</span></span>
+<span id="cb2-6"><a href="#cb2-6"></a>  <span class="dt">MkDoor</span><span class="ot"> ::</span> <span class="dt">Sing</span> a <span class="ot">-&gt;</span> <span class="dt">Door</span> a</span></code></pre></div>
+<p>The <code>singletons</code> splice adds two singleton types with the necessary framework, as shown on diagram 2:</p>
+<p><a href="https://github.com/epoberezkin/poberezkin.com/tree/master/dot/singletons2.gv"><img src="../images/singletons2.svg" title="source" alt="Singleton types" /></a></p>
+<p>Singleton types and values serve as an intermediary to link <code>Opened</code>/<code>Closed</code> values with <code>'Opened</code>/<code>'Closed</code> types that are used as parameters for the type <code>Door</code>, in this way making <code>Door</code> an equivalent of a dependent type.</p>
+<h2 id="the-future">The future</h2>
+<p>Using singleton types for dependent type programming in Haskell is a bit of a workaround, rather than a solution to the problem. It either requires an additional code to write or depends on singletons library templates to generate all the necessary code and on namespace conventions that users have to be aware of.</p>
+<p>There is an ongoing work by <a href="https://richarde.dev/">Richard Eisenberg</a> to bring dependent types support to Haskell - it would be very exciting when it comes out.</p>
+<p>Until then, we can use singletons library for type-driven development of complex systems, modelling their state transitions and all the relationships in “dependent” types.</p>
+  </section>
+  <section class="links">
+    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Using%20dependent%20types%20in%20Haskell%20with%20singletons&hashtags=haskell%2Ccoding&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2020-05-17-using-dependent-types-haskell-singletons.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2020-05-17-using-dependent-types-haskell-singletons.html" target="_blank"><img src="../images/tweet.png"></a>
+    
+  </section>
+</article>
+
+      </main>
+    </div>
+  </body>
+</html>

@@ -1,12 +1,14 @@
 ---
-title: "Using dependent types in Haskell with singletons library"
+title: Using dependent types in Haskell with singletons
 author: Evgeny Poberezkin
 tags: haskell, coding
 ---
 
-Haskell has a very advanced type system, but it does not yet have [dependent types](https://en.wikipedia.org/wiki/Dependent_type). Yet, singleton types and [singletons library](https://hackage.haskell.org/package/singletons) provide a very good approximation of dependent types.
+Haskell has a very advanced type system, but it does not yet have [dependent types](https://en.wikipedia.org/wiki/Dependent_type). Yet, singleton types and [singletons library](https://hackage.haskell.org/package/singletons) provide a very good approximation of dependent types, that is shown on this diagram - the explanations to follow.
 
-Justin Le wrote a fantastic [introduction to singletons library](https://blog.jle.im/entry/introduction-to-singletons-1.html) and dependent type programming with Haskell - if you did not use singletons library before, I highly recommended to read it.
+[![Singleton types](/images/singletons1.svg "source")](https://github.com/epoberezkin/poberezkin.com/tree/master/dot/singletons1.gv)
+
+Justin Le wrote a fantastic [introduction to singletons library](https://blog.jle.im/entry/introduction-to-singletons-1.html) and dependent type programming with Haskell - if you did not use singletons library before, I highly recommended reading it.
 
 I've written this post to visualise the Haskell "problem" that prevents it from having dependent types, and the "solution" that singleton types offer.
 
@@ -24,9 +26,9 @@ data Door (a :: DoorState) :: Type where
   MkDoor :: Door a
 ```
 
-These two declarations create kinds, types and values that are shown on this diagram:
+These two declarations create kinds, types and values that are shown on diagram 2:
 
-[![Types and kinds with DataKinds](/images/singletons1.svg source)](https://github.com/epoberezkin/poberezkin.com/tree/master/dot/singletons1.gv)
+[![Types and kinds with DataKinds](/images/singletons2.svg "source")](https://github.com/epoberezkin/poberezkin.com/tree/master/dot/singletons2.gv)
 
 The `DoorState` type is automatically promoted to `DoorState` kind, and `Opened`/`Closed` values belonging to type `DoorState` are automatically promoted to `'Opened`/`'Closed` types belonging to kind `DoorState` - these types have no values in them (other than `undefined`).
 
@@ -48,17 +50,15 @@ data Door (a :: DoorState) :: Type where
   MkDoor :: Sing a -> Door a
 ```
 
-The `singletons` splice adds two singleton types with the necessary framework, as shown on diagram 2:
-
-[![Singleton types](/images/singletons2.svg source)](https://github.com/epoberezkin/poberezkin.com/tree/master/dot/singletons2.gv)
+The `singletons` splice adds two singleton types with the necessary framework, as shown on diagram 1 on top of the post.
 
 Singleton types and values serve as an intermediary to link `Opened`/`Closed` values with `'Opened`/`'Closed` types that are used as parameters for the type `Door`, in this way making `Door` an equivalent of a dependent type.
 
 
-## The Future
+## The future
 
 Using singleton types for dependent type programming in Haskell is a bit of a workaround, rather than a solution to the problem. It either requires an additional code to write or depends on singletons library templates to generate all the necessary code and on namespace conventions that users have to be aware of.
 
 There is an ongoing work by [Richard Eisenberg](https://richarde.dev/) to bring dependent types support to Haskell - it would be very exciting when it comes out.
 
-Until then, we can use singletons library for type-driven development of complex systems modelling their state transitions and all the relationships in types.
+Until then, we can use singletons library for type-driven development of complex systems, modelling their state transitions and all the relationships in "dependent" types.

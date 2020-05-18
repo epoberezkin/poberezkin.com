@@ -1,7 +1,7 @@
 digraph DataKinds {
-  label="data DoorState = Opened | Closed\ndata Door (a ∷ DoorState) where MkDoor ∷ Door a"
-  fontname="monaco"
-  fontsize=9
+  label="Diagram 1\n$(singletons [d| data DoorState = Opened | Closed |])\ndata Door (a :: DoorState) where MkDoor :: Sing a -> Door a"
+  fontname="monospace"
+  fontsize=10
   edge [ arrowhead=open
        , arrowtail=open
        , fontname="arial"
@@ -33,9 +33,9 @@ digraph DataKinds {
   Type [shape=box]
   Type -> t
 
-  dk [label="DoorState → Type", shape=box]
+  dk [label="DoorState -> Type", shape=box]
   dk -> d
-  
+
   subgraph Kinds {
     edge [style=dotted]
     kinds [style=dotted, shape=box]
@@ -44,9 +44,29 @@ digraph DataKinds {
     kinds -> dk
   }
 
-  subgraph No_Connection {
-    edge [dir=none, color=red, style=dotted, label="??", fontcolor=red]
-    to -> o
-    tc -> c
+  subgraph SDoorState {
+    node [color=blue, style=rounded, fontcolor=blue]
+    ts [label="SDoorState a", shape=box, style="rounded,bold"]
+    tso [label="Sing 'Opened", shape=box]
+    tsc [label="Sing 'Closed", shape=box]
+    so [label="SOpened"]
+    sc [label="SClosed"]
+    ts -> tso [style=dashed]
+    ts -> tsc [style=dashed]
+    tso -> so
+    tsc -> sc
+  }
+
+  dk -> ts
+
+  Type -> tso
+  Type -> tsc
+
+  subgraph Singleton_Connections {
+    edge [dir=both, color=blue, fontcolor=blue]
+    to -> so
+    tc -> sc [label="type inference\n(Sing a <-> Door a)"]
+    so -> o [label="to/fromSing"]
+    sc -> c
   }
 }

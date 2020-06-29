@@ -1,0 +1,16 @@
+digraph Elevator {
+  node [ fontname="arial"
+       , fontsize=11
+       , shape=box, style="rounded" ]
+  edge [ fontname="arial"
+       , fontsize=10
+       , arrowhead=open
+       , arrowtail=open ]
+  opened [label="Opened/Stopped"]
+  closed [label="Closed/Stopped"]
+  up [label="Closed/Going Up"]
+  down [label="Closed/Going Down"]
+  opened -> closed [dir=both, label="  Close / Open"]
+  closed -> up [dir=both, label="Go Up / Stop"]
+  closed -> down [dir=both, label="Go Down / Stop"]
+}

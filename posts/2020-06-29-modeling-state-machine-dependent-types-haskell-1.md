@@ -1,7 +1,7 @@
 ---
 title: "Modeling state machines with dependent types in Haskell: Part 1"
 author: Evgeny Poberezkin
-tags: haskell, coding
+tags: haskell, executable, coding
 github: epoberezkin/elevator-state-machine
 ---
 
@@ -27,7 +27,7 @@ We will model state transition of a simplified [elevator](https://en.wikipedia.o
 
 The state of the elevator has 3 dimensions: its door can be opened or closed, it can be stopped or going up or down, and it can be on different floors. Not all combinations are allowed though - the elevator must not move with the opened door and it must not open the door while moving. Allowed elevator commands and states are shown on the diagram.
 
-## TODO diagram
+[![Elevator states](/images/elevator.svg source)](https://github.com/epoberezkin/poberezkin.com/tree/master/dot/elevator.gv)
 
 In addition to that elevator cannot go below than the ground floor (type-level natural number `0` will be used for it).
 
@@ -78,19 +78,19 @@ $(singletonsOnly [d|
       then f - 1
       else 0
 
-  nextMove :: MoveState -> Nat -> MoveState
-  nextMove Stopped _ = Stopped
-  nextMove Up _ = Up
-  nextMove Down f =
+  nextMoveState :: MoveState -> Nat -> MoveState
+  nextMoveState Stopped _ = Stopped
+  nextMoveState Up _ = Up
+  nextMoveState Down f =
     if f <= 1
       then Stopped
       else Down
   |])
 ```
 
-The two functions above define that the floor should increase when the elevator is going up, and decrease when it is going down, but not below `0` (`nextFloor`) and that when the elevator reaches the ground floor it should stop (`nextMove`).
+The two functions above define that the floor should increase when the elevator is going up, and decrease when it is going down, but not below `0` (`nextFloor`) and that when the elevator reaches the ground floor it should stop (`nextMoveState`).
 
-Singletons library generates code that adds type families `NextFloor` and `NextMove` to the above declaration and equivalent functions on singletons (`sNextFloor` and `sNextMove`). They are defined similarly to the below (but you do not need to add this code - it is added automatically):
+Singletons library generates code that adds type families `NextFloor` and `NextMoveState` to the above declaration and equivalent functions on singletons (`sNextFloor` and `sNextMoveState`). They are defined similarly to the below (but you do not need to add this code - it is added automatically):
 
 ```haskell ignore
 type family NextFloor (m :: MoveState) (f :: Nat) :: Nat where
@@ -99,7 +99,7 @@ type family NextFloor (m :: MoveState) (f :: Nat) :: Nat where
   NextFloor Down f =
     If (f > 1) (f - 1) 0
 
-sNextMove ::
+sNextMoveState ::
   Sing (m :: MoveState) -> Sing (f :: Nat) -> Sing (NextFloor m f)
 ```
 
@@ -130,7 +130,7 @@ data Action (s :: Elevator) (s' :: Elevator) :: Type where
     Sing (m :: MoveState) ->
     Action
       '(Closed, Stopped, f)
-      '(Closed, NextMove m f, NextFloor m f)
+      '(Closed, NextMoveState m f, NextFloor m f)
   Stop ::
     Action
       '(Closed, m, f)
@@ -138,7 +138,7 @@ data Action (s :: Elevator) (s' :: Elevator) :: Type where
   Wait ::
     Action
       '(d, m, f)
-      '(d, NextMove m f, NextFloor m f)
+      '(d, NextMoveState m f, NextFloor m f)
   (:>>) :: Action s1 s2 -> Action s2 s3 -> Action s1 s3
 ```
 
@@ -196,7 +196,7 @@ The error message will be:
                        '( 'Closed, 'Stopped, 0) '( 'Closed, 'Stopped, 1)
         Actual type: Action
                        '( 'Closed, 'Stopped, 0)
-                       '( 'Closed, NextMove 'Up 0, NextFloor 'Up 0)
+                       '( 'Closed, NextMoveState 'Up 0, NextFloor 'Up 0)
     • In the first argument of ‘(:>>)’, namely ‘Move SUp’
       In the second argument of ‘(:>>)’, namely ‘Move SUp :>> Open’
       In the expression: Close :>> Move SUp :>> Open
@@ -275,11 +275,11 @@ actionFromString name (SomeSing st) = action name st
     action "up" s@(STuple3 SClosed SStopped f) =
       act (Move SUp) s (STuple3 SClosed SUp (sNextFloor SUp f))
     action "down" s@(STuple3 SClosed SStopped f) =
-      act (Move SDown) s (STuple3 SClosed (sNextMove SDown f) (sNextFloor SDown f))
+      act (Move SDown) s (STuple3 SClosed (sNextMoveState SDown f) (sNextFloor SDown f))
     action "stop" s@(STuple3 SClosed _ f) =
       act Stop s (STuple3 SClosed SStopped f)
     action "wait" s@(STuple3 d m f) =
-      act Wait s (STuple3 d (sNextMove m f) (sNextFloor m f))
+      act Wait s (STuple3 d (sNextMoveState m f) (sNextFloor m f))
     action _ _ = Nothing
 ```
 
@@ -297,29 +297,7 @@ show' :: SomeSing Elevator -> String
 show' (SomeSing s) = show (fromSing s)
 ```
 
-We can write an interactive REPL that modifies and prints the elevator state in the recursive loop:
-
-```haskell ignore
-main :: IO ()
-main = do
-  let elevator = toSing (Opened, Stopped, 0)
-  putStrLn "Enter: open, close, up, down, wait or stop"
-  runElevator elevator
-
-runElevator :: SomeSing Elevator -> IO ()
-runElevator st = do
-  putStrLn $ show' st
-  putStr "> "
-  hFlush stdout
-  act <- getLine
-  case actionFromString act st >>= finalState st of
-    Just st' -> runElevator st'
-    Nothing -> do
-      putStrLn $ "action " ++ act ++ " not allowed"
-      runElevator st
-```
-
-Or we can use [interact](https://hackage.haskell.org/package/interact) library<sup>[*](#interact)</sup> to create interactive stateful REPL from the function that updates state:
+To create an interactive REPL that modifies and prints the elevator state in a loop we will use [interact](https://hackage.haskell.org/package/interact) library<sup>[*](#interact)</sup>:
 
 ```haskell
 main :: IO ()

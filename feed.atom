@@ -8,8 +8,280 @@
         <name>Evgeny Poberezkin</name>
         <email>evgeny@poberezkin.com</email>
     </author>
-    <updated>2020-05-17T00:00:00Z</updated>
+    <updated>2020-06-29T00:00:00Z</updated>
     <entry>
+    <title>Modeling state machines with dependent types in Haskell: Part 1</title>
+    <link href="http://www.poberezkin.com/posts/2020-06-29-modeling-state-machine-dependent-types-haskell-1.html" />
+    <id>http://www.poberezkin.com/posts/2020-06-29-modeling-state-machine-dependent-types-haskell-1.html</id>
+    <published>2020-06-29T00:00:00Z</published>
+    <updated>2020-06-29T00:00:00Z</updated>
+    <summary type="html"><![CDATA[<article>
+  <section class="header">
+    <div class="info">
+      Posted on
+      
+        June 29, 2020
+      
+      
+        by Evgeny Poberezkin
+      
+    </div>
+    <div class="info">
+      
+        Tags: <a title="All pages tagged &#39;haskell&#39;." href="/tags/haskell.html">haskell</a>, <a title="All pages tagged &#39;executable&#39;." href="/tags/executable.html">executable</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html">coding</a>
+      
+    </div>
+  </section>
+  <section>
+    <h2 id="why">Why?</h2>
+<p>The reason to use types to model state transitions is to guarantee the correctness of <a href="https://en.wikipedia.org/wiki/Finite-state_machine">state machine</a> implementation by the way it is constructed, so that invalid implementations fail to compile.</p>
+<p>When we model a state machine we usually create some diagram or use some meta-language to show allowed state transitions. The code implementing the logic of the state machine is disconnected from this diagram, and it can be large enough to make it impossible or very difficult to validate that the implementation only supports allowed state transitions.</p>
+<p>We could use some DSL or library to raise the level of abstraction so that allowed state transitions are more visible in code. It mitigates the problem, but it creates additional complexity and dependency on the component (DSL interpreter or state-machine library) that also can have implementation mistakes.</p>
+<p>Modeling state transition in types offers a simple alternative to ensure that only allowed state transitions can be implemented - the code that attempts to perform the state transition that is not allowed will not compile.</p>
+<h2 id="how">How?</h2>
+<p>Using parametrized types it is possible to express state machine transitions where state can be part of the transition type. Further, using <a href="https://en.wikipedia.org/wiki/Dependent_type">dependent types</a> it is possible to make transitions depend on some run time states. Haskell does not support dependent types directly, but it is possible to have an equivalent of dependent types with singleton types and <a href="https://hackage.haskell.org/package/singletons">singletons</a> - see <a href="2020-05-17-using-dependent-types-haskell-singletons.html">this post</a>.</p>
+<h2 id="modeling-elevator-aka-lift-states">Modeling elevator (aka lift) states</h2>
+<p>We will model state transition of a simplified <a href="https://en.wikipedia.org/wiki/Elevator">elevator</a> state changes.</p>
+<p>The state of the elevator has 3 dimensions: its door can be opened or closed, it can be stopped or going up or down, and it can be on different floors. Not all combinations are allowed though - the elevator must not move with the opened door and it must not open the door while moving. Elevator states and allowed actions and states are shown on the diagram.</p>
+<p><a href="https://github.com/epoberezkin/poberezkin.com/tree/master/dot/elevator.gv"><img src="/images/elevator.svg" title="source" alt="Elevator states" /></a></p>
+<p>In addition to that elevator cannot go below than the ground floor (type-level natural number <code>0</code> will be used for it).</p>
+<p>To have the state of the elevator available both in types, and also at run-time we will use singletons library and we will need to enable some GHC extensions:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="ot">{-# LANGUAGE ConstraintKinds, DataKinds, DeriveAnyClass, EmptyCase, </span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="ot">  FlexibleContexts, FlexibleInstances, FunctionalDependencies, GADTs, </span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a><span class="ot">  InstanceSigs, LambdaCase, PartialTypeSignatures, PolyKinds, RankNTypes, </span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a><span class="ot">  ScopedTypeVariables, StandaloneDeriving, TemplateHaskell, </span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true"></a><span class="ot">  TypeApplications, TypeFamilies, TypeOperators, UndecidableInstances #-}</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true"></a><span class="ot">{-# OPTIONS_GHC -Werror=incomplete-patterns #-}</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true"></a><span class="ot">{-# OPTIONS_GHC -fno-warn-unticked-promoted-constructors #-}</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true"></a><span class="kw">import</span> <span class="dt">Data.Kind</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true"></a><span class="kw">import</span> <span class="dt">Data.Singletons</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true"></a><span class="kw">import</span> <span class="dt">Data.Singletons.Prelude</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true"></a><span class="kw">import</span> <span class="dt">Data.Singletons.TH</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true"></a><span class="kw">import</span> <span class="dt">Data.Singletons.TypeLits</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true"></a><span class="kw">import</span> <span class="dt">System.IO</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true"></a><span class="kw">import</span> <span class="dt">System.IO.Interact</span></span></code></pre></div>
+<p>We will define the state of the elevator door and movement in types, and also create singleton types for them:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="op">$</span>(singletons [d|</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>  data DoorState = Opened | Closed</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>    deriving (Show, Read, Eq)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a>  data MoveState = Stopped | Up | Down</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a>    deriving (Show, Read, Eq)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true"></a>  |])</span></code></pre></div>
+<p><a href="2020-05-17-using-dependent-types-haskell-singletons.html">This post</a> shows what singletons library does when you wrap type definitions like that. If you did not use singletons before, you can read an <a href="https://blog.jle.im/entry/introduction-to-singletons-1.html">introduction to singletons library</a> by Justin Le.</p>
+<p>We also need to define dependent state changes both in types and at run-time. For that we will need type families and functions on singletons that can also be created with singletons library:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a><span class="op">$</span>(singletonsOnly [d|</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>  nextFloor :: MoveState -&gt; Nat -&gt; Nat</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a>  nextFloor Stopped f = f</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true"></a>  nextFloor Up f = f + 1</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true"></a>  nextFloor Down f =</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true"></a>    if f &gt; 0</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true"></a>      then f - 1</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true"></a>      else 0</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true"></a>  nextMoveState :: MoveState -&gt; Nat -&gt; MoveState</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true"></a>  nextMoveState Stopped _ = Stopped</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true"></a>  nextMoveState Up _ = Up</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true"></a>  nextMoveState Down f =</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true"></a>    if f &lt;= 1</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true"></a>      then Stopped</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true"></a>      else Down</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true"></a>  |])</span></code></pre></div>
+<p>The two functions above define that the floor should increase when the elevator is going up, and decrease when it is going down, but not below <code>0</code> (<code>nextFloor</code>) and that when the elevator reaches the ground floor it should stop (<code>nextMoveState</code>).</p>
+<p>Singletons library generates code that adds type families <code>NextFloor</code> and <code>NextMoveState</code> to the above declaration and equivalent functions on singletons (<code>sNextFloor</code> and <code>sNextMoveState</code>). They are defined similarly to the below (but you do not need to add this code - it is added automatically):</p>
+<pre class="haskell-ignore"><code>type family NextFloor (m :: MoveState) (f :: Nat) :: Nat where
+  NextFloor Stopped f = f
+  NextFloor Up f = f + 1
+  NextFloor Down f =
+    If (f &gt; 1) (f - 1) 0
+
+sNextMoveState ::
+  Sing (m :: MoveState) -&gt; Sing (f :: Nat) -&gt; Sing (NextFloor m f)</code></pre>
+<p>etc. The actual generated code is a bit more complex.</p>
+<p>Now we can define the type for allowed elevator actions:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="kw">infixr</span> <span class="dv">2</span> <span class="op">:&gt;&gt;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a><span class="kw">type</span> <span class="dt">Elevator</span> <span class="ot">=</span> (<span class="dt">DoorState</span>, <span class="dt">MoveState</span>, <span class="dt">Nat</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a><span class="kw">type</span> <span class="kw">family</span> <span class="dt">Moving</span> (<span class="ot">m ::</span> <span class="dt">MoveState</span>)<span class="ot"> ::</span> <span class="dt">Constraint</span> <span class="kw">where</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true"></a>  <span class="dt">Moving</span> <span class="dt">Up</span> <span class="ot">=</span> ()</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true"></a>  <span class="dt">Moving</span> <span class="dt">Down</span> <span class="ot">=</span> ()</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true"></a><span class="kw">data</span> <span class="dt">Action</span> (<span class="ot">s ::</span> <span class="dt">Elevator</span>) (<span class="ot">s&#39; ::</span> <span class="dt">Elevator</span>)<span class="ot"> ::</span> <span class="dt">Type</span> <span class="kw">where</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true"></a>  <span class="dt">Open</span> <span class="ot">::</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true"></a>    <span class="dt">Action</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true"></a>      &#39;(<span class="dt">Closed</span>, <span class="dt">Stopped</span>, f)</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true"></a>      &#39;(<span class="dt">Opened</span>, <span class="dt">Stopped</span>, f)</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true"></a>  <span class="dt">Close</span> <span class="ot">::</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true"></a>    <span class="dt">Action</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true"></a>      &#39;(<span class="dt">Opened</span>, <span class="dt">Stopped</span>, f)</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true"></a>      &#39;(<span class="dt">Closed</span>, <span class="dt">Stopped</span>, f)</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true"></a>  <span class="dt">Move</span> <span class="ot">::</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true"></a>    <span class="dt">Moving</span> m <span class="ot">=&gt;</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true"></a>    <span class="dt">Sing</span> (<span class="ot">m ::</span> <span class="dt">MoveState</span>) <span class="ot">-&gt;</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true"></a>    <span class="dt">Action</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true"></a>      &#39;(<span class="dt">Closed</span>, <span class="dt">Stopped</span>, f)</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true"></a>      &#39;(<span class="dt">Closed</span>, <span class="dt">NextMoveState</span> m f, <span class="dt">NextFloor</span> m f)</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true"></a>  <span class="dt">Stop</span> <span class="ot">::</span></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true"></a>    <span class="dt">Action</span></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true"></a>      &#39;(<span class="dt">Closed</span>, m, f)</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true"></a>      &#39;(<span class="dt">Closed</span>, <span class="dt">Stopped</span>, f)</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true"></a>  <span class="dt">Wait</span> <span class="ot">::</span></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true"></a>    <span class="dt">Action</span></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true"></a>      &#39;(d, m, f)</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true"></a>      &#39;(d, <span class="dt">NextMoveState</span> m f, <span class="dt">NextFloor</span> m f)</span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true"></a><span class="ot">  (:&gt;&gt;) ::</span> <span class="dt">Action</span> s1 s2 <span class="ot">-&gt;</span> <span class="dt">Action</span> s2 s3 <span class="ot">-&gt;</span> <span class="dt">Action</span> s1 s3</span></code></pre></div>
+<p><code>Action</code> type is defined as generalized algebraic data type and it includes elevator state before and after the action as type-level tuples. Another alternative would be to parametrize <code>Action</code> on 6 separate parameters, but it would be more difficult to manage.</p>
+<p><code>Move</code> constructor takes parameter that should be <code>SUp</code> or <code>SDown</code> (singletons for <code>Up</code> and <code>Down</code>) and type family <code>Moving</code> ensures that <code>SStoped</code> cannot be used here.</p>
+<p>As actions can only be created using one of the available constructors, only allowed actions can be created. For example, the door can only be opened if it is closed and if the elevator is stopped. And the elevator can only start moving only if the door is closed.</p>
+<p><code>Wait</code> action lets the elevator to go up and down, and it will also stop the elevator when it reaches the ground floor.</p>
+<p><code>:&gt;&gt;</code> constructor allows to sequence actions, but only in such way that the final state of the first action is the same as the initial state of the second action. It also defines that the resulting compound action starts from the initial state of the first action and ends with the final state of the second action, in this way ensuring the continuity of state transitions.</p>
+<p>With this type definition we expressed the original requirements in types without any executable code. The code using these types will not need tests to ensure the validity of state transitions, because we can only create allowed actions and we can only chain actions in a way that state changes are sequential, otherwise the code will not compile.</p>
+<p>We can create a small “program” for the elevator to perform a sequence of actions:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a><span class="kw">type</span> <span class="dt">ElevatorProgram</span> f f&#39; <span class="ot">=</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a>  <span class="dt">Action</span> &#39;(<span class="dt">Opened</span>, <span class="dt">Stopped</span>, f) &#39;(<span class="dt">Opened</span>, <span class="dt">Stopped</span>, f&#39;)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true"></a><span class="ot">program ::</span> <span class="dt">ElevatorProgram</span> <span class="dv">0</span> <span class="dv">0</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true"></a>program <span class="ot">=</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true"></a>  <span class="dt">Close</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true"></a>  <span class="op">:&gt;&gt;</span> <span class="dt">Move</span> <span class="dt">SUp</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true"></a>  <span class="op">:&gt;&gt;</span> <span class="dt">Wait</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true"></a>  <span class="op">:&gt;&gt;</span> <span class="dt">Wait</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true"></a>  <span class="op">:&gt;&gt;</span> <span class="dt">Stop</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true"></a>  <span class="op">:&gt;&gt;</span> <span class="dt">Open</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true"></a>  <span class="op">:&gt;&gt;</span> <span class="dt">Close</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true"></a>  <span class="op">:&gt;&gt;</span> <span class="dt">Move</span> <span class="dt">SDown</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true"></a>  <span class="op">:&gt;&gt;</span> <span class="dt">Wait</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true"></a>  <span class="op">:&gt;&gt;</span> <span class="dt">Wait</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true"></a>  <span class="op">:&gt;&gt;</span> <span class="dt">Stop</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true"></a>  <span class="op">:&gt;&gt;</span> <span class="dt">Open</span></span></code></pre></div>
+<p>This sequence of actions has type <code>Action '(Opened, Stopped, 0) '(Opened, Stopped, 0)</code> - the elevator starts and ends on the ground floor, with the opened door and stopped. If you try to write a program that performs the sequence of actions that is not allowed, it will not compile:</p>
+<pre class="haskell-ignore"><code>badElevator :: ElevatorProgram 0 1
+badElevator =
+  Close
+  :&gt;&gt; Move SUp
+  -- Stop
+  :&gt;&gt; Open</code></pre>
+<p>The error message will be:</p>
+<pre><code>    • Couldn&#39;t match type ‘&#39;Up’ with ‘&#39;Stopped’
+      Expected type: Action
+                       &#39;( &#39;Closed, &#39;Stopped, 0) &#39;( &#39;Closed, &#39;Stopped, 1)
+        Actual type: Action
+                       &#39;( &#39;Closed, &#39;Stopped, 0)
+                       &#39;( &#39;Closed, NextMoveState &#39;Up 0, NextFloor &#39;Up 0)
+    • In the first argument of ‘(:&gt;&gt;)’, namely ‘Move SUp’
+      In the second argument of ‘(:&gt;&gt;)’, namely ‘Move SUp :&gt;&gt; Open’
+      In the expression: Close :&gt;&gt; Move SUp :&gt;&gt; Open
+    |
+... |     :&gt;&gt; Move SUp</code></pre>
+<p>It almost literally says that “to open door, the elevator must be stopped, it cannot be moving up”! So the correctness of state transitions is ensured by the way the type is defined.</p>
+<p>To “fix” the program you just need to add <code>Stop</code> before <code>Open</code>.</p>
+<h2 id="whats-the-point">What’s the point?</h2>
+<p>We have the program, but what can we do with it? It is not code, so we cannot just run it.</p>
+<p>We can interpret this program in different contexts - for that we need to write interpreter. For example, one of the interpreters can be just printing this program to console:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true"></a><span class="ot">printElevator ::</span> <span class="dt">Action</span> s s&#39; <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true"></a>printElevator <span class="dt">Open</span> <span class="ot">=</span> <span class="fu">putStrLn</span> <span class="st">&quot;open&quot;</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true"></a>printElevator <span class="dt">Close</span> <span class="ot">=</span> <span class="fu">putStrLn</span> <span class="st">&quot;close&quot;</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true"></a>printElevator (<span class="dt">Move</span> m) <span class="ot">=</span> <span class="kw">case</span> m <span class="kw">of</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true"></a>  <span class="dt">SUp</span> <span class="ot">-&gt;</span> <span class="fu">putStrLn</span> <span class="st">&quot;up&quot;</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true"></a>  _ <span class="ot">-&gt;</span> <span class="fu">putStrLn</span> <span class="st">&quot;down&quot;</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true"></a>printElevator <span class="dt">Stop</span> <span class="ot">=</span> <span class="fu">putStrLn</span> <span class="st">&quot;stop&quot;</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true"></a>printElevator <span class="dt">Wait</span> <span class="ot">=</span> <span class="fu">putStrLn</span> <span class="st">&quot;wait&quot;</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true"></a>printElevator (a <span class="op">:&gt;&gt;</span> prog) <span class="ot">=</span> printElevator a <span class="op">&gt;&gt;</span> printElevator prog</span></code></pre></div>
+<p>The same approach can be used in real code - there could be an interpreter to control the real elevator. But it is now safe, as by defining allowed operations on the type level we ensured that we cannot perform unsafe actions - opening the door while the elevator is moving, or starting to move without closing the door.</p>
+<h2 id="how-to-make-it-interactive">How to make it interactive?</h2>
+<p>In some situations this can be useful and real programs can be written in this way - we achieved the possibility to restrict allowed operations in type system.</p>
+<p>But how can we make this elevator interactive, so it can respond to the passengers’ commands? These commands are just data, so we need a way to move between data and types.</p>
+<p>We will use singletons for the elevator state - they have type <code>Sing (s :: Elevator)</code>. We defined <code>Elevator</code> as a type synonym for the tuple of type <code>(DoorState, MoveState, Nat)</code> and we do not need anything special to use singletons for this type - as we have created singletons for our types <code>DoorState</code> and <code>MoveState</code>, singletons library defines singletons for all standard derived types, including tuples.</p>
+<p>Because we want to create elevator actions at run time, from passenger commands, we will also need the existential wrapper for the typed action:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true"></a><span class="kw">data</span> <span class="dt">SomeAction</span> <span class="kw">where</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true"></a>  <span class="dt">SomeAction</span><span class="ot"> ::</span> <span class="dt">Action</span> s s&#39; <span class="ot">-&gt;</span> <span class="dt">Sing</span> s <span class="ot">-&gt;</span> <span class="dt">Sing</span> s&#39; <span class="ot">-&gt;</span> <span class="dt">SomeAction</span></span></code></pre></div>
+<p>The action constructor includes the action itself and its initial and final states, so we can pattern match on them.</p>
+<p>Now if we have the initial state and the action, we can both check that the action is compatible with it and get its final state:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true"></a><span class="ot">finalState ::</span> <span class="dt">SomeSing</span> <span class="dt">Elevator</span> <span class="ot">-&gt;</span> <span class="dt">SomeAction</span> <span class="ot">-&gt;</span> <span class="dt">Maybe</span> (<span class="dt">SomeSing</span> <span class="dt">Elevator</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true"></a>finalState (<span class="dt">SomeSing</span> s1) (<span class="dt">SomeAction</span> _ s1&#39; s2) <span class="ot">=</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true"></a>  <span class="kw">case</span> s1 <span class="op">%~</span> s1&#39; <span class="kw">of</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true"></a>    <span class="dt">Proved</span> <span class="dt">Refl</span> <span class="ot">-&gt;</span> <span class="dt">Just</span> (<span class="dt">SomeSing</span> s2)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true"></a>    _ <span class="ot">-&gt;</span> <span class="dt">Nothing</span></span></code></pre></div>
+<p><code>%~</code> compares types of singletons <code>s1</code> and <code>s1'</code> and returns <code>Proved Refl</code> if they are the same. In this case we could have also converted both singletons to their base types and compare using <code>fromSing s1 == fromSing s1'</code> but it will not work in the contexts where type equality should be established, and not only value equality.</p>
+<p>The following function creates the elevator action from the passenger’s commands. We also need to pass the initial state, both to make sure that the action is allowed and also to create actions with specific types, as all constructors are polymorphic:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true"></a><span class="ot">actionFromString ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">SomeSing</span> <span class="dt">Elevator</span> <span class="ot">-&gt;</span> <span class="dt">Maybe</span> <span class="dt">SomeAction</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true"></a>actionFromString name (<span class="dt">SomeSing</span> st) <span class="ot">=</span> action name st</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true"></a>  <span class="kw">where</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true"></a><span class="ot">    act ::</span> <span class="dt">Action</span> s s&#39; <span class="ot">-&gt;</span> <span class="dt">Sing</span> s <span class="ot">-&gt;</span> <span class="dt">Sing</span> s&#39; <span class="ot">-&gt;</span> <span class="dt">Maybe</span> <span class="dt">SomeAction</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true"></a>    act a s1 s2 <span class="ot">=</span> <span class="dt">Just</span> <span class="op">$</span> <span class="dt">SomeAction</span> a s1 s2</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true"></a><span class="ot">    action ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">Sing</span> (<span class="ot">s ::</span> <span class="dt">Elevator</span>) <span class="ot">-&gt;</span> <span class="dt">Maybe</span> <span class="dt">SomeAction</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true"></a>    action <span class="st">&quot;open&quot;</span> s<span class="op">@</span>(<span class="dt">STuple3</span> <span class="dt">SClosed</span> <span class="dt">SStopped</span> f) <span class="ot">=</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true"></a>      act <span class="dt">Open</span> s (<span class="dt">STuple3</span> <span class="dt">SOpened</span> <span class="dt">SStopped</span> f)</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true"></a>    action <span class="st">&quot;close&quot;</span> s<span class="op">@</span>(<span class="dt">STuple3</span> <span class="dt">SOpened</span> <span class="dt">SStopped</span> f) <span class="ot">=</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true"></a>      act <span class="dt">Close</span> s (<span class="dt">STuple3</span> <span class="dt">SClosed</span> <span class="dt">SStopped</span> f)</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true"></a>    action <span class="st">&quot;up&quot;</span> s<span class="op">@</span>(<span class="dt">STuple3</span> <span class="dt">SClosed</span> <span class="dt">SStopped</span> f) <span class="ot">=</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true"></a>      act (<span class="dt">Move</span> <span class="dt">SUp</span>) s (<span class="dt">STuple3</span> <span class="dt">SClosed</span> <span class="dt">SUp</span> (sNextFloor <span class="dt">SUp</span> f))</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true"></a>    action <span class="st">&quot;down&quot;</span> s<span class="op">@</span>(<span class="dt">STuple3</span> <span class="dt">SClosed</span> <span class="dt">SStopped</span> f) <span class="ot">=</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true"></a>      act (<span class="dt">Move</span> <span class="dt">SDown</span>) s</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true"></a>        (<span class="dt">STuple3</span> <span class="dt">SClosed</span> (sNextMoveState <span class="dt">SDown</span> f) (sNextFloor <span class="dt">SDown</span> f))</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true"></a>    action <span class="st">&quot;stop&quot;</span> s<span class="op">@</span>(<span class="dt">STuple3</span> <span class="dt">SClosed</span> _ f) <span class="ot">=</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true"></a>      act <span class="dt">Stop</span> s (<span class="dt">STuple3</span> <span class="dt">SClosed</span> <span class="dt">SStopped</span> f)</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true"></a>    action <span class="st">&quot;wait&quot;</span> s<span class="op">@</span>(<span class="dt">STuple3</span> d m f) <span class="ot">=</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true"></a>      act <span class="dt">Wait</span> s (<span class="dt">STuple3</span> d (sNextMoveState m f) (sNextFloor m f))</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true"></a>    action _ _ <span class="ot">=</span> <span class="dt">Nothing</span></span></code></pre></div>
+<p>We need to specify both initial and final states of the action here, so at first it may seem that we can violate the type restrictions in the Action type and create disallowed action. But if any mistake is made in the function above that could lead to the creation of disallowed command, this function will not compile - try changing any of the state values above.</p>
+<h2 id="lets-run-it">Let’s run it!</h2>
+<p>We will let “the passengers” control the elevator, but if they try to perform the action that is not allowed it will be rejected.</p>
+<p>To print the current elevator state we need a function to convert it to String, so it shows as, e.g., <code>(Opened,Stopped,0)</code>, and not as <code>SomeSing (STuple3 SOpened SStopped (SNat @0))</code>:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true"></a><span class="ot">show&#39; ::</span> <span class="dt">SomeSing</span> <span class="dt">Elevator</span> <span class="ot">-&gt;</span> <span class="dt">String</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true"></a>show&#39; (<span class="dt">SomeSing</span> s) <span class="ot">=</span> <span class="fu">show</span> (fromSing s)</span></code></pre></div>
+<p>To create an interactive REPL that modifies and prints the elevator state in a loop we will use <a href="https://hackage.haskell.org/package/interact">interact</a> library<sup><a href="#interact">*</a></sup>:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true"></a>main <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true"></a>  <span class="kw">let</span> elevator <span class="ot">=</span> toSing (<span class="dt">Opened</span>, <span class="dt">Stopped</span>, <span class="dv">0</span>)</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true"></a>  <span class="fu">putStrLn</span> <span class="st">&quot;Enter: open, close, up, down, wait or stop&quot;</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true"></a>  <span class="fu">putStrLn</span> <span class="op">$</span> show&#39; elevator</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true"></a>  replState runElevator elevator</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true"></a></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true"></a><span class="ot">runElevator ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">SomeSing</span> <span class="dt">Elevator</span> <span class="ot">-&gt;</span> (<span class="dt">String</span>, <span class="dt">SomeSing</span> <span class="dt">Elevator</span>)</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true"></a>runElevator act st <span class="ot">=</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true"></a>  <span class="kw">case</span> actionFromString act st <span class="op">&gt;&gt;=</span> finalState st <span class="kw">of</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true"></a>    <span class="dt">Just</span> st&#39; <span class="ot">-&gt;</span> (show&#39; st&#39;, st&#39;)</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true"></a>    <span class="dt">Nothing</span> <span class="ot">-&gt;</span> (<span class="st">&quot;action &quot;</span> <span class="op">++</span> act <span class="op">++</span> <span class="st">&quot; not allowed&quot;</span>, st)</span></code></pre></div>
+<p>The “elevator” now support actions “open”, “close”, “up”, “down”, “wait” and “stop” and prints its current state after each action.</p>
+<p>You can run the code right from this post by cloning the <a href="https://github.com/epoberezkin/poberezkin.com">site repo</a> and executing <code>stack run elevator</code>. The source code without the text is available <a href="https://github.com/epoberezkin/elevator-state-machine">here</a>.</p>
+<h2 id="problems">Problems</h2>
+<p>You can try these problems with this elevator example (possible solutions are in the <a href="https://github.com/epoberezkin/elevator-state-machine/src/Problems.hs">linked repo</a>):</p>
+<ol type="1">
+<li>Create an operation that chains “run-time” actions <code>SomeAction</code>:</li>
+</ol>
+<pre class="haskell-ignore"><code>(&gt;&gt;:) :: SomeAction -&gt; SomeAction -&gt; Maybe SomeAction</code></pre>
+<ol start="2" type="1">
+<li>Create a function that given initial state and a list of commands returns elevator “program” to perform this sequence of actions, if it is valid:</li>
+</ol>
+<pre class="haskell-ignore"><code>elevatorProgram :: SomeSing Elevator -&gt; [String] -&gt; Maybe SomeAction</code></pre>
+<ol start="3" type="1">
+<li><p>If you “close” the door on the ground floor and send the elevator “down”, it will remain <code>Stopped</code>, but the command will not be rejected. How to modify the type definition for <code>Action</code> to disallow it? If you do it, <code>actionFromString</code> will no longer compile - it has to be modified as well.</p></li>
+<li><p>Create a function that given the current elevator state and the requested floor, returns an action sequence in <code>SomeAction</code> to send it to the specific floor, in case it is stopped and the door is opened, and <code>Nothing</code> otherwise:</p></li>
+</ol>
+<pre class="haskell-ignore"><code>elevatorToFloor :: SomeSing Elevator -&gt; Natural -&gt; Maybe SomeAction</code></pre>
+<h2 id="whats-next">What’s next?</h2>
+<p>You may have already asked some of the following questions:</p>
+<ol type="1">
+<li>How to define actions that return results?</li>
+<li>How to define more complex state machines when the same action can change the state differently depending on the results of the previous actions?</li>
+<li>Also, how to write interactive programs with these actions in a more conventional way using <code>do</code> notation?</li>
+</ol>
+<p>All these questions will be answered in Part 2.</p>
+<p><a id="interact"><sup>*</sup> disclaimer - I created it</a></p>
+  </section>
+  <section class="links">
+    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Modeling%20state%20machines%20with%20dependent%20types%20in%20Haskell%3A%20Part%201&hashtags=haskell%2Cexecutable%2Ccoding&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2020-06-29-modeling-state-machine-dependent-types-haskell-1.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2020-06-29-modeling-state-machine-dependent-types-haskell-1.html" target="_blank"><img src="/images/tweet.png"></a>
+    
+      <a href="https://github.com/epoberezkin/elevator-state-machine" target="_blank"><img src="/images/repo.png"></a>
+    
+  </section>
+</article>
+]]></summary>
+</entry>
+<entry>
     <title>Using dependent types in Haskell with singletons</title>
     <link href="http://www.poberezkin.com/posts/2020-05-17-using-dependent-types-haskell-singletons.html" />
     <id>http://www.poberezkin.com/posts/2020-05-17-using-dependent-types-haskell-singletons.html</id>
@@ -40,23 +312,23 @@
 <h2 id="the-problem">The problem</h2>
 <p>Haskell types can only have other types as their parameters, but not values. <a href="https://downloads.haskell.org/ghc/8.10.1/docs/html/users_guide/glasgow_exts.html#extension-DataKinds">DataKinds extension</a> automatically promotes all types to kinds and all constructors to types, in this way allowing other types depending on something that looks like values of another type. But there is no way to convert actual values to types, as promoted constructors are not connected to corresponding values and fully erased during compilation.</p>
 <p>This is best illustrated with a simple example from Justin’s post. Suppose we have type <code>Door</code> parametrised with the types of the kind <code>DoorState</code>:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">data</span> <span class="dt">DoorState</span> <span class="ot">=</span> <span class="dt">Opened</span> <span class="op">|</span> <span class="dt">Closed</span></span>
-<span id="cb1-2"><a href="#cb1-2"></a></span>
-<span id="cb1-3"><a href="#cb1-3"></a><span class="kw">data</span> <span class="dt">Door</span> (<span class="ot">a ::</span> <span class="dt">DoorState</span>)<span class="ot"> ::</span> <span class="dt">Type</span> <span class="kw">where</span></span>
-<span id="cb1-4"><a href="#cb1-4"></a>  <span class="dt">MkDoor</span><span class="ot"> ::</span> <span class="dt">Door</span> a</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="kw">data</span> <span class="dt">DoorState</span> <span class="ot">=</span> <span class="dt">Opened</span> <span class="op">|</span> <span class="dt">Closed</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a><span class="kw">data</span> <span class="dt">Door</span> (<span class="ot">a ::</span> <span class="dt">DoorState</span>)<span class="ot"> ::</span> <span class="dt">Type</span> <span class="kw">where</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a>  <span class="dt">MkDoor</span><span class="ot"> ::</span> <span class="dt">Door</span> a</span></code></pre></div>
 <p>These two declarations create kinds, types and values that are shown on diagram 2:</p>
 <p><a href="https://github.com/epoberezkin/poberezkin.com/tree/master/dot/singletons2.gv"><img src="/images/singletons2.svg" title="source" alt="Types and kinds with DataKinds" /></a></p>
 <p>The <code>DoorState</code> type is automatically promoted to <code>DoorState</code> kind, and <code>Opened</code>/<code>Closed</code> values belonging to type <code>DoorState</code> are automatically promoted to <code>'Opened</code>/<code>'Closed</code> types belonging to kind <code>DoorState</code> - these types have no values in them (other than <code>undefined</code>).</p>
 <p>As you can see, the values <code>Opened</code>/<code>Closed</code> are not connected to the associated promoted constructors <code>'Opened</code>/<code>'Closed</code> - at the moment Haskell provides no way to connect them directly.</p>
 <h2 id="the-solution">The solution</h2>
 <p>Singleton types allow creating this missing link between ordinary values and their associated promoted constructors. The idea here is that for each value we need to create a separate type that has only one value in it. In this way, if we connect values in these singleton types to ordinary values (via polymorphic functions), and the singleton types themselves to the promoted constructors (via type inference), we will have managed to link types to values, even though indirectly - so we can use the equivalent of the dependent types in Haskell.</p>
-<p>It does sound like a lot of boilerplate to write, but luckily singletons library automates the whole process by using Templage Haskell to generate it. To illustrate using the same example as above, but with the singleton types added:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1"></a><span class="op">$</span>(singletons [<span class="op">|</span></span>
-<span id="cb2-2"><a href="#cb2-2"></a>  <span class="kw">data</span> <span class="dt">DoorState</span> <span class="ot">=</span> <span class="dt">Opened</span> <span class="op">|</span> <span class="dt">Closed</span></span>
-<span id="cb2-3"><a href="#cb2-3"></a>  <span class="op">|</span>])</span>
-<span id="cb2-4"><a href="#cb2-4"></a></span>
-<span id="cb2-5"><a href="#cb2-5"></a><span class="kw">data</span> <span class="dt">Door</span> (<span class="ot">a ::</span> <span class="dt">DoorState</span>)<span class="ot"> ::</span> <span class="dt">Type</span> <span class="kw">where</span></span>
-<span id="cb2-6"><a href="#cb2-6"></a>  <span class="dt">MkDoor</span><span class="ot"> ::</span> <span class="dt">Sing</span> a <span class="ot">-&gt;</span> <span class="dt">Door</span> a</span></code></pre></div>
+<p>It does sound like a lot of boilerplate to write, but luckily singletons library automates the whole process by using Template Haskell to generate it. To illustrate using the same example as above, but with the singleton types added:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="op">$</span>(singletons [<span class="op">|</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>  <span class="kw">data</span> <span class="dt">DoorState</span> <span class="ot">=</span> <span class="dt">Opened</span> <span class="op">|</span> <span class="dt">Closed</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>  <span class="op">|</span>])</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a><span class="kw">data</span> <span class="dt">Door</span> (<span class="ot">a ::</span> <span class="dt">DoorState</span>)<span class="ot"> ::</span> <span class="dt">Type</span> <span class="kw">where</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a>  <span class="dt">MkDoor</span><span class="ot"> ::</span> <span class="dt">Sing</span> a <span class="ot">-&gt;</span> <span class="dt">Door</span> a</span></code></pre></div>
 <p>The <code>singletons</code> splice adds two singleton types with the necessary framework, as shown on diagram 1 on top of the post.</p>
 <p>Singleton types and values serve as an intermediary to link <code>Opened</code>/<code>Closed</code> values with <code>'Opened</code>/<code>'Closed</code> types that are used as parameters for the type <code>Door</code>, in this way making <code>Door</code> an equivalent of a dependent type.</p>
 <h2 id="the-future">The future</h2>
@@ -102,73 +374,73 @@
 <h2 id="approach-1---basic-types">Approach #1 - basic types</h2>
 <p>While users and organisations are quite different, they may have many similarities (for example, have a look at <a href="https://developer.github.com/v3/users/#get-a-single-user">GitHub API</a> that returns both users and orgs).</p>
 <p>Our users and orgs share some functionality and we would want to store them in one list. So we will make a single type to hold these accounts:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1"></a><span class="co">-- shared information for both users and organisations</span></span>
-<span id="cb1-2"><a href="#cb1-2"></a><span class="kw">data</span> <span class="dt">AInfo</span> <span class="ot">=</span> <span class="dt">AInfo</span></span>
-<span id="cb1-3"><a href="#cb1-3"></a>              {<span class="ot"> name ::</span> <span class="dt">Text</span></span>
-<span id="cb1-4"><a href="#cb1-4"></a>              ,<span class="ot"> displayName ::</span> <span class="dt">Text</span> }</span>
-<span id="cb1-5"><a href="#cb1-5"></a></span>
-<span id="cb1-6"><a href="#cb1-6"></a><span class="kw">data</span> <span class="dt">Account</span> <span class="ot">=</span> <span class="dt">User</span> <span class="dt">AInfo</span> <span class="op">|</span> <span class="dt">Org</span> <span class="dt">AInfo</span> <span class="dt">Members</span></span>
-<span id="cb1-7"><a href="#cb1-7"></a><span class="kw">type</span> <span class="dt">Members</span> <span class="ot">=</span> [<span class="dt">Account</span>]</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="co">-- shared information for both users and organisations</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="kw">data</span> <span class="dt">AInfo</span> <span class="ot">=</span> <span class="dt">AInfo</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a>              {<span class="ot"> name ::</span> <span class="dt">Text</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a>              ,<span class="ot"> displayName ::</span> <span class="dt">Text</span> }</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true"></a><span class="kw">data</span> <span class="dt">Account</span> <span class="ot">=</span> <span class="dt">User</span> <span class="dt">AInfo</span> <span class="op">|</span> <span class="dt">Org</span> <span class="dt">AInfo</span> <span class="dt">Members</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true"></a><span class="kw">type</span> <span class="dt">Members</span> <span class="ot">=</span> [<span class="dt">Account</span>]</span></code></pre></div>
 <p>We’ve already met the first problem with this approach - members of the organisation should be users, but <code>Members</code> type allows both users and organisations - we will have to manage it in code.</p>
 <p>Here are some functions for these accounts:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1"></a><span class="co">-- all shared functions should work with both users and orgs</span></span>
-<span id="cb2-2"><a href="#cb2-2"></a><span class="ot">accountName ::</span> <span class="dt">Account</span> <span class="ot">-&gt;</span> <span class="dt">Text</span></span>
-<span id="cb2-3"><a href="#cb2-3"></a>accountName (<span class="dt">User</span> info) <span class="ot">=</span> name info</span>
-<span id="cb2-4"><a href="#cb2-4"></a>accountName (<span class="dt">Org</span> info _) <span class="ot">=</span> name info</span>
-<span id="cb2-5"><a href="#cb2-5"></a></span>
-<span id="cb2-6"><a href="#cb2-6"></a><span class="co">-- but some functions may only work with orgs,</span></span>
-<span id="cb2-7"><a href="#cb2-7"></a><span class="co">-- so we will have to use Maybe type to return results</span></span>
-<span id="cb2-8"><a href="#cb2-8"></a><span class="ot">orgMembers ::</span> <span class="dt">Account</span> <span class="ot">-&gt;</span> <span class="dt">Maybe</span> <span class="dt">Members</span></span>
-<span id="cb2-9"><a href="#cb2-9"></a>orgMembers (<span class="dt">User</span> _) <span class="ot">=</span> <span class="dt">Nothing</span></span>
-<span id="cb2-10"><a href="#cb2-10"></a>orgMembers (<span class="dt">Org</span> _ ms) <span class="ot">=</span> <span class="dt">Just</span> ms</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="co">-- all shared functions should work with both users and orgs</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a><span class="ot">accountName ::</span> <span class="dt">Account</span> <span class="ot">-&gt;</span> <span class="dt">Text</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>accountName (<span class="dt">User</span> info) <span class="ot">=</span> name info</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a>accountName (<span class="dt">Org</span> info _) <span class="ot">=</span> name info</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a><span class="co">-- but some functions may only work with orgs,</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true"></a><span class="co">-- so we will have to use Maybe type to return results</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true"></a><span class="ot">orgMembers ::</span> <span class="dt">Account</span> <span class="ot">-&gt;</span> <span class="dt">Maybe</span> <span class="dt">Members</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true"></a>orgMembers (<span class="dt">User</span> _) <span class="ot">=</span> <span class="dt">Nothing</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true"></a>orgMembers (<span class="dt">Org</span> _ ms) <span class="ot">=</span> <span class="dt">Just</span> ms</span></code></pre></div>
 <p>It’s easy to put accounts in one list and process this list, as they have the same type, but we will have to check the result when we use a function intended only for organisations:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
-<span id="cb3-2"><a href="#cb3-2"></a>main <span class="ot">=</span> <span class="kw">do</span></span>
-<span id="cb3-3"><a href="#cb3-3"></a>  <span class="kw">let</span> user <span class="ot">=</span> <span class="dt">User</span> (<span class="dt">AInfo</span> <span class="st">&quot;john&quot;</span> <span class="st">&quot;John Doe&quot;</span>)</span>
-<span id="cb3-4"><a href="#cb3-4"></a>      org <span class="ot">=</span> <span class="dt">Org</span> (<span class="dt">AInfo</span> <span class="st">&quot;team&quot;</span> <span class="st">&quot;John&#39;s team&quot;</span>) [user]</span>
-<span id="cb3-5"><a href="#cb3-5"></a>      accounts <span class="ot">=</span> [user, org]</span>
-<span id="cb3-6"><a href="#cb3-6"></a>  <span class="fu">print</span> <span class="op">$</span> <span class="fu">map</span> accountName accounts</span>
-<span id="cb3-7"><a href="#cb3-7"></a>  <span class="kw">case</span> orgMembers org <span class="kw">of</span></span>
-<span id="cb3-8"><a href="#cb3-8"></a>    <span class="dt">Just</span> ms <span class="ot">-&gt;</span> <span class="fu">print</span> <span class="op">$</span> <span class="fu">map</span> accountName ms</span>
-<span id="cb3-9"><a href="#cb3-9"></a>    <span class="dt">Nothing</span> <span class="ot">-&gt;</span> <span class="fu">return</span> ()</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>main <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a>  <span class="kw">let</span> user <span class="ot">=</span> <span class="dt">User</span> (<span class="dt">AInfo</span> <span class="st">&quot;john&quot;</span> <span class="st">&quot;John Doe&quot;</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true"></a>      org <span class="ot">=</span> <span class="dt">Org</span> (<span class="dt">AInfo</span> <span class="st">&quot;team&quot;</span> <span class="st">&quot;John&#39;s team&quot;</span>) [user]</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true"></a>      accounts <span class="ot">=</span> [user, org]</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true"></a>  <span class="fu">print</span> <span class="op">$</span> <span class="fu">map</span> accountName accounts</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true"></a>  <span class="kw">case</span> orgMembers org <span class="kw">of</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true"></a>    <span class="dt">Just</span> ms <span class="ot">-&gt;</span> <span class="fu">print</span> <span class="op">$</span> <span class="fu">map</span> accountName ms</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true"></a>    <span class="dt">Nothing</span> <span class="ot">-&gt;</span> <span class="fu">return</span> ()</span></code></pre></div>
 <p>Could we design better types for our scenario to avoid the need to check the result of functions for orgs? It would also be good to prevent organisations being added as members at a type level, but without losing the ability to process both users and organisation in a single list.</p>
 <h2 id="approach-2---existential-quantification">Approach #2 - existential quantification</h2>
 <p>Let’s try to create two different types to store users and organisations, to avoid the problems we had:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">data</span> <span class="dt">User</span> <span class="ot">=</span> <span class="dt">User</span> <span class="dt">AInfo</span> <span class="co">-- we could have made it newtype</span></span>
-<span id="cb4-2"><a href="#cb4-2"></a><span class="kw">data</span> <span class="dt">Org</span> <span class="ot">=</span> <span class="dt">Org</span> <span class="dt">AInfo</span> <span class="dt">Members</span></span>
-<span id="cb4-3"><a href="#cb4-3"></a><span class="kw">type</span> <span class="dt">Members</span> <span class="ot">=</span> [<span class="dt">User</span>]</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a><span class="kw">data</span> <span class="dt">User</span> <span class="ot">=</span> <span class="dt">User</span> <span class="dt">AInfo</span> <span class="co">-- we could have made it newtype</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a><span class="kw">data</span> <span class="dt">Org</span> <span class="ot">=</span> <span class="dt">Org</span> <span class="dt">AInfo</span> <span class="dt">Members</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a><span class="kw">type</span> <span class="dt">Members</span> <span class="ot">=</span> [<span class="dt">User</span>]</span></code></pre></div>
 <p>This is better, organisation members can be only users now.</p>
 <p>We cannot have one function working on two different types, but we can define a type class and make <code>User</code> and <code>Org</code> types its instances:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">class</span> <span class="dt">Acc</span> a <span class="kw">where</span></span>
-<span id="cb5-2"><a href="#cb5-2"></a><span class="ot">  accountName ::</span> a <span class="ot">-&gt;</span> <span class="dt">Text</span></span>
-<span id="cb5-3"><a href="#cb5-3"></a><span class="kw">instance</span> <span class="dt">Acc</span> <span class="dt">User</span> <span class="kw">where</span></span>
-<span id="cb5-4"><a href="#cb5-4"></a>  accountName (<span class="dt">User</span> info) <span class="ot">=</span> name info</span>
-<span id="cb5-5"><a href="#cb5-5"></a><span class="kw">instance</span> <span class="dt">Acc</span> <span class="dt">Org</span> <span class="kw">where</span></span>
-<span id="cb5-6"><a href="#cb5-6"></a>  accountName (<span class="dt">Org</span> info _) <span class="ot">=</span> name info</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="kw">class</span> <span class="dt">Acc</span> a <span class="kw">where</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a><span class="ot">  accountName ::</span> a <span class="ot">-&gt;</span> <span class="dt">Text</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a><span class="kw">instance</span> <span class="dt">Acc</span> <span class="dt">User</span> <span class="kw">where</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a>  accountName (<span class="dt">User</span> info) <span class="ot">=</span> name info</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a><span class="kw">instance</span> <span class="dt">Acc</span> <span class="dt">Org</span> <span class="kw">where</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true"></a>  accountName (<span class="dt">Org</span> info _) <span class="ot">=</span> name info</span></code></pre></div>
 <p>And we can also have a function that works only with organisations, without using Maybe:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb6-1"><a href="#cb6-1"></a><span class="ot">orgMembers ::</span> <span class="dt">Org</span> <span class="ot">-&gt;</span> <span class="dt">Members</span></span>
-<span id="cb6-2"><a href="#cb6-2"></a>orgMembers (<span class="dt">Org</span> _ ms) <span class="ot">=</span> ms</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a><span class="ot">orgMembers ::</span> <span class="dt">Org</span> <span class="ot">-&gt;</span> <span class="dt">Members</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a>orgMembers (<span class="dt">Org</span> _ ms) <span class="ot">=</span> ms</span></code></pre></div>
 <p>The problem that we now have is that <code>User</code> and <code>Org</code> are two different types, and we cannot put them into one list.</p>
 <p>Haskell GHC compiler (since v6.8.1 released in 2007) has the extension <a href="https://downloads.haskell.org/ghc/8.8.3/docs/html/users_guide/glasgow_exts.html#extension-ExistentialQuantification">ExistentialQuantification</a> that allows to create a type that can wrap values of multiple types, and the members of this wrapper type can be put in the list:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1"></a><span class="kw">data</span> <span class="dt">A</span> <span class="ot">=</span> <span class="kw">forall</span> a<span class="op">.</span> <span class="dt">Acc</span> a <span class="ot">=&gt;</span> <span class="dt">A</span> a</span>
-<span id="cb7-2"><a href="#cb7-2"></a><span class="kw">type</span> <span class="dt">Accounts</span> <span class="ot">=</span> [<span class="dt">A</span>]</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a><span class="kw">data</span> <span class="dt">A</span> <span class="ot">=</span> <span class="kw">forall</span> a<span class="op">.</span> <span class="dt">Acc</span> a <span class="ot">=&gt;</span> <span class="dt">A</span> a</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true"></a><span class="kw">type</span> <span class="dt">Accounts</span> <span class="ot">=</span> [<span class="dt">A</span>]</span></code></pre></div>
 <p>In our case we limit the allowed types to the instances of <code>Acc</code> type class, so we can use the list elements with our type class functions, but it is not the only shared criteria the types can have and still be useful - see another example in ExistentialQuantification docs.</p>
 <p>Now we can put wrapped users and orgs into the same list and process them:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb8-1"><a href="#cb8-1"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
-<span id="cb8-2"><a href="#cb8-2"></a>main <span class="ot">=</span> <span class="kw">do</span></span>
-<span id="cb8-3"><a href="#cb8-3"></a>  <span class="kw">let</span> user <span class="ot">=</span> <span class="dt">User</span> (<span class="dt">AInfo</span> <span class="st">&quot;john&quot;</span> <span class="st">&quot;John Doe&quot;</span>)</span>
-<span id="cb8-4"><a href="#cb8-4"></a>      org <span class="ot">=</span> <span class="dt">Org</span> (<span class="dt">AInfo</span> <span class="st">&quot;team&quot;</span> <span class="st">&quot;John&#39;s team&quot;</span>) [user]</span>
-<span id="cb8-5"><a href="#cb8-5"></a>      accounts <span class="ot">=</span> [<span class="dt">A</span> user, <span class="dt">A</span> org] <span class="co">-- we need to wrap users and orgs</span></span>
-<span id="cb8-6"><a href="#cb8-6"></a></span>
-<span id="cb8-7"><a href="#cb8-7"></a>  <span class="co">-- we do not need to check type of the org now</span></span>
-<span id="cb8-8"><a href="#cb8-8"></a>  <span class="fu">print</span> <span class="op">.</span> <span class="fu">map</span> accountName <span class="op">$</span> orgMembers org</span>
-<span id="cb8-9"><a href="#cb8-9"></a></span>
-<span id="cb8-10"><a href="#cb8-10"></a>  <span class="co">-- the only way to unwrap an existential wrapper is with pattern matching</span></span>
-<span id="cb8-11"><a href="#cb8-11"></a>  <span class="fu">print</span> <span class="op">$</span> <span class="fu">map</span> (\(<span class="dt">A</span> acc) <span class="ot">-&gt;</span> accountName acc) accounts</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true"></a>main <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true"></a>  <span class="kw">let</span> user <span class="ot">=</span> <span class="dt">User</span> (<span class="dt">AInfo</span> <span class="st">&quot;john&quot;</span> <span class="st">&quot;John Doe&quot;</span>)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true"></a>      org <span class="ot">=</span> <span class="dt">Org</span> (<span class="dt">AInfo</span> <span class="st">&quot;team&quot;</span> <span class="st">&quot;John&#39;s team&quot;</span>) [user]</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true"></a>      accounts <span class="ot">=</span> [<span class="dt">A</span> user, <span class="dt">A</span> org] <span class="co">-- we need to wrap users and orgs</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true"></a>  <span class="co">-- we do not need to check type of the org now</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true"></a>  <span class="fu">print</span> <span class="op">.</span> <span class="fu">map</span> accountName <span class="op">$</span> orgMembers org</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true"></a></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true"></a>  <span class="co">-- the only way to unwrap an existential wrapper is with pattern matching</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true"></a>  <span class="fu">print</span> <span class="op">$</span> <span class="fu">map</span> (\(<span class="dt">A</span> acc) <span class="ot">-&gt;</span> accountName acc) accounts</span></code></pre></div>
 <p>There are two downsides of this approach:</p>
 <ol type="1">
 <li>We cannot limit which types can be instances of <code>Acc</code> type class. While in some more general cases this unlimited extensibility can be helpful, if we want to control which types can be used as <code>Acc</code> we need some other approach.</li>
-<li>We have to write some boiler plate code - we really just wanted one type with some additional flexbility in it, and not two different types and type class to represent it.</li>
+<li>We have to write some boiler plate code - we really just wanted one type with some additional flexibility in it, and not two different types and type class to represent it.</li>
 </ol>
 <p>Let’s try to solve these problems.</p>
 <h2>
@@ -177,56 +449,56 @@ Approach #3 - data families and data kinds
 <p>We will try to limit the types that can be instances of <code>Acc</code> type class. Types in Haskell have kinds, and in most cases the kind of a type is determined by the number of type parameters.</p>
 <p>From v7.4.1 released in 2012 Haskell makes all your types also kinds using <a href="https://downloads.haskell.org/ghc/8.8.3/docs/html/users_guide/glasgow_exts.html#extension-DataKinds">DataKinds</a> extension - we will use it to limit the types that can be used as <code>Acc</code>. We will also use extensions <a href="https://downloads.haskell.org/ghc/8.8.3/docs/html/users_guide/glasgow_exts.html#extension-TypeFamilies">TypeFamilies</a> and ExistentialQuantification we already used to have types of user and organisation related to each other and to put them into the same list.</p>
 <p>Let’s define a simple type that has the list of allowed account types:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb9-1"><a href="#cb9-1"></a><span class="kw">data</span> <span class="dt">AType</span> <span class="ot">=</span> <span class="dt">AUser</span> <span class="op">|</span> <span class="dt">AOrg</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true"></a><span class="kw">data</span> <span class="dt">AType</span> <span class="ot">=</span> <span class="dt">AUser</span> <span class="op">|</span> <span class="dt">AOrg</span></span></code></pre></div>
 <p>With DataKinds extension each <em>type</em> (in this case <code>AType</code>) automatically becomes a <em>kind</em> that can be used to define and restrict other types. We will use this kind to create <code>Account</code> data family:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb10-1"><a href="#cb10-1"></a><span class="kw">data</span> <span class="kw">family</span> <span class="dt">Account</span> (<span class="ot">a ::</span> <span class="dt">AType</span>)</span>
-<span id="cb10-2"><a href="#cb10-2"></a><span class="kw">data</span> <span class="kw">instance</span> <span class="dt">Account</span> <span class="dt">&#39;AUser</span> <span class="ot">=</span> <span class="dt">User</span> <span class="dt">AInfo</span></span>
-<span id="cb10-3"><a href="#cb10-3"></a><span class="kw">data</span> <span class="kw">instance</span> <span class="dt">Account</span> <span class="dt">&#39;AOrg</span> <span class="ot">=</span> <span class="dt">Org</span> <span class="dt">AInfo</span> <span class="dt">Members</span></span>
-<span id="cb10-4"><a href="#cb10-4"></a></span>
-<span id="cb10-5"><a href="#cb10-5"></a><span class="kw">type</span> <span class="dt">Members</span> <span class="ot">=</span> [<span class="dt">Account</span> <span class="dt">&#39;AUser</span>] <span class="co">-- organisation members can be only users</span></span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true"></a><span class="kw">data</span> <span class="kw">family</span> <span class="dt">Account</span> (<span class="ot">a ::</span> <span class="dt">AType</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true"></a><span class="kw">data</span> <span class="kw">instance</span> <span class="dt">Account</span> <span class="dt">&#39;AUser</span> <span class="ot">=</span> <span class="dt">User</span> <span class="dt">AInfo</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true"></a><span class="kw">data</span> <span class="kw">instance</span> <span class="dt">Account</span> <span class="dt">&#39;AOrg</span> <span class="ot">=</span> <span class="dt">Org</span> <span class="dt">AInfo</span> <span class="dt">Members</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true"></a></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true"></a><span class="kw">type</span> <span class="dt">Members</span> <span class="ot">=</span> [<span class="dt">Account</span> <span class="dt">&#39;AUser</span>] <span class="co">-- organisation members can be only users</span></span></code></pre></div>
 <p><code>'AUser</code> and <code>'AOrg</code> is a special syntax that allows to use <em>constructors of type</em> <code>AType</code> as <em>types of kind</em> <code>AType</code>. <code>User</code> and <code>Org</code> are just normal constructors of types <code>Account 'AUser</code> and <code>Account 'AOrg</code>.</p>
 <p>To define shared functionality we would still have to use a type class, because while <code>Account 'AUser</code> and <code>Account 'AOrg</code> are now related (as family members), they are still two separate types:</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb11-1"><a href="#cb11-1"></a><span class="kw">class</span> <span class="dt">Acc</span> (<span class="ot">a ::</span> <span class="dt">AType</span>) <span class="kw">where</span></span>
-<span id="cb11-2"><a href="#cb11-2"></a><span class="ot">  accountName ::</span> <span class="dt">Account</span> a <span class="ot">-&gt;</span> <span class="dt">Text</span></span>
-<span id="cb11-3"><a href="#cb11-3"></a><span class="kw">instance</span> <span class="dt">Acc</span> <span class="dt">AUser</span> <span class="kw">where</span></span>
-<span id="cb11-4"><a href="#cb11-4"></a>  accountName (<span class="dt">User</span> info) <span class="ot">=</span> name info</span>
-<span id="cb11-5"><a href="#cb11-5"></a><span class="kw">instance</span> <span class="dt">Acc</span> <span class="dt">AOrg</span> <span class="kw">where</span></span>
-<span id="cb11-6"><a href="#cb11-6"></a>  accountName (<span class="dt">Org</span> info _) <span class="ot">=</span> name info</span>
-<span id="cb11-7"><a href="#cb11-7"></a></span>
-<span id="cb11-8"><a href="#cb11-8"></a><span class="ot">orgMembers ::</span> <span class="dt">Account</span> <span class="dt">&#39;AOrg</span> <span class="ot">-&gt;</span> <span class="dt">Members</span></span>
-<span id="cb11-9"><a href="#cb11-9"></a>orgMembers (<span class="dt">Org</span> _ ms) <span class="ot">=</span> ms</span></code></pre></div>
-<p>Please note that in this case we made types belonging to our custom-made kind <code>AType</code> instances of typeclass <code>Acc</code>, rather than account types. We can neither extend data family <code>Account a</code> nor type class <code>Acc</code> without extending our kind <code>AType</code>.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true"></a><span class="kw">class</span> <span class="dt">Acc</span> (<span class="ot">a ::</span> <span class="dt">AType</span>) <span class="kw">where</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true"></a><span class="ot">  accountName ::</span> <span class="dt">Account</span> a <span class="ot">-&gt;</span> <span class="dt">Text</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true"></a><span class="kw">instance</span> <span class="dt">Acc</span> <span class="dt">AUser</span> <span class="kw">where</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true"></a>  accountName (<span class="dt">User</span> info) <span class="ot">=</span> name info</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true"></a><span class="kw">instance</span> <span class="dt">Acc</span> <span class="dt">AOrg</span> <span class="kw">where</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true"></a>  accountName (<span class="dt">Org</span> info _) <span class="ot">=</span> name info</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true"></a></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true"></a><span class="ot">orgMembers ::</span> <span class="dt">Account</span> <span class="dt">&#39;AOrg</span> <span class="ot">-&gt;</span> <span class="dt">Members</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true"></a>orgMembers (<span class="dt">Org</span> _ ms) <span class="ot">=</span> ms</span></code></pre></div>
+<p>Please note that in this case we made types belonging to our custom-made kind <code>AType</code> instances of type-class <code>Acc</code>, rather than account types. We can neither extend data family <code>Account a</code> nor type class <code>Acc</code> without extending our kind <code>AType</code>.</p>
 <p>We still need to create an existential wrapper type to put users and orgs in the same list:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb12-1"><a href="#cb12-1"></a><span class="kw">data</span> <span class="dt">A</span> <span class="ot">=</span> <span class="kw">forall</span> a<span class="op">.</span> <span class="dt">Acc</span> a <span class="ot">=&gt;</span> <span class="dt">A</span> (<span class="dt">Account</span> a)</span>
-<span id="cb12-2"><a href="#cb12-2"></a><span class="kw">type</span> <span class="dt">Accounts</span> <span class="ot">=</span> [<span class="dt">A</span>]</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true"></a><span class="kw">data</span> <span class="dt">A</span> <span class="ot">=</span> <span class="kw">forall</span> a<span class="op">.</span> <span class="dt">Acc</span> a <span class="ot">=&gt;</span> <span class="dt">A</span> (<span class="dt">Account</span> a)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true"></a><span class="kw">type</span> <span class="dt">Accounts</span> <span class="ot">=</span> [<span class="dt">A</span>]</span></code></pre></div>
 <p>We can use exactly the same code to process users and orgs as in approach #2.</p>
-<p>We have managed to restrict the types of accounts by defining a kind, but do we really need 2 different types and a typeclass, or is there a way to create just one, a more advanced type?</p>
+<p>We have managed to restrict the types of accounts by defining a kind, but do we really need 2 different types and a type-class, or is there a way to create just one, a more advanced type?</p>
 <h2 id="approach-4---gadts">Approach #4 - GADTs</h2>
-<p>We can achive the same flexibility using a generalised algebraic data type - support for such types is enabled with <a href="https://downloads.haskell.org/ghc/8.8.3/docs/html/users_guide/glasgow_exts.html#extension-GADTs">GADTs</a> extension.</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb13-1"><a href="#cb13-1"></a><span class="kw">data</span> <span class="dt">AType</span> <span class="ot">=</span> <span class="dt">AUser</span> <span class="op">|</span> <span class="dt">AOrg</span> <span class="co">-- we still need DataKinds extension</span></span>
-<span id="cb13-2"><a href="#cb13-2"></a></span>
-<span id="cb13-3"><a href="#cb13-3"></a><span class="co">-- (a :: AType) here requires KindSignatures extension</span></span>
-<span id="cb13-4"><a href="#cb13-4"></a><span class="kw">data</span> <span class="dt">Account</span> (<span class="ot">a ::</span> <span class="dt">AType</span>) <span class="kw">where</span></span>
-<span id="cb13-5"><a href="#cb13-5"></a>  <span class="dt">User</span><span class="ot"> ::</span> <span class="dt">AInfo</span> <span class="ot">-&gt;</span> <span class="dt">Account</span> <span class="dt">&#39;AUser</span></span>
-<span id="cb13-6"><a href="#cb13-6"></a>  <span class="dt">Org</span><span class="ot"> ::</span> <span class="dt">AInfo</span> <span class="ot">-&gt;</span> <span class="dt">Members</span> <span class="ot">-&gt;</span> <span class="dt">Account</span> <span class="dt">&#39;AOrg</span></span>
-<span id="cb13-7"><a href="#cb13-7"></a></span>
-<span id="cb13-8"><a href="#cb13-8"></a><span class="kw">type</span> <span class="dt">Members</span> <span class="ot">=</span> [<span class="dt">Account</span> <span class="dt">&#39;AUser</span>] <span class="co">-- organisation members can be only users</span></span></code></pre></div>
+<p>We can achieve the same flexibility using a generalised algebraic data type - support for such types is enabled with <a href="https://downloads.haskell.org/ghc/8.8.3/docs/html/users_guide/glasgow_exts.html#extension-GADTs">GADTs</a> extension.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true"></a><span class="kw">data</span> <span class="dt">AType</span> <span class="ot">=</span> <span class="dt">AUser</span> <span class="op">|</span> <span class="dt">AOrg</span> <span class="co">-- we still need DataKinds extension</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true"></a></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true"></a><span class="co">-- (a :: AType) here requires KindSignatures extension</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true"></a><span class="kw">data</span> <span class="dt">Account</span> (<span class="ot">a ::</span> <span class="dt">AType</span>) <span class="kw">where</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true"></a>  <span class="dt">User</span><span class="ot"> ::</span> <span class="dt">AInfo</span> <span class="ot">-&gt;</span> <span class="dt">Account</span> <span class="dt">&#39;AUser</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true"></a>  <span class="dt">Org</span><span class="ot"> ::</span> <span class="dt">AInfo</span> <span class="ot">-&gt;</span> <span class="dt">Members</span> <span class="ot">-&gt;</span> <span class="dt">Account</span> <span class="dt">&#39;AOrg</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true"></a></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true"></a><span class="kw">type</span> <span class="dt">Members</span> <span class="ot">=</span> [<span class="dt">Account</span> <span class="dt">&#39;AUser</span>] <span class="co">-- organisation members can be only users</span></span></code></pre></div>
 <p>Now that we have one parametrised type, we can define functions on this general type without a type class, using just pattern matching:</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb14-1"><a href="#cb14-1"></a><span class="ot">accountName ::</span> <span class="dt">Account</span> a <span class="ot">-&gt;</span> <span class="dt">Text</span></span>
-<span id="cb14-2"><a href="#cb14-2"></a>accountName (<span class="dt">User</span> info) <span class="ot">=</span> name info</span>
-<span id="cb14-3"><a href="#cb14-3"></a>accountName (<span class="dt">Org</span> info _) <span class="ot">=</span> name info</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true"></a><span class="ot">accountName ::</span> <span class="dt">Account</span> a <span class="ot">-&gt;</span> <span class="dt">Text</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true"></a>accountName (<span class="dt">User</span> info) <span class="ot">=</span> name info</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true"></a>accountName (<span class="dt">Org</span> info _) <span class="ot">=</span> name info</span></code></pre></div>
 <p>We can also define functions on specific types:</p>
 <pre><code>orgMembers :: Account &#39;AOrg -&gt; Members
 orgMembers (Org _ ms) = ms</code></pre>
 <p>We still need an existential wrapper to put a general type in a list, but it is a bit simpler now, as we do not need a type class:</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb16-1"><a href="#cb16-1"></a><span class="kw">data</span> <span class="dt">A</span> <span class="ot">=</span> <span class="kw">forall</span> a<span class="op">.</span> <span class="dt">A</span> (<span class="dt">Account</span> a)</span>
-<span id="cb16-2"><a href="#cb16-2"></a><span class="kw">type</span> <span class="dt">Accounts</span> <span class="ot">=</span> [<span class="dt">A</span>]</span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true"></a><span class="kw">data</span> <span class="dt">A</span> <span class="ot">=</span> <span class="kw">forall</span> a<span class="op">.</span> <span class="dt">A</span> (<span class="dt">Account</span> a)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true"></a><span class="kw">type</span> <span class="dt">Accounts</span> <span class="ot">=</span> [<span class="dt">A</span>]</span></code></pre></div>
 <p>GADTs extension implies ExistentialQuantification, so we do not need to enable it separately.</p>
 <p>The same code as above can be used to process the list of users and orgs.</p>
 <h2 id="summary">Summary</h2>
 <p>Beyond basic types, we looked at three options that allow to define different entities with shared behaviours and to manage them in the same data structure:</p>
 <ol type="1">
-<li>Type classes - the most extensible option, that allows to define the behavior independently of its implementation. The classic scenario for type classes is some kind of widgets/shapes/etc.</li>
+<li>Type classes - the most extensible option, that allows to define the behaviour independently of its implementation. The classic scenario for type classes is some kind of widgets/shapes/etc.</li>
 <li>Data families restricted with data kinds. The advantage of such data families is that you can define its members in different parts of your code, but you have control of the list of allowed members in a single location using a custom data kind.</li>
 <li>GADTs - they provide a much bigger flexibility in defining your types, in many cases without the need for type classes. They allow different constructors of one parametrised type (of a higher kind) to return specific types (of basic kind).</li>
 </ol>
@@ -260,101 +532,118 @@ orgMembers (Org _ ms) = ms</code></pre>
     </div>
     <div class="info">
       
-        Tags: <a title="All pages tagged &#39;haskell&#39;." href="/tags/haskell.html">haskell</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html">coding</a>
+        Tags: <a title="All pages tagged &#39;haskell&#39;." href="/tags/haskell.html">haskell</a>, <a title="All pages tagged &#39;executable&#39;." href="/tags/executable.html">executable</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html">coding</a>
       
     </div>
   </section>
   <section>
     <p><img src="/images/haskell.png" width="40%" style="float: left; margin: 20px 20px 10px 0;" /></p>
-<p>The thesis here is that Haskel is not just one of many functional programming languages — it is a different, more advanced programming paradigm.</p>
+<p>The thesis here is that Haskell is not just one of many functional programming languages — it is a different, more advanced programming paradigm.</p>
 <p>Haskell is indeed a functional language, but calling Haskell “a functional language” is like calling a skyscraper “a dwelling” — while technically correct, it does not describe how the latter is much more than just a place to live.</p>
 <p>What defines a programming language? From the point of view of category theory, there are two major components of each programming language: data types and transformations between them — in category theory terminology, “objects” and “morphisms”.</p>
 <p><strong>The first claim</strong> here (that must be challenged) is that all programming languages but Haskell (and more recent Idris) are based on “morphisms” — code, procedures or functions that transform and manipulate the data. Data types in these languages play the secondary role — to ensure validity and to improve predictability of the “morphisms”.</p>
 <p>Haskell, being a functional language, counterintuitively, is not based on functions — it is based on types, or “objects” in category theory terminology. Types ensuring the validity of transformations almost seems secondary in Haskell (however useful), while the primary purpose of types is to formally describe the system model and the relationship between the elements of the system (including functions that also have types).</p>
 <p>But a bigger distinction between Haskell and other languages is in the nature of the language semantics. <strong>The second claim</strong> (that also must be challenged) is that while other languages have semantics tightly coupled with the syntax — the meaning of the code is defined by its grammar, Haskell semantics is defined by the combination of code and context (e.g., created by the types that belong to Monad class). In this way, Haskell is much closer than other programming languages to the natural human languages that also have semantics defined by the combination of grammar and context (see interpretive and generative semantics of human languages).</p>
 <p>For example, a simple <code>sequence</code> function that is defined as:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1"></a><span class="fu">sequence</span><span class="ot"> ::</span> <span class="dt">Monad</span> m <span class="ot">=&gt;</span> [m a] <span class="ot">-&gt;</span> m [a]</span>
-<span id="cb1-2"><a href="#cb1-2"></a><span class="fu">sequence</span> ms <span class="ot">=</span> <span class="fu">foldr</span> k (<span class="fu">return</span> []) ms</span>
-<span id="cb1-3"><a href="#cb1-3"></a>            <span class="kw">where</span></span>
-<span id="cb1-4"><a href="#cb1-4"></a>              k m m&#39; <span class="ot">=</span> <span class="kw">do</span> { x <span class="ot">&lt;-</span> m; xs <span class="ot">&lt;-</span> m&#39;; <span class="fu">return</span> (x<span class="op">:</span>xs) }</span></code></pre></div>
+<pre class="haskell-ignore"><code>sequence :: Monad m =&gt; [m a] -&gt; m [a]
+sequence ms = foldr k (return []) ms
+            where
+              k m m&#39; = do { x &lt;- m; xs &lt;- m&#39;; return (x:xs) }</code></pre>
 <p>can mean different things depending on the context that is defined by <code>m</code>.</p>
 <p>Applied to IO it can mean performing IO actions in sequence:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1"></a><span class="fu">sequence</span> [<span class="fu">getLine</span>, <span class="fu">getLine</span>]</span></code></pre></div>
+<pre class="haskell-ignore"><code>sequence [getLine, getLine]</code></pre>
 <p>returns a single IO action that resolves into the list of 2 strings.</p>
 <p>Applied to the list of instances of <code>Maybe</code> type, it would check that all of them contain some value and either return <code>Just</code> list of these value or Nothing if any of them is <code>Nothing</code>:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1"></a><span class="fu">sequence</span> [<span class="dt">Just</span> <span class="dv">1</span>, <span class="dt">Just</span> <span class="dv">2</span>, <span class="dt">Just</span> <span class="dv">3</span>] <span class="ot">=</span> <span class="dt">Just</span> [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>]</span>
-<span id="cb3-2"><a href="#cb3-2"></a><span class="fu">sequence</span> [<span class="dt">Just</span> <span class="dv">1</span>, <span class="dt">Just</span> <span class="dv">2</span>, <span class="dt">Nothing</span>] <span class="ot">=</span> <span class="dt">Nothing</span></span></code></pre></div>
+<pre class="haskell-ignore"><code>sequence [Just 1, Just 2, Just 3] = Just [1, 2, 3]
+sequence [Just 1, Just 2, Nothing] = Nothing</code></pre>
 <p>Applied to the list of 2 lists, it will perform indeterminate computation and return all possible permutations of list items where the first item comes from the first list, and the second — from the second list:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1"></a><span class="fu">sequence</span> [[<span class="dv">1</span>,<span class="dv">2</span>],[<span class="dv">3</span>,<span class="dv">4</span>]] <span class="ot">=</span> [[<span class="dv">1</span>,<span class="dv">3</span>],[<span class="dv">1</span>,<span class="dv">4</span>],[<span class="dv">2</span>,<span class="dv">3</span>],[<span class="dv">2</span>,<span class="dv">4</span>]]</span>
-<span id="cb4-2"><a href="#cb4-2"></a><span class="fu">sequence</span> [[<span class="dv">1</span>,<span class="dv">2</span>],[<span class="dv">3</span>,<span class="dv">4</span>], []] <span class="ot">=</span> [] <span class="co">-- [] is &quot;undefined&quot; in this context</span></span></code></pre></div>
+<pre class="haskell-ignore"><code>sequence [[1,2],[3,4]] = [[1,3],[1,4],[2,3],[2,4]]
+sequence [[1,2],[3,4], []] = [] -- [] is &quot;undefined&quot; in this context</code></pre>
 <p>Context-dependent semantics of Haskell code makes Haskell more difficult to learn. As the same syntax can mean many different things, achieving fluency requires more effort than with other languages. But it also makes Haskell infinitely more expressive than any other language — you can implement any new semantics you want by adding the new context to the same code. Therefore, while Haskell requires more investment from you than other programming languages, the return on this investment is infinitely higher.</p>
 <p>Some Haskell books (e.g. <a href="http://learnyouahaskell.com/">LYAH</a>) and lectures (e.g <a href="https://www.seas.upenn.edu/~cis194/fall16/index.html">Penn course</a>) do not capture this fundamental distinction well enough. Instead, they focus on the functional nature of Haskell, and present Monad as almost some work-around to allow using pure functions for context-aware computations (IO, State, indeterminism, etc.). Unfortunately, it creates a barrier to entry for the new developers, because when people are asked to make a larger than usual investment to learn yet one more functional programming language with quirky syntax, this investment is difficult to justify without understanding first that Haskell is a more powerful programming paradigm. How many people abandoned Haskell before grasping its power?</p>
-<p>A good book that explains how Haskel is a higher order language is <a href="https://en.wikibooks.org/wiki/Haskell">Haskell</a> in wiki-books. Once you get over “<a href="https://en.wikibooks.org/wiki/Haskell/Understanding_monads">Understanding monads</a>” section, the Haskell advantage should become apparent.</p>
+<p>A good book that explains how Haskell is a higher order language is <a href="https://en.wikibooks.org/wiki/Haskell">Haskell</a> in wiki-books. Once you get over “<a href="https://en.wikibooks.org/wiki/Haskell/Understanding_monads">Understanding monads</a>” section, the Haskell advantage should become apparent.</p>
 <p>If you want to see some relatively simple magic you can do with Haskell, watch the talk by <a href="https://github.com/EncodePanda">Paweł Szulc</a> at Lambda World’19, particularly where he <a href="https://www.youtube.com/watch?v=idU7GdlfP9Q&amp;feature=youtu.be&amp;t=625">talks about Servant</a> — the library to create REST APIs in Haskell. Before you write a single line of implementation code, you can get the whole API definition from a single type definition (I am replacing alpacas from Paweł’s farm with users here):</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">type</span> <span class="dt">User</span> <span class="ot">=</span> <span class="dt">User</span> {</span>
-<span id="cb5-2"><a href="#cb5-2"></a><span class="ot">    name  ::</span> <span class="dt">String</span></span>
-<span id="cb5-3"><a href="#cb5-3"></a>}</span>
-<span id="cb5-4"><a href="#cb5-4"></a> </span>
-<span id="cb5-5"><a href="#cb5-5"></a><span class="kw">type</span> <span class="dt">UserAPI</span> <span class="ot">=</span></span>
-<span id="cb5-6"><a href="#cb5-6"></a>       <span class="st">&quot;user&quot;</span> <span class="op">:&gt;</span> <span class="dt">Get</span> &#39;[<span class="dt">JSON</span>] (<span class="dt">M.Map</span> <span class="dt">Int</span> <span class="dt">User</span>)</span>
-<span id="cb5-7"><a href="#cb5-7"></a>  <span class="op">:&lt;|&gt;</span> <span class="st">&quot;user&quot;</span> <span class="op">:&gt;</span> <span class="dt">Capture</span> <span class="st">&quot;userId&quot;</span> <span class="dt">Int</span></span>
-<span id="cb5-8"><a href="#cb5-8"></a>              <span class="op">:&gt;</span> <span class="dt">Get</span> &#39;[<span class="dt">JSON</span>] <span class="dt">User</span></span>
-<span id="cb5-9"><a href="#cb5-9"></a>  <span class="op">:&lt;|&gt;</span> <span class="st">&quot;user&quot;</span> <span class="op">:&gt;</span> <span class="dt">Capture</span> <span class="st">&quot;userId&quot;</span> <span class="dt">Int</span></span>
-<span id="cb5-10"><a href="#cb5-10"></a>              <span class="op">:&gt;</span> <span class="dt">ReqBody</span> &#39;[<span class="dt">JSON</span>] <span class="dt">User</span></span>
-<span id="cb5-11"><a href="#cb5-11"></a>              <span class="op">:&gt;</span> <span class="dt">PutCreated</span> &#39;[<span class="dt">JSON</span>] <span class="dt">NoContent</span><span class="co">-- UserAPI type defines this API:</span></span>
-<span id="cb5-12"><a href="#cb5-12"></a><span class="co">-- GET /user   - Response: {&quot;1&quot;:{&quot;name&quot;:&quot;jane&quot;}}, 200</span></span>
-<span id="cb5-13"><a href="#cb5-13"></a><span class="co">-- GET /user/1 - Response: {&quot;name&quot;:&quot;jane&quot;}, 200</span></span>
-<span id="cb5-14"><a href="#cb5-14"></a><span class="co">-- PUT /user/2 Body: {&quot;name&quot;:&quot;John D.&quot;} - Response: NoContent, 201</span></span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="ot">{-# LANGUAGE DataKinds, DeriveAnyClass, DeriveGeneric, TypeOperators #-}</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a><span class="kw">import</span> <span class="dt">Servant</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a><span class="kw">import</span> <span class="dt">Servant.Server</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a><span class="kw">import</span> <span class="dt">Network.Wai.Handler.Warp</span> (run)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a><span class="kw">import</span> <span class="dt">Data.Aeson</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true"></a><span class="kw">import</span> <span class="dt">GHC.Generics</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true"></a><span class="kw">import</span> <span class="kw">qualified</span> <span class="dt">Data.Map</span> <span class="kw">as</span> <span class="dt">M</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true"></a><span class="kw">data</span> <span class="dt">User</span> <span class="ot">=</span> <span class="dt">User</span> {</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true"></a><span class="ot">  name  ::</span> <span class="dt">String</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true"></a>} <span class="kw">deriving</span> (<span class="dt">Generic</span>, <span class="dt">ToJSON</span>, <span class="dt">FromJSON</span>)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true"></a></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true"></a><span class="kw">type</span> <span class="dt">UserAPI</span> <span class="ot">=</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true"></a>       <span class="st">&quot;user&quot;</span> <span class="op">:&gt;</span> <span class="dt">Get</span> &#39;[<span class="dt">JSON</span>] (<span class="dt">M.Map</span> <span class="dt">Int</span> <span class="dt">User</span>)</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true"></a>  <span class="op">:&lt;|&gt;</span> <span class="st">&quot;user&quot;</span> <span class="op">:&gt;</span> <span class="dt">Capture</span> <span class="st">&quot;userId&quot;</span> <span class="dt">Int</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true"></a>              <span class="op">:&gt;</span> <span class="dt">Get</span> &#39;[<span class="dt">JSON</span>] <span class="dt">User</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true"></a>  <span class="op">:&lt;|&gt;</span> <span class="st">&quot;user&quot;</span> <span class="op">:&gt;</span> <span class="dt">Capture</span> <span class="st">&quot;userId&quot;</span> <span class="dt">Int</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true"></a>              <span class="op">:&gt;</span> <span class="dt">ReqBody</span> &#39;[<span class="dt">JSON</span>] <span class="dt">User</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true"></a>              <span class="op">:&gt;</span> <span class="dt">PutCreated</span> &#39;[<span class="dt">JSON</span>] <span class="dt">NoContent</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true"></a></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true"></a><span class="ot">userApi ::</span> <span class="dt">Proxy</span> <span class="dt">UserAPI</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true"></a>userApi <span class="ot">=</span> <span class="dt">Proxy</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true"></a></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true"></a><span class="co">-- UserAPI type defines this API:</span></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true"></a><span class="co">-- GET /user   - Response: {&quot;1&quot;:{&quot;name&quot;:&quot;jane&quot;}}, 200</span></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true"></a><span class="co">-- GET /user/1 - Response: {&quot;name&quot;:&quot;jane&quot;}, 200</span></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true"></a><span class="co">-- PUT /user/2 Body: {&quot;name&quot;:&quot;John D.&quot;} - Response: NoContent, 201</span></span></code></pre></div>
 <p>And before you even start implementing this API you can get client functions to call this API with a few lines of code:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb6-1"><a href="#cb6-1"></a><span class="ot">userApi ::</span> <span class="dt">Proxy</span> <span class="dt">UserAPI</span></span>
-<span id="cb6-2"><a href="#cb6-2"></a>userApi <span class="ot">=</span> <span class="dt">Proxy</span></span>
-<span id="cb6-3"><a href="#cb6-3"></a>getAll <span class="op">:&lt;|&gt;</span> getUser <span class="op">:&lt;|&gt;</span> putUser <span class="ot">=</span> client userApi</span>
-<span id="cb6-4"><a href="#cb6-4"></a> </span>
-<span id="cb6-5"><a href="#cb6-5"></a><span class="co">-- client functions types:</span></span>
-<span id="cb6-6"><a href="#cb6-6"></a><span class="ot">getAll ::</span> <span class="dt">ClientM</span> (<span class="dt">M.Map</span> <span class="dt">Int</span> <span class="dt">User</span>)</span>
-<span id="cb6-7"><a href="#cb6-7"></a><span class="ot">getUser ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">ClientM</span> <span class="dt">User</span></span>
-<span id="cb6-8"><a href="#cb6-8"></a><span class="ot">putUser ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">User</span> <span class="ot">-&gt;</span> <span class="dt">ClientM</span> <span class="dt">User</span></span></code></pre></div>
+<pre class="haskell-ignore"><code>-- import Servant.Client
+
+getAll :&lt;|&gt; getUser :&lt;|&gt; putUser = client userApi
+
+-- client functions types:
+getAll :: ClientM (M.Map Int User)
+getUser :: Int -&gt; ClientM User
+putUser :: Int -&gt; User -&gt; ClientM User</code></pre>
 <p>With just a few annotations you can generate API docs from UserAPI type:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1"></a><span class="kw">instance</span> <span class="dt">ToCapture</span> (<span class="dt">Capture</span> <span class="st">&quot;userId&quot;</span> <span class="dt">Int</span>) <span class="kw">where</span></span>
-<span id="cb7-2"><a href="#cb7-2"></a>  toCapture _ <span class="ot">=</span></span>
-<span id="cb7-3"><a href="#cb7-3"></a>    <span class="dt">DocCapture</span> <span class="st">&quot;userId&quot;</span></span>
-<span id="cb7-4"><a href="#cb7-4"></a>               <span class="st">&quot;Id that uniquely identifies a user in the system&quot;</span></span>
-<span id="cb7-5"><a href="#cb7-5"></a> </span>
-<span id="cb7-6"><a href="#cb7-6"></a><span class="kw">instance</span> <span class="dt">ToSample</span> (<span class="dt">User</span>) <span class="kw">where</span></span>
-<span id="cb7-7"><a href="#cb7-7"></a>  toSamples _ <span class="ot">=</span> singleSample <span class="op">$</span> <span class="dt">User</span> <span class="st">&quot;Jane&quot;</span></span>
-<span id="cb7-8"><a href="#cb7-8"></a> </span>
-<span id="cb7-9"><a href="#cb7-9"></a><span class="kw">instance</span> <span class="dt">ToSample</span> (<span class="dt">M.Map</span> <span class="dt">Int</span> <span class="dt">User</span>) <span class="kw">where</span></span>
-<span id="cb7-10"><a href="#cb7-10"></a>  toSamples _ <span class="ot">=</span> singleSample <span class="op">$</span> M.singleton <span class="dv">1</span> (<span class="dt">User</span> <span class="st">&quot;Jane&quot;</span>)</span>
-<span id="cb7-11"><a href="#cb7-11"></a> </span>
-<span id="cb7-12"><a href="#cb7-12"></a><span class="ot">apiDocs ::</span> <span class="dt">API</span></span>
-<span id="cb7-13"><a href="#cb7-13"></a>apiDocs <span class="ot">=</span> docs<span class="ot"> userApimain ::</span> <span class="dt">IO</span> ()</span>
-<span id="cb7-14"><a href="#cb7-14"></a>main <span class="ot">=</span> (<span class="fu">writeFile</span> <span class="st">&quot;docs.md&quot;</span> <span class="op">.</span> markdown) apiDocs</span></code></pre></div>
+<pre class="haskell-ignore"><code>instance ToCapture (Capture &quot;userId&quot; Int) where
+  toCapture _ =
+    DocCapture &quot;userId&quot;
+               &quot;Id that uniquely identifies a user in the system&quot;
+
+instance ToSample (User) where
+  toSamples _ = singleSample $ User &quot;Jane&quot;
+
+instance ToSample (M.Map Int User) where
+  toSamples _ = singleSample $ M.singleton 1 (User &quot;Jane&quot;)
+
+apiDocs :: API
+apiDocs = docs userApi
+
+main :: IO ()
+main = (writeFile &quot;docs.md&quot; . markdown) apiDocs</code></pre>
 <p>To run this server you just need to implement it, the mock implementation is very simple, but the Haskell type system ensures that the type of implementation is correct (<code>Server UserAPI</code> that is based on <code>UserAPI</code> type):</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb8-1"><a href="#cb8-1"></a>dummy <span class="ot">=</span> <span class="dt">User</span> <span class="st">&quot;Jane&quot;</span> <span class="st">&quot;jane@example.com&quot;</span></span>
-<span id="cb8-2"><a href="#cb8-2"></a> </span>
-<span id="cb8-3"><a href="#cb8-3"></a><span class="ot">fetchAll ::</span> <span class="dt">Monad</span> m <span class="ot">=&gt;</span> m (<span class="dt">M.Map</span> <span class="dt">Int</span> <span class="dt">User</span>)</span>
-<span id="cb8-4"><a href="#cb8-4"></a>fetchAll <span class="ot">=</span> <span class="fu">pure</span> <span class="op">$</span> M.singleton <span class="dv">1</span> dummy</span>
-<span id="cb8-5"><a href="#cb8-5"></a> </span>
-<span id="cb8-6"><a href="#cb8-6"></a><span class="ot">fetch ::</span> <span class="dt">Monad</span> m <span class="ot">=&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> m <span class="dt">User</span></span>
-<span id="cb8-7"><a href="#cb8-7"></a>fetch <span class="fu">id</span> <span class="ot">=</span> <span class="fu">pure</span> dummy</span>
-<span id="cb8-8"><a href="#cb8-8"></a> </span>
-<span id="cb8-9"><a href="#cb8-9"></a><span class="ot">insert ::</span> <span class="dt">Monad</span> m <span class="ot">=&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">User</span> <span class="ot">-&gt;</span> m <span class="dt">NoContent</span></span>
-<span id="cb8-10"><a href="#cb8-10"></a>insert <span class="fu">id</span> user <span class="ot">=</span> <span class="fu">pure</span> <span class="dt">NoContent</span></span>
-<span id="cb8-11"><a href="#cb8-11"></a> </span>
-<span id="cb8-12"><a href="#cb8-12"></a><span class="ot">server ::</span> <span class="dt">Server</span> <span class="dt">UserAPI</span></span>
-<span id="cb8-13"><a href="#cb8-13"></a>server <span class="ot">=</span> fetchAll <span class="op">:&lt;|&gt;</span> fetch <span class="op">:&lt;|&gt;</span> insert</span>
-<span id="cb8-14"><a href="#cb8-14"></a> </span>
-<span id="cb8-15"><a href="#cb8-15"></a><span class="ot">app ::</span> <span class="dt">Application</span></span>
-<span id="cb8-16"><a href="#cb8-16"></a>app <span class="ot">=</span> serve userApi server</span>
-<span id="cb8-17"><a href="#cb8-17"></a> </span>
-<span id="cb8-18"><a href="#cb8-18"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
-<span id="cb8-19"><a href="#cb8-19"></a>main <span class="ot">=</span> run <span class="dv">8080</span> app</span></code></pre></div>
-<p>The above does feel like magic!</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true"></a>dummy <span class="ot">=</span> <span class="dt">User</span> <span class="st">&quot;Jane&quot;</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true"></a><span class="ot">fetchAll ::</span> <span class="dt">Monad</span> m <span class="ot">=&gt;</span> m (<span class="dt">M.Map</span> <span class="dt">Int</span> <span class="dt">User</span>)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true"></a>fetchAll <span class="ot">=</span> <span class="fu">pure</span> <span class="op">$</span> M.singleton <span class="dv">1</span> dummy</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true"></a></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true"></a><span class="ot">fetch ::</span> <span class="dt">Monad</span> m <span class="ot">=&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> m <span class="dt">User</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true"></a>fetch <span class="fu">id</span> <span class="ot">=</span> <span class="fu">pure</span> dummy</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true"></a><span class="ot">insert ::</span> <span class="dt">Monad</span> m <span class="ot">=&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">User</span> <span class="ot">-&gt;</span> m <span class="dt">NoContent</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true"></a>insert <span class="fu">id</span> user <span class="ot">=</span> <span class="fu">pure</span> <span class="dt">NoContent</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true"></a></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true"></a><span class="ot">server ::</span> <span class="dt">Server</span> <span class="dt">UserAPI</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true"></a>server <span class="ot">=</span> fetchAll <span class="op">:&lt;|&gt;</span> fetch <span class="op">:&lt;|&gt;</span> insert</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true"></a></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true"></a><span class="ot">app ::</span> <span class="dt">Application</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true"></a>app <span class="ot">=</span> serve userApi server</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true"></a></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true"></a>main <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true"></a>  <span class="fu">putStrLn</span> <span class="st">&quot;http://localhost:8080/user&quot;</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true"></a>  run <span class="dv">8080</span> app</span></code></pre></div>
+<p>The above does feel like magic! You can run this server right from this post with <code>stack run users-api</code>.</p>
 <p>Morphism-based programming languages (i.e., all other languages) force programmers to model the whole system outside of the code — using SQL schema, JSON schema, diagrams, etc. Type-based languages (Haskell and Idris) allow for type-driven development, when the whole system can be modelled top-down with algebraic data types, rather than bottom-up with functions as in other languages.</p>
 <p>Haskell being type-based language with context-dependent semantics is a higher order language that is almost one of a kind — there seems to be no other mature programming language that allows the same level of expressiveness as Haskell does.</p>
   </section>
   <section class="links">
-    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Haskell%20%E2%80%94%20a%20higher%20order%20language&hashtags=haskell%2Ccoding&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2020-03-15-haskell-a-higher-order-language.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2020-03-15-haskell-a-higher-order-language.html" target="_blank"><img src="/images/tweet.png"></a>
+    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Haskell%20%E2%80%94%20a%20higher%20order%20language&hashtags=haskell%2Cexecutable%2Ccoding&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2020-03-15-haskell-a-higher-order-language.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2020-03-15-haskell-a-higher-order-language.html" target="_blank"><img src="/images/tweet.png"></a>
     
   </section>
 </article>
@@ -657,173 +946,173 @@ orgMembers (Org _ ms) = ms</code></pre>
 <p>All the code examples below are available in <a href="https://github.com/epoberezkin/eval-is-evil">eval-is-evil</a> repository.</p>
 <h2 id="myth-1-eval-is-bad-for-performance">Myth #1: Eval Is Bad For Performance</h2>
 <p>This statement is usually supported by some trivial example like this:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">var</span> foo <span class="op">=</span> <span class="pp">eval</span>(<span class="st">&#39;bar.&#39;</span> <span class="op">+</span> x)<span class="op">;</span></span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="kw">var</span> foo <span class="op">=</span> <span class="pp">eval</span>(<span class="st">&#39;bar.&#39;</span> <span class="op">+</span> x)<span class="op">;</span></span></code></pre></div>
 <p>This code can be used to access bar object property which name is stored in the variable x. Instead, the author would argue, you should use the code below to access such property:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">var</span> foo <span class="op">=</span> bar[x]<span class="op">;</span></span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="kw">var</span> foo <span class="op">=</span> bar[x]<span class="op">;</span></span></code></pre></div>
 <p>Although this way of using eval indeed reduces execution speed, I cannot imagine any JavaScript developer, however unexperienced, who would think of using eval in this case.</p>
 <p>Let’s consider another example that also involves property accesses but <strong>where using <em>eval</em> dramatically improves performance</strong>.</p>
 <p>We have some nested object and we need to define some transformation of this object to a shallow object. We want to define such transformation using configuration rather than just writing code. It can be preferable if we want to be able to dynamically change such configuration and in many other scenarios. So if our nested object looks something like this:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">var</span> source <span class="op">=</span> {</span>
-<span id="cb3-2"><a href="#cb3-2"></a>  <span class="dt">services</span><span class="op">:</span> {</span>
-<span id="cb3-3"><a href="#cb3-3"></a>    <span class="dt">db</span><span class="op">:</span> {</span>
-<span id="cb3-4"><a href="#cb3-4"></a>      <span class="dt">host</span><span class="op">:</span> <span class="st">&#39;db.example.com&#39;</span></span>
-<span id="cb3-5"><a href="#cb3-5"></a>    }<span class="op">,</span></span>
-<span id="cb3-6"><a href="#cb3-6"></a>    <span class="dt">audit</span><span class="op">:</span> {</span>
-<span id="cb3-7"><a href="#cb3-7"></a>      <span class="dt">host</span><span class="op">:</span> <span class="st">&#39;audit.example.com&#39;</span></span>
-<span id="cb3-8"><a href="#cb3-8"></a>    }</span>
-<span id="cb3-9"><a href="#cb3-9"></a>  }</span>
-<span id="cb3-10"><a href="#cb3-10"></a>}<span class="op">;</span></span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a><span class="kw">var</span> source <span class="op">=</span> {</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>  <span class="dt">services</span><span class="op">:</span> {</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a>    <span class="dt">db</span><span class="op">:</span> {</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true"></a>      <span class="dt">host</span><span class="op">:</span> <span class="st">&#39;db.example.com&#39;</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true"></a>    }<span class="op">,</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true"></a>    <span class="dt">audit</span><span class="op">:</span> {</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true"></a>      <span class="dt">host</span><span class="op">:</span> <span class="st">&#39;audit.example.com&#39;</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true"></a>    }</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true"></a>  }</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true"></a>}<span class="op">;</span></span></code></pre></div>
 <p>and the shallow object we want to have should look this way:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">var</span> result <span class="op">=</span> {</span>
-<span id="cb4-2"><a href="#cb4-2"></a>  <span class="dt">db</span><span class="op">:</span> <span class="st">&#39;db.example.com&#39;</span><span class="op">,</span></span>
-<span id="cb4-3"><a href="#cb4-3"></a>  <span class="dt">audit</span><span class="op">:</span> <span class="st">&#39;audit.example.com&#39;</span></span>
-<span id="cb4-4"><a href="#cb4-4"></a>}<span class="op">;</span></span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a><span class="kw">var</span> result <span class="op">=</span> {</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a>  <span class="dt">db</span><span class="op">:</span> <span class="st">&#39;db.example.com&#39;</span><span class="op">,</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a>  <span class="dt">audit</span><span class="op">:</span> <span class="st">&#39;audit.example.com&#39;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true"></a>}<span class="op">;</span></span></code></pre></div>
 <p>the transformation from nested to shallow object could look as this one:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">var</span> transformation <span class="op">=</span> {</span>
-<span id="cb5-2"><a href="#cb5-2"></a>  <span class="dt">db</span><span class="op">:</span> <span class="st">&#39;/services/db/host&#39;</span><span class="op">,</span></span>
-<span id="cb5-3"><a href="#cb5-3"></a>  <span class="dt">audit</span><span class="op">:</span> <span class="st">&#39;/services/audit/host&#39;</span></span>
-<span id="cb5-4"><a href="#cb5-4"></a>}<span class="op">;</span></span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="kw">var</span> transformation <span class="op">=</span> {</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a>  <span class="dt">db</span><span class="op">:</span> <span class="st">&#39;/services/db/host&#39;</span><span class="op">,</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a>  <span class="dt">audit</span><span class="op">:</span> <span class="st">&#39;/services/audit/host&#39;</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a>}<span class="op">;</span></span></code></pre></div>
 <p>By the way, the format of the string defining the location of the data in the nested object is called <a href="https://tools.ietf.org/html/rfc6901">JSON pointer</a>.</p>
 <p>Ok, so if we had such transformation, how would we write the code to transform a nested object to a shallow one? One approach is to simply iterate properties in the transformation and generate the resulting object:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb6-1"><a href="#cb6-1"></a><span class="kw">function</span> <span class="fu">transform</span>(source) {</span>
-<span id="cb6-2"><a href="#cb6-2"></a>  <span class="kw">var</span> result <span class="op">=</span> {}<span class="op">;</span></span>
-<span id="cb6-3"><a href="#cb6-3"></a>  <span class="cf">for</span> (<span class="kw">var</span> key <span class="kw">in</span> transformation) {</span>
-<span id="cb6-4"><a href="#cb6-4"></a>    <span class="kw">var</span> path <span class="op">=</span> transformation[key]<span class="op">;</span></span>
-<span id="cb6-5"><a href="#cb6-5"></a>    <span class="kw">var</span> segments <span class="op">=</span> path<span class="op">.</span><span class="fu">split</span>(<span class="st">&#39;/&#39;</span>)<span class="op">;</span></span>
-<span id="cb6-6"><a href="#cb6-6"></a>    <span class="kw">var</span> data <span class="op">=</span> source<span class="op">;</span></span>
-<span id="cb6-7"><a href="#cb6-7"></a>    <span class="cf">for</span> (<span class="kw">var</span> i<span class="op">=</span><span class="dv">1</span><span class="op">;</span> i<span class="op">&lt;</span>segments<span class="op">.</span><span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) {</span>
-<span id="cb6-8"><a href="#cb6-8"></a>      data <span class="op">=</span> data <span class="op">&amp;&amp;</span> data[segments[i]]<span class="op">;</span></span>
-<span id="cb6-9"><a href="#cb6-9"></a>    }</span>
-<span id="cb6-10"><a href="#cb6-10"></a>    result[key] <span class="op">=</span> data<span class="op">;</span></span>
-<span id="cb6-11"><a href="#cb6-11"></a>  }</span>
-<span id="cb6-12"><a href="#cb6-12"></a>  <span class="cf">return</span> result<span class="op">;</span></span>
-<span id="cb6-13"><a href="#cb6-13"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a><span class="kw">function</span> <span class="fu">transform</span>(source) {</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a>  <span class="kw">var</span> result <span class="op">=</span> {}<span class="op">;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a>  <span class="cf">for</span> (<span class="kw">var</span> key <span class="kw">in</span> transformation) {</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true"></a>    <span class="kw">var</span> path <span class="op">=</span> transformation[key]<span class="op">;</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true"></a>    <span class="kw">var</span> segments <span class="op">=</span> path<span class="op">.</span><span class="fu">split</span>(<span class="st">&#39;/&#39;</span>)<span class="op">;</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true"></a>    <span class="kw">var</span> data <span class="op">=</span> source<span class="op">;</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true"></a>    <span class="cf">for</span> (<span class="kw">var</span> i<span class="op">=</span><span class="dv">1</span><span class="op">;</span> i<span class="op">&lt;</span>segments<span class="op">.</span><span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) {</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true"></a>      data <span class="op">=</span> data <span class="op">&amp;&amp;</span> data[segments[i]]<span class="op">;</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true"></a>    }</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true"></a>    result[key] <span class="op">=</span> data<span class="op">;</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true"></a>  }</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true"></a>  <span class="cf">return</span> result<span class="op">;</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true"></a>}</span></code></pre></div>
 <p>Although this code works, it is not very efficient if the transformation has to be performed on the server many times.</p>
 <p>Another approach would be to <strong>generate</strong> the code that performs the transformation and convert this code into a function using eval (or Function constructor):</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb7-1"><a href="#cb7-1"></a><span class="kw">var</span> code <span class="op">=</span> <span class="st">&#39;return { &#39;</span><span class="op">;</span></span>
-<span id="cb7-2"><a href="#cb7-2"></a><span class="cf">for</span> (<span class="kw">var</span> key <span class="kw">in</span> transformation) {</span>
-<span id="cb7-3"><a href="#cb7-3"></a>  <span class="kw">var</span> path <span class="op">=</span> transformation[key]<span class="op">;</span></span>
-<span id="cb7-4"><a href="#cb7-4"></a>  <span class="kw">var</span> segments <span class="op">=</span> path<span class="op">.</span><span class="fu">split</span>(<span class="st">&#39;/&#39;</span>)<span class="op">;</span></span>
-<span id="cb7-5"><a href="#cb7-5"></a>  <span class="kw">var</span> data <span class="op">=</span> <span class="st">&#39;source&#39;</span><span class="op">;</span></span>
-<span id="cb7-6"><a href="#cb7-6"></a>  <span class="kw">var</span> expr <span class="op">=</span> data<span class="op">;</span></span>
-<span id="cb7-7"><a href="#cb7-7"></a>  <span class="cf">for</span> (<span class="kw">var</span> i<span class="op">=</span><span class="dv">1</span><span class="op">;</span> i<span class="op">&lt;</span>segments<span class="op">.</span><span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) {</span>
-<span id="cb7-8"><a href="#cb7-8"></a>    data <span class="op">+=</span> <span class="st">&#39;.&#39;</span> <span class="op">+</span> segments[i]<span class="op">;</span></span>
-<span id="cb7-9"><a href="#cb7-9"></a>    expr <span class="op">+=</span> <span class="st">&#39; &amp;&amp; &#39;</span> <span class="op">+</span> data<span class="op">;</span></span>
-<span id="cb7-10"><a href="#cb7-10"></a>  }</span>
-<span id="cb7-11"><a href="#cb7-11"></a>  code <span class="op">+=</span> key <span class="op">+</span> <span class="st">&#39;: &#39;</span> <span class="op">+</span> expr <span class="op">+</span> <span class="st">&#39;, &#39;</span><span class="op">;</span></span>
-<span id="cb7-12"><a href="#cb7-12"></a>}</span>
-<span id="cb7-13"><a href="#cb7-13"></a>code <span class="op">+=</span> <span class="st">&#39;};&#39;</span></span>
-<span id="cb7-14"><a href="#cb7-14"></a></span>
-<span id="cb7-15"><a href="#cb7-15"></a><span class="kw">var</span> transform <span class="op">=</span> <span class="pp">eval</span>(<span class="st">&#39;(function(source) { &#39;</span> <span class="op">+</span> code <span class="op">+</span> <span class="st">&#39; })&#39;</span>)<span class="op">;</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a><span class="kw">var</span> code <span class="op">=</span> <span class="st">&#39;return { &#39;</span><span class="op">;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true"></a><span class="cf">for</span> (<span class="kw">var</span> key <span class="kw">in</span> transformation) {</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true"></a>  <span class="kw">var</span> path <span class="op">=</span> transformation[key]<span class="op">;</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true"></a>  <span class="kw">var</span> segments <span class="op">=</span> path<span class="op">.</span><span class="fu">split</span>(<span class="st">&#39;/&#39;</span>)<span class="op">;</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true"></a>  <span class="kw">var</span> data <span class="op">=</span> <span class="st">&#39;source&#39;</span><span class="op">;</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true"></a>  <span class="kw">var</span> expr <span class="op">=</span> data<span class="op">;</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true"></a>  <span class="cf">for</span> (<span class="kw">var</span> i<span class="op">=</span><span class="dv">1</span><span class="op">;</span> i<span class="op">&lt;</span>segments<span class="op">.</span><span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) {</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true"></a>    data <span class="op">+=</span> <span class="st">&#39;.&#39;</span> <span class="op">+</span> segments[i]<span class="op">;</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true"></a>    expr <span class="op">+=</span> <span class="st">&#39; &amp;&amp; &#39;</span> <span class="op">+</span> data<span class="op">;</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true"></a>  }</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true"></a>  code <span class="op">+=</span> key <span class="op">+</span> <span class="st">&#39;: &#39;</span> <span class="op">+</span> expr <span class="op">+</span> <span class="st">&#39;, &#39;</span><span class="op">;</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true"></a>}</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true"></a>code <span class="op">+=</span> <span class="st">&#39;};&#39;</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true"></a></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true"></a><span class="kw">var</span> transform <span class="op">=</span> <span class="pp">eval</span>(<span class="st">&#39;(function(source) { &#39;</span> <span class="op">+</span> code <span class="op">+</span> <span class="st">&#39; })&#39;</span>)<span class="op">;</span></span></code></pre></div>
 <p>The last line can be replaced with:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb8-1"><a href="#cb8-1"></a><span class="kw">var</span> transform <span class="op">=</span> <span class="kw">new</span> <span class="bu">Function</span>(<span class="st">&#39;source&#39;</span><span class="op">,</span> code)<span class="op">;</span></span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true"></a><span class="kw">var</span> transform <span class="op">=</span> <span class="kw">new</span> <span class="bu">Function</span>(<span class="st">&#39;source&#39;</span><span class="op">,</span> code)<span class="op">;</span></span></code></pre></div>
 <p>For our transformation the generated function will be:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb9-1"><a href="#cb9-1"></a><span class="kw">function</span> (source) {</span>
-<span id="cb9-2"><a href="#cb9-2"></a>  <span class="cf">return</span> {</span>
-<span id="cb9-3"><a href="#cb9-3"></a>    <span class="dt">db</span><span class="op">:</span> source <span class="op">&amp;&amp;</span> source<span class="op">.</span><span class="at">services</span> <span class="op">&amp;&amp;</span> source<span class="op">.</span><span class="at">services</span><span class="op">.</span><span class="at">db</span> <span class="op">&amp;&amp;</span> source<span class="op">.</span><span class="at">services</span><span class="op">.</span><span class="at">db</span><span class="op">.</span><span class="at">host</span><span class="op">,</span></span>
-<span id="cb9-4"><a href="#cb9-4"></a>    <span class="dt">audit</span><span class="op">:</span> source <span class="op">&amp;&amp;</span> source<span class="op">.</span><span class="at">services</span> <span class="op">&amp;&amp;</span> source<span class="op">.</span><span class="at">services</span><span class="op">.</span><span class="at">audit</span> <span class="op">&amp;&amp;</span> source<span class="op">.</span><span class="at">services</span><span class="op">.</span><span class="at">audit</span><span class="op">.</span><span class="at">host</span><span class="op">,</span></span>
-<span id="cb9-5"><a href="#cb9-5"></a>  }<span class="op">;</span></span>
-<span id="cb9-6"><a href="#cb9-6"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true"></a><span class="kw">function</span> (source) {</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true"></a>  <span class="cf">return</span> {</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true"></a>    <span class="dt">db</span><span class="op">:</span> source <span class="op">&amp;&amp;</span> source<span class="op">.</span><span class="at">services</span> <span class="op">&amp;&amp;</span> source<span class="op">.</span><span class="at">services</span><span class="op">.</span><span class="at">db</span> <span class="op">&amp;&amp;</span> source<span class="op">.</span><span class="at">services</span><span class="op">.</span><span class="at">db</span><span class="op">.</span><span class="at">host</span><span class="op">,</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true"></a>    <span class="dt">audit</span><span class="op">:</span> source <span class="op">&amp;&amp;</span> source<span class="op">.</span><span class="at">services</span> <span class="op">&amp;&amp;</span> source<span class="op">.</span><span class="at">services</span><span class="op">.</span><span class="at">audit</span> <span class="op">&amp;&amp;</span> source<span class="op">.</span><span class="at">services</span><span class="op">.</span><span class="at">audit</span><span class="op">.</span><span class="at">host</span><span class="op">,</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true"></a>  }<span class="op">;</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true"></a>}</span></code></pre></div>
 <p>This dynamically generated code will execute many times faster than the first example where the transformation is performed using a loop. Creating this function takes some execution time but it happens only once.</p>
 <p>This example shows that you can substantially improve the performance of your application using dynamic code generation and eval. The same approach is used for generating model accessor methods (get, set, etc.) in <a href="https://github.com/milojs/milo">milo.js</a> framework.</p>
 <h2 id="myth-2-eval-is-security-risk">Myth #2: Eval Is Security Risk</h2>
 <p>This statement probably assumes that you would receive JavaScript code in the request to the server and execute it using eval:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb10-1"><a href="#cb10-1"></a>app<span class="op">.</span><span class="fu">get</span>(<span class="st">&#39;/execute&#39;</span><span class="op">,</span> <span class="kw">function</span>(req<span class="op">,</span> res) {</span>
-<span id="cb10-2"><a href="#cb10-2"></a>  res<span class="op">.</span><span class="fu">send</span>(<span class="pp">eval</span>(req<span class="op">.</span><span class="at">body</span><span class="op">.</span><span class="at">code</span>))<span class="op">;</span></span>
-<span id="cb10-3"><a href="#cb10-3"></a>})<span class="op">;</span></span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true"></a>app<span class="op">.</span><span class="fu">get</span>(<span class="st">&#39;/execute&#39;</span><span class="op">,</span> <span class="kw">function</span>(req<span class="op">,</span> res) {</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true"></a>  res<span class="op">.</span><span class="fu">send</span>(<span class="pp">eval</span>(req<span class="op">.</span><span class="at">body</span><span class="op">.</span><span class="at">code</span>))<span class="op">;</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true"></a>})<span class="op">;</span></span></code></pre></div>
 <p>The code above indeed has some problems. If <code>req.body.code</code> were <code>process.exit(1)</code> the application would exit with error. Some worse things may easily happen too. But I cannot see how anybody could write code like this. User input is usually sanitised, particularly in cases when this input is used for code execution/generation.</p>
 <p>Let’s consider another example. Say, we have a mass mailing application that sends the messages to the list of recipients and we require that the message that the user submits is a template using available fields from a recipient record:</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb11-1"><a href="#cb11-1"></a><span class="kw">var</span> recipients <span class="op">=</span> [</span>
-<span id="cb11-2"><a href="#cb11-2"></a>  { <span class="dt">first_name</span><span class="op">:</span> <span class="st">&#39;John&#39;</span><span class="op">,</span> <span class="dt">last_name</span><span class="op">:</span> <span class="st">&#39;Smith&#39;</span> }<span class="op">,</span></span>
-<span id="cb11-3"><a href="#cb11-3"></a>  { <span class="dt">first_name</span><span class="op">:</span> <span class="st">&#39;Jane&#39;</span><span class="op">,</span> <span class="dt">last_name</span><span class="op">:</span> <span class="st">&#39;Doe&#39;</span> }</span>
-<span id="cb11-4"><a href="#cb11-4"></a>]<span class="op">;</span></span>
-<span id="cb11-5"><a href="#cb11-5"></a></span>
-<span id="cb11-6"><a href="#cb11-6"></a><span class="kw">var</span> messageTemplate <span class="op">=</span> <span class="st">&#39;Hello {{first_name}} {{last_name}}!&#39;</span><span class="op">;</span></span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true"></a><span class="kw">var</span> recipients <span class="op">=</span> [</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true"></a>  { <span class="dt">first_name</span><span class="op">:</span> <span class="st">&#39;John&#39;</span><span class="op">,</span> <span class="dt">last_name</span><span class="op">:</span> <span class="st">&#39;Smith&#39;</span> }<span class="op">,</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true"></a>  { <span class="dt">first_name</span><span class="op">:</span> <span class="st">&#39;Jane&#39;</span><span class="op">,</span> <span class="dt">last_name</span><span class="op">:</span> <span class="st">&#39;Doe&#39;</span> }</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true"></a>]<span class="op">;</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true"></a></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true"></a><span class="kw">var</span> messageTemplate <span class="op">=</span> <span class="st">&#39;Hello {{first_name}} {{last_name}}!&#39;</span><span class="op">;</span></span></code></pre></div>
 <p>We could create the actual messages to all users in a loop:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb12-1"><a href="#cb12-1"></a><span class="kw">var</span> messages <span class="op">=</span> recipients<span class="op">.</span><span class="fu">map</span>(createMessage)<span class="op">;</span></span>
-<span id="cb12-2"><a href="#cb12-2"></a></span>
-<span id="cb12-3"><a href="#cb12-3"></a><span class="kw">function</span> <span class="fu">createMessage</span>(recipient) {</span>
-<span id="cb12-4"><a href="#cb12-4"></a>  <span class="cf">return</span> messageTemplate<span class="op">.</span><span class="fu">replace</span>(<span class="ss">/{{</span><span class="sc">([a-z_]+)</span><span class="ss">}}/ig</span><span class="op">,</span></span>
-<span id="cb12-5"><a href="#cb12-5"></a>    <span class="kw">function</span>(match<span class="op">,</span> key) {</span>
-<span id="cb12-6"><a href="#cb12-6"></a>      <span class="cf">return</span> recipients[key]<span class="op">;</span></span>
-<span id="cb12-7"><a href="#cb12-7"></a>    }</span>
-<span id="cb12-8"><a href="#cb12-8"></a>  )<span class="op">;</span></span>
-<span id="cb12-9"><a href="#cb12-9"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true"></a><span class="kw">var</span> messages <span class="op">=</span> recipients<span class="op">.</span><span class="fu">map</span>(createMessage)<span class="op">;</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true"></a><span class="kw">function</span> <span class="fu">createMessage</span>(recipient) {</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true"></a>  <span class="cf">return</span> messageTemplate<span class="op">.</span><span class="fu">replace</span>(<span class="ss">/{{</span><span class="sc">([a-z_]+)</span><span class="ss">}}/ig</span><span class="op">,</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true"></a>    <span class="kw">function</span>(match<span class="op">,</span> key) {</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true"></a>      <span class="cf">return</span> recipients[key]<span class="op">;</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true"></a>    }</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true"></a>  )<span class="op">;</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true"></a>}</span></code></pre></div>
 <p>The code above will create all the messages we need, but there is a much faster way to achieve it. We can generate the function createMessage. It doesn’t have any security implications even though messageTemplate is received from the user:</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb13-1"><a href="#cb13-1"></a><span class="kw">var</span> code <span class="op">=</span> <span class="st">&#39;return &quot;&#39;</span><span class="op">;</span></span>
-<span id="cb13-2"><a href="#cb13-2"></a>code <span class="op">+=</span> messageTemplate<span class="op">.</span><span class="fu">replace</span>(<span class="ss">/{{</span><span class="sc">([a-z_]+)</span><span class="ss">}}/ig</span><span class="op">,</span></span>
-<span id="cb13-3"><a href="#cb13-3"></a>  <span class="kw">function</span>(match<span class="op">,</span> key) {</span>
-<span id="cb13-4"><a href="#cb13-4"></a>    <span class="cf">return</span> <span class="st">&#39;&quot; + data.&#39;</span> <span class="op">+</span> key <span class="op">+</span> <span class="st">&#39; + &quot;&#39;</span><span class="op">;</span></span>
-<span id="cb13-5"><a href="#cb13-5"></a>  }</span>
-<span id="cb13-6"><a href="#cb13-6"></a>)<span class="op">;</span></span>
-<span id="cb13-7"><a href="#cb13-7"></a>code <span class="op">+=</span> <span class="st">&#39;&quot;;&#39;</span></span>
-<span id="cb13-8"><a href="#cb13-8"></a></span>
-<span id="cb13-9"><a href="#cb13-9"></a><span class="kw">var</span> createMessage <span class="op">=</span> <span class="pp">eval</span>(<span class="st">&#39;(function(data) { &#39;</span> <span class="op">+</span> code <span class="op">+</span> <span class="st">&#39; })&#39;</span>)<span class="op">;</span></span>
-<span id="cb13-10"><a href="#cb13-10"></a><span class="co">// or new Function(&#39;data&#39;, code);</span></span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true"></a><span class="kw">var</span> code <span class="op">=</span> <span class="st">&#39;return &quot;&#39;</span><span class="op">;</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true"></a>code <span class="op">+=</span> messageTemplate<span class="op">.</span><span class="fu">replace</span>(<span class="ss">/{{</span><span class="sc">([a-z_]+)</span><span class="ss">}}/ig</span><span class="op">,</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true"></a>  <span class="kw">function</span>(match<span class="op">,</span> key) {</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true"></a>    <span class="cf">return</span> <span class="st">&#39;&quot; + data.&#39;</span> <span class="op">+</span> key <span class="op">+</span> <span class="st">&#39; + &quot;&#39;</span><span class="op">;</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true"></a>  }</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true"></a>)<span class="op">;</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true"></a>code <span class="op">+=</span> <span class="st">&#39;&quot;;&#39;</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true"></a></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true"></a><span class="kw">var</span> createMessage <span class="op">=</span> <span class="pp">eval</span>(<span class="st">&#39;(function(data) { &#39;</span> <span class="op">+</span> code <span class="op">+</span> <span class="st">&#39; })&#39;</span>)<span class="op">;</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true"></a><span class="co">// or new Function(&#39;data&#39;, code);</span></span></code></pre></div>
 <p>In a few lines of code we have created a super-simple “templating engine” that compiles templates into JavaScript functions.</p>
 <p>The template <code>"Hello {{first_name}} {{last_name}}!"</code> will be compiled to:</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb14-1"><a href="#cb14-1"></a><span class="kw">function</span>(data) {</span>
-<span id="cb14-2"><a href="#cb14-2"></a>  <span class="cf">return</span> <span class="st">&quot;Hello &quot;</span> <span class="op">+</span> data<span class="op">.</span><span class="at">first_name</span> <span class="op">+</span> <span class="st">&quot; &quot;</span> <span class="op">+</span> data<span class="op">.</span><span class="at">last_name</span> <span class="op">+</span> <span class="st">&quot;!&quot;</span><span class="op">;</span></span>
-<span id="cb14-3"><a href="#cb14-3"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true"></a><span class="kw">function</span>(data) {</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true"></a>  <span class="cf">return</span> <span class="st">&quot;Hello &quot;</span> <span class="op">+</span> data<span class="op">.</span><span class="at">first_name</span> <span class="op">+</span> <span class="st">&quot; &quot;</span> <span class="op">+</span> data<span class="op">.</span><span class="at">last_name</span> <span class="op">+</span> <span class="st">&quot;!&quot;</span><span class="op">;</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true"></a>}</span></code></pre></div>
 <p>Executing the function above is hundreds (if not thousands) times faster than the code that does not use eval. Creating this function is always safe — if some unsafe code is used inside curly braces it will not be executed because the regular expression won’t match. For example, the template</p>
 <pre><code>&quot;Hello {{process.exit(1)}}!&quot;</code></pre>
 <p>will generate this function:</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb16-1"><a href="#cb16-1"></a><span class="kw">function</span>(data) {</span>
-<span id="cb16-2"><a href="#cb16-2"></a>  <span class="cf">return</span> <span class="st">&quot;Hello {{process.exit(1)}}!&quot;</span><span class="op">;</span></span>
-<span id="cb16-3"><a href="#cb16-3"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true"></a><span class="kw">function</span>(data) {</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true"></a>  <span class="cf">return</span> <span class="st">&quot;Hello {{process.exit(1)}}!&quot;</span><span class="op">;</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true"></a>}</span></code></pre></div>
 <p>i.e. an unsafe interpolation was not replaced with the code.</p>
 <p>The same approach to compiling templates into JavaScript functions is used in the fastest and the most concise <a href="https://github.com/olado/doT">templating engine doT</a>.</p>
 <h2 id="myth-3-eval-is-difficult-to-debug">Myth #3: Eval Is Difficult To Debug</h2>
 <p>I am not sure where this is coming from. The code passed to eval is a normal JavaScript code — you can add breakpoints, inspect variables, etc. Debugging code passed to eval or to Function constructor is not that much different from debugging any JavaScript code, you just need to either format it during code generation or to use <a href="https://github.com/beautify-web/js-beautify">js-beautify</a> package.</p>
 <p>Let’s consider one more example when you want to define a super-simple schema for your object (not <a href="http://json-schema.org/">JSON-schema</a>!) and validate it according to this schema:</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb17-1"><a href="#cb17-1"></a><span class="kw">var</span> schema <span class="op">=</span> {</span>
-<span id="cb17-2"><a href="#cb17-2"></a>  <span class="dt">foo</span><span class="op">:</span> <span class="st">&#39;identifier&#39;</span><span class="op">,</span></span>
-<span id="cb17-3"><a href="#cb17-3"></a>  <span class="dt">bar</span><span class="op">:</span> <span class="st">&#39;date&#39;</span></span>
-<span id="cb17-4"><a href="#cb17-4"></a>}<span class="op">;</span></span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true"></a><span class="kw">var</span> schema <span class="op">=</span> {</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true"></a>  <span class="dt">foo</span><span class="op">:</span> <span class="st">&#39;identifier&#39;</span><span class="op">,</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true"></a>  <span class="dt">bar</span><span class="op">:</span> <span class="st">&#39;date&#39;</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true"></a>}<span class="op">;</span></span></code></pre></div>
 <p>We assume here that all properties should be strings and they should match some known formats (<code>identifier</code> and <code>date</code> in this case).</p>
 <p>Our formats can be defined as regular expressions:</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb18-1"><a href="#cb18-1"></a><span class="kw">var</span> formats <span class="op">=</span> {</span>
-<span id="cb18-2"><a href="#cb18-2"></a>  <span class="dt">identifier</span><span class="op">:</span> <span class="ss">/</span><span class="sc">^[a-z_$][a-z0-9_$]*$</span><span class="ss">/i</span><span class="op">,</span></span>
-<span id="cb18-3"><a href="#cb18-3"></a>  <span class="dt">date</span><span class="op">:</span> <span class="ss">/</span><span class="sc">^\d{2}\/\d{2}\/\d{4}$</span><span class="ss">/</span></span>
-<span id="cb18-4"><a href="#cb18-4"></a>}<span class="op">;</span></span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true"></a><span class="kw">var</span> formats <span class="op">=</span> {</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true"></a>  <span class="dt">identifier</span><span class="op">:</span> <span class="ss">/</span><span class="sc">^[a-z_$][a-z0-9_$]*$</span><span class="ss">/i</span><span class="op">,</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true"></a>  <span class="dt">date</span><span class="op">:</span> <span class="ss">/</span><span class="sc">^\d{2}\/\d{2}\/\d{4}$</span><span class="ss">/</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true"></a>}<span class="op">;</span></span></code></pre></div>
 <p>The data that we want to validate:</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb19-1"><a href="#cb19-1"></a><span class="kw">var</span> validData <span class="op">=</span> {</span>
-<span id="cb19-2"><a href="#cb19-2"></a>  <span class="dt">foo</span><span class="op">:</span> <span class="st">&#39;abc&#39;</span><span class="op">,</span></span>
-<span id="cb19-3"><a href="#cb19-3"></a>  <span class="dt">bar</span><span class="op">:</span> <span class="st">&#39;15/09/2016&#39;</span></span>
-<span id="cb19-4"><a href="#cb19-4"></a>}<span class="op">;</span></span>
-<span id="cb19-5"><a href="#cb19-5"></a></span>
-<span id="cb19-6"><a href="#cb19-6"></a><span class="kw">var</span> invalidData <span class="op">=</span> {</span>
-<span id="cb19-7"><a href="#cb19-7"></a>  <span class="dt">foo</span><span class="op">:</span> <span class="st">&#39;1&#39;</span><span class="op">,</span></span>
-<span id="cb19-8"><a href="#cb19-8"></a>  <span class="dt">bar</span><span class="op">:</span> <span class="st">&#39;15-09-2016&#39;</span></span>
-<span id="cb19-9"><a href="#cb19-9"></a>}<span class="op">;</span></span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true"></a><span class="kw">var</span> validData <span class="op">=</span> {</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true"></a>  <span class="dt">foo</span><span class="op">:</span> <span class="st">&#39;abc&#39;</span><span class="op">,</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true"></a>  <span class="dt">bar</span><span class="op">:</span> <span class="st">&#39;15/09/2016&#39;</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true"></a>}<span class="op">;</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true"></a></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true"></a><span class="kw">var</span> invalidData <span class="op">=</span> {</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true"></a>  <span class="dt">foo</span><span class="op">:</span> <span class="st">&#39;1&#39;</span><span class="op">,</span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true"></a>  <span class="dt">bar</span><span class="op">:</span> <span class="st">&#39;15-09-2016&#39;</span></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true"></a>}<span class="op">;</span></span></code></pre></div>
 <p>We can validate the data by iterating the properties in the schema and checking the data properties against the formats:</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb20-1"><a href="#cb20-1"></a><span class="kw">function</span> <span class="fu">validate</span>(schema<span class="op">,</span> data) {</span>
-<span id="cb20-2"><a href="#cb20-2"></a>  <span class="cf">for</span> (<span class="kw">var</span> prop <span class="kw">in</span> schema) {</span>
-<span id="cb20-3"><a href="#cb20-3"></a>    <span class="kw">var</span> value <span class="op">=</span> data[prop]<span class="op">;</span></span>
-<span id="cb20-4"><a href="#cb20-4"></a>    <span class="cf">if</span> (<span class="kw">typeof</span> value <span class="op">!=</span> <span class="st">&#39;string&#39;</span>) <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span>
-<span id="cb20-5"><a href="#cb20-5"></a>    <span class="kw">var</span> pattern <span class="op">=</span> formats[schema[prop]]<span class="op">;</span></span>
-<span id="cb20-6"><a href="#cb20-6"></a>    <span class="cf">if</span> (<span class="op">!</span>pattern<span class="op">.</span><span class="fu">test</span>(value)) <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span>
-<span id="cb20-7"><a href="#cb20-7"></a>  }</span>
-<span id="cb20-8"><a href="#cb20-8"></a>  <span class="cf">return</span> <span class="kw">true</span><span class="op">;</span></span>
-<span id="cb20-9"><a href="#cb20-9"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true"></a><span class="kw">function</span> <span class="fu">validate</span>(schema<span class="op">,</span> data) {</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true"></a>  <span class="cf">for</span> (<span class="kw">var</span> prop <span class="kw">in</span> schema) {</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true"></a>    <span class="kw">var</span> value <span class="op">=</span> data[prop]<span class="op">;</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true"></a>    <span class="cf">if</span> (<span class="kw">typeof</span> value <span class="op">!=</span> <span class="st">&#39;string&#39;</span>) <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true"></a>    <span class="kw">var</span> pattern <span class="op">=</span> formats[schema[prop]]<span class="op">;</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true"></a>    <span class="cf">if</span> (<span class="op">!</span>pattern<span class="op">.</span><span class="fu">test</span>(value)) <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true"></a>  }</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true"></a>  <span class="cf">return</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true"></a>}</span></code></pre></div>
 <p>An alternative approach is to generate the code of the validating function from the schema and create this function using <em>eval</em>:</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb21-1"><a href="#cb21-1"></a><span class="kw">var</span> code <span class="op">=</span> <span class="st">&#39;&#39;</span><span class="op">;</span></span>
-<span id="cb21-2"><a href="#cb21-2"></a><span class="cf">for</span> (<span class="kw">var</span> prop <span class="kw">in</span> schema) {</span>
-<span id="cb21-3"><a href="#cb21-3"></a>  <span class="kw">var</span> data <span class="op">=</span> <span class="st">&#39;data.&#39;</span> <span class="op">+</span> prop<span class="op">;</span></span>
-<span id="cb21-4"><a href="#cb21-4"></a>  code <span class="op">+=</span> <span class="st">&#39;if (typeof &#39;</span> <span class="op">+</span> data <span class="op">+</span> <span class="st">&#39; != &quot;string&quot;) return false;&#39;</span><span class="op">;</span></span>
-<span id="cb21-5"><a href="#cb21-5"></a>  code <span class="op">+=</span> <span class="st">&#39;if (!formats.&#39;</span> <span class="op">+</span> schema[prop] <span class="op">+</span> <span class="st">&#39;.test(&#39;</span></span>
-<span id="cb21-6"><a href="#cb21-6"></a>            <span class="op">+</span> data <span class="op">+</span> <span class="st">&#39;)) return false;&#39;</span><span class="op">;</span></span>
-<span id="cb21-7"><a href="#cb21-7"></a>}</span>
-<span id="cb21-8"><a href="#cb21-8"></a>code <span class="op">+=</span> <span class="st">&#39;return true;&#39;</span><span class="op">;</span></span>
-<span id="cb21-9"><a href="#cb21-9"></a><span class="kw">var</span> validate <span class="op">=</span> <span class="pp">eval</span>(<span class="st">&#39;(function(data) { &#39;</span> <span class="op">+</span> code <span class="op">+</span> <span class="st">&#39; })&#39;</span>)<span class="op">;</span></span></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true"></a><span class="kw">var</span> code <span class="op">=</span> <span class="st">&#39;&#39;</span><span class="op">;</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true"></a><span class="cf">for</span> (<span class="kw">var</span> prop <span class="kw">in</span> schema) {</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true"></a>  <span class="kw">var</span> data <span class="op">=</span> <span class="st">&#39;data.&#39;</span> <span class="op">+</span> prop<span class="op">;</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true"></a>  code <span class="op">+=</span> <span class="st">&#39;if (typeof &#39;</span> <span class="op">+</span> data <span class="op">+</span> <span class="st">&#39; != &quot;string&quot;) return false;&#39;</span><span class="op">;</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true"></a>  code <span class="op">+=</span> <span class="st">&#39;if (!formats.&#39;</span> <span class="op">+</span> schema[prop] <span class="op">+</span> <span class="st">&#39;.test(&#39;</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true"></a>            <span class="op">+</span> data <span class="op">+</span> <span class="st">&#39;)) return false;&#39;</span><span class="op">;</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true"></a>}</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true"></a>code <span class="op">+=</span> <span class="st">&#39;return true;&#39;</span><span class="op">;</span></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true"></a><span class="kw">var</span> validate <span class="op">=</span> <span class="pp">eval</span>(<span class="st">&#39;(function(data) { &#39;</span> <span class="op">+</span> code <span class="op">+</span> <span class="st">&#39; })&#39;</span>)<span class="op">;</span></span></code></pre></div>
 <p>Our simple schema above would “compile” to this function:</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb22-1"><a href="#cb22-1"></a><span class="kw">function</span> (data) {</span>
-<span id="cb22-2"><a href="#cb22-2"></a>  <span class="cf">if</span> (<span class="kw">typeof</span> data<span class="op">.</span><span class="at">foo</span> <span class="op">!=</span> <span class="st">&quot;string&quot;</span>) <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span>
-<span id="cb22-3"><a href="#cb22-3"></a>  <span class="cf">if</span> (<span class="op">!</span>formats<span class="op">.</span><span class="at">identifier</span><span class="op">.</span><span class="fu">test</span>(data<span class="op">.</span><span class="at">foo</span>)) <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span>
-<span id="cb22-4"><a href="#cb22-4"></a>  <span class="cf">if</span> (<span class="kw">typeof</span> data<span class="op">.</span><span class="at">bar</span> <span class="op">!=</span> <span class="st">&quot;string&quot;</span>) <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span>
-<span id="cb22-5"><a href="#cb22-5"></a>  <span class="cf">if</span> (<span class="op">!</span>formats<span class="op">.</span><span class="at">date</span><span class="op">.</span><span class="fu">test</span>(data<span class="op">.</span><span class="at">bar</span>)) <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span>
-<span id="cb22-6"><a href="#cb22-6"></a>  <span class="cf">return</span> <span class="kw">true</span><span class="op">;</span></span>
-<span id="cb22-7"><a href="#cb22-7"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true"></a><span class="kw">function</span> (data) {</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true"></a>  <span class="cf">if</span> (<span class="kw">typeof</span> data<span class="op">.</span><span class="at">foo</span> <span class="op">!=</span> <span class="st">&quot;string&quot;</span>) <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true"></a>  <span class="cf">if</span> (<span class="op">!</span>formats<span class="op">.</span><span class="at">identifier</span><span class="op">.</span><span class="fu">test</span>(data<span class="op">.</span><span class="at">foo</span>)) <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true"></a>  <span class="cf">if</span> (<span class="kw">typeof</span> data<span class="op">.</span><span class="at">bar</span> <span class="op">!=</span> <span class="st">&quot;string&quot;</span>) <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true"></a>  <span class="cf">if</span> (<span class="op">!</span>formats<span class="op">.</span><span class="at">date</span><span class="op">.</span><span class="fu">test</span>(data<span class="op">.</span><span class="at">bar</span>)) <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true"></a>  <span class="cf">return</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true"></a>}</span></code></pre></div>
 <p>This approach to data validation when the schema is compiled to a JavaScript function is used in several JSON-Schema validators, including the fastest one — <a href="https://github.com/epoberezkin/ajv">Ajv</a> that I have created.</p>
 <h2 id="so-why-eval-is-evil">So Why Eval Is Evil?</h2>
 <p><em>Eval</em> can dramatically improve performance, it doesn’t create security risks if used properly and it can be debugged without any problems. Why it should never be used then?</p>
@@ -833,9 +1122,9 @@ orgMembers (Org _ ms) = ms</code></pre>
 <p>Vyacheslav Egorov <a href="https://mrale.ph/blog/2012/09/23/grokking-v8-closures-for-fun.html">wrote about it</a> 4 years ago and it is still the case today — eval is not optimised in node.js and browsers in the way normal closures are, that only retain access to the scope variables they use.</p>
 <p>This issue has been pointed out by <a href="https://github.com/rf">Russ Frank</a> who has recently submitted a <a href="https://github.com/epoberezkin/ajv/pull/293">PR to Ajv</a> that replaced <em>eval</em> with <em>Function</em> constructor to reduce memory utilisation.</p>
 <p>In all examples but the last one we could easily replace <em>eval</em> with <em>new Function</em>. In the last example though the generated function should be a closure — it needs access to <em>formats</em> that are defined in the parent scope. So if we simply use <em>Function</em> constructor in the same way as before it won’t work. Instead we can do this:</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb23-1"><a href="#cb23-1"></a><span class="kw">var</span> createValidate <span class="op">=</span> <span class="kw">new</span> <span class="bu">Function</span>(<span class="st">&#39;formats&#39;</span><span class="op">,</span></span>
-<span id="cb23-2"><a href="#cb23-2"></a>                       <span class="st">&#39;return function(data) { &#39;</span> <span class="op">+</span> code <span class="op">+</span> <span class="st">&#39; }&#39;</span>)<span class="op">;</span></span>
-<span id="cb23-3"><a href="#cb23-3"></a><span class="kw">var</span> validate <span class="op">=</span> createValidate(formats)<span class="op">;</span></span></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true"></a><span class="kw">var</span> createValidate <span class="op">=</span> <span class="kw">new</span> <span class="bu">Function</span>(<span class="st">&#39;formats&#39;</span><span class="op">,</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true"></a>                       <span class="st">&#39;return function(data) { &#39;</span> <span class="op">+</span> code <span class="op">+</span> <span class="st">&#39; }&#39;</span>)<span class="op">;</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true"></a><span class="kw">var</span> validate <span class="op">=</span> <span class="fu">createValidate</span>(formats)<span class="op">;</span></span></code></pre></div>
 <p>As you can see <em>Function</em> constructor is used to create a function that returns a closure that has access to <em>formats</em>, but not to anything else:</p>
 <p><img src="/images/eval2.png" alt="Function constructor closure" title="Function constructor allows to control closure"></p>
 <p>Although this code is more verbose than with <em>eval</em> it doesn’t have the issue that makes <em>eval</em> really evil — <strong>retaining access to everything in all scopes</strong> from the current to the global.</p>

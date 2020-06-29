@@ -37,7 +37,7 @@ As you can see, the values `Opened`/`Closed` are not connected to the associated
 
 Singleton types allow creating this missing link between ordinary values and their associated promoted constructors. The idea here is that for each value we need to create a separate type that has only one value in it. In this way, if we connect values in these singleton types to ordinary values (via polymorphic functions), and the singleton types themselves to the promoted constructors (via type inference), we will have managed to link types to values, even though indirectly - so we can use the equivalent of the dependent types in Haskell.
 
-It does sound like a lot of boilerplate to write, but luckily singletons library automates the whole process by using Templage Haskell to generate it. To illustrate using the same example as above, but with the singleton types added:
+It does sound like a lot of boilerplate to write, but luckily singletons library automates the whole process by using Template Haskell to generate it. To illustrate using the same example as above, but with the singleton types added:
 
 ```haskell
 $(singletons [|

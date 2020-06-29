@@ -124,7 +124,7 @@ main = do
 There are two downsides of this approach:
 
 1. We cannot limit which types can be instances of `Acc` type class. While in some more general cases this unlimited extensibility can be helpful, if we want to control which types can be used as `Acc` we need some other approach.
-2. We have to write some boiler plate code - we really just wanted one type with some additional flexbility in it, and not two different types and type class to represent it.
+2. We have to write some boiler plate code - we really just wanted one type with some additional flexibility in it, and not two different types and type class to represent it.
 
 Let's try to solve these problems.
 
@@ -167,7 +167,7 @@ orgMembers :: Account 'AOrg -> Members
 orgMembers (Org _ ms) = ms
 ```
 
-Please note that in this case we made types belonging to our custom-made kind `AType` instances of typeclass `Acc`, rather than account types. We can neither extend data family `Account a` nor type class `Acc` without extending our kind `AType`.
+Please note that in this case we made types belonging to our custom-made kind `AType` instances of type-class `Acc`, rather than account types. We can neither extend data family `Account a` nor type class `Acc` without extending our kind `AType`.
 
 We still need to create an existential wrapper type to put users and orgs in the same list:
 
@@ -178,12 +178,12 @@ type Accounts = [A]
 
 We can use exactly the same code to process users and orgs as in approach #2. 
 
-We have managed to restrict the types of accounts by defining a kind, but do we really need 2 different types and a typeclass, or is there a way to create just one, a more advanced type?
+We have managed to restrict the types of accounts by defining a kind, but do we really need 2 different types and a type-class, or is there a way to create just one, a more advanced type?
 
 
 ## Approach #4 - GADTs
 
-We can achive the same flexibility using a generalised algebraic data type - support for such types is enabled with [GADTs](https://downloads.haskell.org/ghc/8.8.3/docs/html/users_guide/glasgow_exts.html#extension-GADTs) extension.
+We can achieve the same flexibility using a generalised algebraic data type - support for such types is enabled with [GADTs](https://downloads.haskell.org/ghc/8.8.3/docs/html/users_guide/glasgow_exts.html#extension-GADTs) extension.
 
 ```haskell
 data AType = AUser | AOrg -- we still need DataKinds extension
@@ -227,7 +227,7 @@ The same code as above can be used to process the list of users and orgs.
 
 Beyond basic types, we looked at three options that allow to define different entities with shared behaviours and to manage them in the same data structure:
 
-1. Type classes - the most extensible option, that allows to define the behavior independently of its implementation. The classic scenario for type classes is some kind of widgets/shapes/etc.
+1. Type classes - the most extensible option, that allows to define the behaviour independently of its implementation. The classic scenario for type classes is some kind of widgets/shapes/etc.
 2. Data families restricted with data kinds. The advantage of such data families is that you can define its members in different parts of your code, but you have control of the list of allowed members in a single location using a custom data kind.
 3. GADTs - they provide a much bigger flexibility in defining your types, in many cases without the need for type classes. They allow different constructors of one parametrised type (of a higher kind) to return specific types (of basic kind).
 

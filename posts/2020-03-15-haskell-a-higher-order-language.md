@@ -7,7 +7,7 @@ ref: https://medium.com/@epoberezkin/haskell-a-higher-order-language-ade461d453c
 
 <img src="/images/haskell.png" width="40%" style="float: left; margin: 20px 20px 10px 0;" />
 
-The thesis here is that Haskel is not just one of many functional programming languages — it is a different, more advanced programming paradigm.
+The thesis here is that Haskell is not just one of many functional programming languages — it is a different, more advanced programming paradigm.
 
 Haskell is indeed a functional language, but calling Haskell “a functional language” is like calling a skyscraper “a dwelling” — while technically correct, it does not describe how the latter is much more than just a place to live.
 
@@ -21,7 +21,7 @@ But a bigger distinction between Haskell and other languages is in the nature of
 
 For example, a simple `sequence` function that is defined as:
 
-```haskell
+```haskell ignore
 sequence :: Monad m => [m a] -> m [a]
 sequence ms = foldr k (return []) ms
             where
@@ -32,7 +32,7 @@ can mean different things depending on the context that is defined by `m`.
 
 Applied to IO it can mean performing IO actions in sequence:
 
-```haskell
+```haskell ignore
 sequence [getLine, getLine]
 ```
 
@@ -40,14 +40,14 @@ returns a single IO action that resolves into the list of 2 strings.
 
 Applied to the list of instances of `Maybe` type, it would check that all of them contain some value and either return `Just` list of these value or Nothing if any of them is `Nothing`:
 
-```haskell
+```haskell ignore
 sequence [Just 1, Just 2, Just 3] = Just [1, 2, 3]
 sequence [Just 1, Just 2, Nothing] = Nothing
 ```
 
 Applied to the list of 2 lists, it will perform indeterminate computation and return all possible permutations of list items where the first item comes from the first list, and the second — from the second list:
 
-```haskell
+```haskell ignore
 sequence [[1,2],[3,4]] = [[1,3],[1,4],[2,3],[2,4]]
 sequence [[1,2],[3,4], []] = [] -- [] is "undefined" in this context
 ```
@@ -71,7 +71,9 @@ type UserAPI =
               :> Get '[JSON] User
   :<|> "user" :> Capture "userId" Int
               :> ReqBody '[JSON] User
-              :> PutCreated '[JSON] NoContent-- UserAPI type defines this API:
+              :> PutCreated '[JSON] NoContent
+
+-- UserAPI type defines this API:
 -- GET /user   - Response: {"1":{"name":"jane"}}, 200
 -- GET /user/1 - Response: {"name":"jane"}, 200
 -- PUT /user/2 Body: {"name":"John D."} - Response: NoContent, 201
@@ -79,7 +81,7 @@ type UserAPI =
 
 And before you even start implementing this API you can get client functions to call this API with a few lines of code:
 
-```haskell
+```haskell ignore
 userApi :: Proxy UserAPI
 userApi = Proxy
 getAll :<|> getUser :<|> putUser = client userApi
@@ -92,7 +94,7 @@ putUser :: Int -> User -> ClientM User
 
 With just a few annotations you can generate API docs from UserAPI type:
 
-```haskell
+```haskell ignore
 instance ToCapture (Capture "userId" Int) where
   toCapture _ =
     DocCapture "userId"

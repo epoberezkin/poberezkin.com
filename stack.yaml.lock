@@ -11,9 +11,16 @@ packages:
       sha256: bdbacc241f680dd0c8d7666c9ec4e7d230dad85172067e106cc35f7c125cd7ab
   original:
     hackage: hakyll-4.13.3.0@sha256:7d8903f03974691aec049a6188ace8d93457563bad9f078c6faf4c9156e27a33,8867
+- completed:
+    hackage: interact-0.2.0.0@sha256:5fe9941fd817affa27317ea5bc8e402ddbc3752ee208f3eb205519a2e1695ff7,1939
+    pantry-tree:
+      size: 374
+      sha256: 49cff5eb13935fd103f285cf7dc4393a02f9db39f254f04d4a7f5d0a8fdaa2d1
+  original:
+    hackage: interact-0.2.0.0@sha256:5fe9941fd817affa27317ea5bc8e402ddbc3752ee208f3eb205519a2e1695ff7,1939
 snapshots:
 - completed:
-    size: 492027
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/15/9.yaml
-    sha256: 11394dc975e96c2fea90f7f2b3229630d46351a092ebcec78f0a56403930b429
-  original: lts-15.9
+    size: 524996
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/14/27.yaml
+    sha256: 7ea31a280c56bf36ff591a7397cc384d0dff622e7f9e4225b47d8980f019a0f0
+  original: lts-14.27

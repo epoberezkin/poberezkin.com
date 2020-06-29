@@ -1,20 +1,35 @@
-name:          my-site
-version:       0.1.0.0
-#synopsis:
-#description:
-homepage:      https://github.com/epoberezkin/poberezkin.com
-license:       MIT
-author:        Evgeny Poberezkin
-copyright:     2016-2020 Evgeny Poberezkin
-category:      Web
+name: my-site
+version: 0.1.0.0
+synopsis: poberezkin.com website
+github: epoberezkin/poberezkin.com
+homepage: https://github.com/epoberezkin/poberezkin.com
+license: MIT
+author: Evgeny Poberezkin
+copyright: 2016-2020 Evgeny Poberezkin
+category: Web
 extra-source-files:
-- README.md
+  - README.md
 
 dependencies:
   - base >= 4.7 && < 5
-  - hakyll
-  - split
-  - uri-encode
+
+executables:
+  my-site:
+    source-dirs: src
+    main: Main.hs
+    dependencies:
+      - hakyll == 4.12.*
+      - split == 0.2.*
+      - uri-encode == 1.5.*
+
+  elevator:
+    source-dirs: posts
+    main: 2020-06-29-modeling-state-machine-dependent-types-haskell-1.lhs
+    ghc-options: -pgmL markdown-unlit
+    dependencies:
+      - markdown-unlit == 0.5.*
+      - interact == 0.2.*
+      - singletons == 2.6.*
 
 ghc-options:
   - -Wall
@@ -24,13 +39,3 @@ ghc-options:
   - -Wredundant-constraints
   - -Wincomplete-record-updates
   - -Wincomplete-uni-patterns
-
-default-extensions:
-  - BlockArguments
-  - OverloadedStrings
-  - PartialTypeSignatures
-
-executables:
-  my-site:
-    source-dirs: src
-    main: Main.hs

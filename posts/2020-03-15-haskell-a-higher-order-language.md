@@ -56,15 +56,23 @@ Context-dependent semantics of Haskell code makes Haskell more difficult to lear
 
 Some Haskell books (e.g. [LYAH](http://learnyouahaskell.com/)) and lectures (e.g [Penn course](https://www.seas.upenn.edu/~cis194/fall16/index.html)) do not capture this fundamental distinction well enough. Instead, they focus on the functional nature of Haskell, and present Monad as almost some work-around to allow using pure functions for context-aware computations (IO, State, indeterminism, etc.). Unfortunately, it creates a barrier to entry for the new developers, because when people are asked to make a larger than usual investment to learn yet one more functional programming language with quirky syntax, this investment is difficult to justify without understanding first that Haskell is a more powerful programming paradigm. How many people abandoned Haskell before grasping its power?
 
-A good book that explains how Haskel is a higher order language is [Haskell](https://en.wikibooks.org/wiki/Haskell) in wiki-books. Once you get over “[Understanding monads](https://en.wikibooks.org/wiki/Haskell/Understanding_monads)” section, the Haskell advantage should become apparent.
+A good book that explains how Haskell is a higher order language is [Haskell](https://en.wikibooks.org/wiki/Haskell) in wiki-books. Once you get over “[Understanding monads](https://en.wikibooks.org/wiki/Haskell/Understanding_monads)” section, the Haskell advantage should become apparent.
 
 If you want to see some relatively simple magic you can do with Haskell, watch the talk by [Paweł Szulc](https://github.com/EncodePanda) at Lambda World’19, particularly where he [talks about Servant](https://www.youtube.com/watch?v=idU7GdlfP9Q&feature=youtu.be&t=625) — the library to create REST APIs in Haskell. Before you write a single line of implementation code, you can get the whole API definition from a single type definition (I am replacing alpacas from Paweł’s farm with users here):
 
 ```haskell
-type User = User {
-    name  :: String
-}
- 
+{-# LANGUAGE DataKinds, DeriveAnyClass, DeriveGeneric, TypeOperators #-}
+import Servant
+import Servant.Server
+import Network.Wai.Handler.Warp (run)
+import Data.Aeson
+import GHC.Generics
+import qualified Data.Map as M
+
+data User = User {
+  name  :: String
+} deriving (Generic, ToJSON, FromJSON)
+
 type UserAPI =
        "user" :> Get '[JSON] (M.Map Int User)
   :<|> "user" :> Capture "userId" Int
@@ -72,6 +80,9 @@ type UserAPI =
   :<|> "user" :> Capture "userId" Int
               :> ReqBody '[JSON] User
               :> PutCreated '[JSON] NoContent
+
+userApi :: Proxy UserAPI
+userApi = Proxy
 
 -- UserAPI type defines this API:
 -- GET /user   - Response: {"1":{"name":"jane"}}, 200
@@ -82,10 +93,10 @@ type UserAPI =
 And before you even start implementing this API you can get client functions to call this API with a few lines of code:
 
 ```haskell ignore
-userApi :: Proxy UserAPI
-userApi = Proxy
+-- import Servant.Client
+
 getAll :<|> getUser :<|> putUser = client userApi
- 
+
 -- client functions types:
 getAll :: ClientM (M.Map Int User)
 getUser :: Int -> ClientM User
@@ -99,43 +110,47 @@ instance ToCapture (Capture "userId" Int) where
   toCapture _ =
     DocCapture "userId"
                "Id that uniquely identifies a user in the system"
- 
+
 instance ToSample (User) where
   toSamples _ = singleSample $ User "Jane"
- 
+
 instance ToSample (M.Map Int User) where
   toSamples _ = singleSample $ M.singleton 1 (User "Jane")
- 
+
 apiDocs :: API
-apiDocs = docs userApimain :: IO ()
+apiDocs = docs userApi
+
+main :: IO ()
 main = (writeFile "docs.md" . markdown) apiDocs
 ```
 
 To run this server you just need to implement it, the mock implementation is very simple, but the Haskell type system ensures that the type of implementation is correct (`Server UserAPI` that is based on `UserAPI` type):
 
 ```haskell
-dummy = User "Jane" "jane@example.com"
- 
+dummy = User "Jane"
+
 fetchAll :: Monad m => m (M.Map Int User)
 fetchAll = pure $ M.singleton 1 dummy
- 
+
 fetch :: Monad m => Int -> m User
 fetch id = pure dummy
- 
+
 insert :: Monad m => Int -> User -> m NoContent
 insert id user = pure NoContent
- 
+
 server :: Server UserAPI
 server = fetchAll :<|> fetch :<|> insert
- 
+
 app :: Application
 app = serve userApi server
- 
+
 main :: IO ()
-main = run 8080 app
+main = do
+  putStrLn "http://localhost:8080/user"
+  run 8080 app
 ```
 
-The above does feel like magic!
+The above does feel like magic! You can run this server right from this post with `stack run users-api`.
 
 Morphism-based programming languages (i.e., all other languages) force programmers to model the whole system outside of the code — using SQL schema, JSON schema, diagrams, etc. Type-based languages (Haskell and Idris) allow for type-driven development, when the whole system can be modelled top-down with algebraic data types, rather than bottom-up with functions as in other languages.
 

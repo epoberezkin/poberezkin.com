@@ -17,7 +17,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver: lts-15.9
+resolver: lts-16.3
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -29,7 +29,7 @@ resolver: lts-15.9
 #   - auto-update
 #   - wai
 packages:
-- .
+  - .
 # Dependency packages to be pulled from upstream that are not in the resolver.
 # These entries can reference officially published versions as well as
 # forks / in-progress versions pinned to a git hash. For example:
@@ -40,8 +40,8 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 #
 extra-deps:
-- hakyll-4.13.3.0@sha256:7d8903f03974691aec049a6188ace8d93457563bad9f078c6faf4c9156e27a33,8867
-
+  - hakyll-4.13.3.0@sha256:7d8903f03974691aec049a6188ace8d93457563bad9f078c6faf4c9156e27a33,8867
+  - interact-0.2.0.0@sha256:5fe9941fd817affa27317ea5bc8e402ddbc3752ee208f3eb205519a2e1695ff7,1939
 # Override default flag values for local packages and extra-deps
 # flags: {}
 

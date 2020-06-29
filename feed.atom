@@ -258,8 +258,8 @@ badElevator =
 </ol>
 <pre class="haskell-ignore"><code>elevatorProgram :: SomeSing Elevator -&gt; [String] -&gt; Maybe SomeAction</code></pre>
 <ol start="3" type="1">
-<li><p>If you “close” the door on the ground floor and send the elevator “down”, it will remain <code>Stopped</code>, but the command will not be rejected. How to modify the type definition for <code>Action</code> to disallow it? If you do it, <code>actionFromString</code> will no longer compile - it has to be modified as well.</p></li>
-<li><p>Create a function that given the current elevator state and the requested floor, returns an action sequence in <code>SomeAction</code> to send it to the specific floor, in case it is stopped and the door is opened, and <code>Nothing</code> otherwise:</p></li>
+<li>If you “close” the door on the ground floor and send the elevator “down”, it will remain <code>Stopped</code>, but the command will not be rejected. How to modify the type definition for <code>Action</code> to disallow it? If you do it, <code>actionFromString</code> will no longer compile - it has to be modified as well.</li>
+<li>Create a function that given the current elevator state and the requested floor, returns an action sequence in <code>SomeAction</code> to send it to the specific floor, in case it is stopped and the door is opened, and <code>Nothing</code> otherwise:</li>
 </ol>
 <pre class="haskell-ignore"><code>elevatorToFloor :: SomeSing Elevator -&gt; Natural -&gt; Maybe SomeAction</code></pre>
 <h2 id="whats-next">What’s next?</h2>

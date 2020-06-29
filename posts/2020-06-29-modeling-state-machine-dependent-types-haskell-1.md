@@ -336,7 +336,6 @@ elevatorProgram :: SomeSing Elevator -> [String] -> Maybe SomeAction
 ```
 
 3. If you "close" the door on the ground floor and send the elevator "down", it will remain `Stopped`, but the command will not be rejected. How to modify the type definition for `Action` to disallow it? If you do it, `actionFromString` will no longer compile - it has to be modified as well.
-
 4. Create a function that given the current elevator state and the requested floor, returns an action sequence in `SomeAction` to send it to the specific floor, in case it is stopped and the door is opened, and `Nothing` otherwise:
 
 ```haskell-ignore

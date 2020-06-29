@@ -18,7 +18,7 @@ executables:
     source-dirs: src
     main: Main.hs
     dependencies:
-      - hakyll == 4.12.*
+      - hakyll == 4.13.*
       - split == 0.2.*
       - uri-encode == 1.5.*
 
@@ -30,8 +30,8 @@ executables:
       - markdown-unlit == 0.5.*
       - aeson == 1.4.*
       - containers == 0.6.*
-      - servant == 0.17.*
-      - servant-server == 0.17.*
+      - servant >= 0.16 && < 0.18
+      - servant-server >= 0.16 && < 0.18
       - warp == 3.3.*
 
   elevator:

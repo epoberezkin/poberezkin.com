@@ -21,7 +21,7 @@ But a bigger distinction between Haskell and other languages is in the nature of
 
 For example, a simple `sequence` function that is defined as:
 
-```haskell ignore
+```haskell-ignore
 sequence :: Monad m => [m a] -> m [a]
 sequence ms = foldr k (return []) ms
             where
@@ -32,7 +32,7 @@ can mean different things depending on the context that is defined by `m`.
 
 Applied to IO it can mean performing IO actions in sequence:
 
-```haskell ignore
+```haskell-ignore
 sequence [getLine, getLine]
 ```
 
@@ -40,14 +40,14 @@ returns a single IO action that resolves into the list of 2 strings.
 
 Applied to the list of instances of `Maybe` type, it would check that all of them contain some value and either return `Just` list of these value or Nothing if any of them is `Nothing`:
 
-```haskell ignore
+```haskell-ignore
 sequence [Just 1, Just 2, Just 3] = Just [1, 2, 3]
 sequence [Just 1, Just 2, Nothing] = Nothing
 ```
 
 Applied to the list of 2 lists, it will perform indeterminate computation and return all possible permutations of list items where the first item comes from the first list, and the second — from the second list:
 
-```haskell ignore
+```haskell-ignore
 sequence [[1,2],[3,4]] = [[1,3],[1,4],[2,3],[2,4]]
 sequence [[1,2],[3,4], []] = [] -- [] is "undefined" in this context
 ```
@@ -92,7 +92,7 @@ userApi = Proxy
 
 And before you even start implementing this API you can get client functions to call this API with a few lines of code:
 
-```haskell ignore
+```haskell-ignore
 -- import Servant.Client
 
 getAll :<|> getUser :<|> putUser = client userApi
@@ -105,7 +105,7 @@ putUser :: Int -> User -> ClientM User
 
 With just a few annotations you can generate API docs from UserAPI type:
 
-```haskell ignore
+```haskell-ignore
 instance ToCapture (Capture "userId" Int) where
   toCapture _ =
     DocCapture "userId"

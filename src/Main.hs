@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 import Hakyll
 import Fields
 
@@ -23,10 +25,10 @@ pages = match (fromList ["about.md"]) $ do
     >>= relativizeUrls
 
 postTags :: Rules Tags
-postTags = buildTags "posts/*" (fromCapture "tags/*.html")
+postTags = buildTags "posts/*.md" (fromCapture "tags/*.html")
 
 postPages :: Tags -> Rules ()
-postPages tags = match "posts/*" $ do
+postPages tags = match "posts/*.md" $ do
   route $ setExtension "html"
   compile $ pandocCompiler
     >>= loadAndApplyTemplate "templates/post.html" (postCtxWithTags tags)

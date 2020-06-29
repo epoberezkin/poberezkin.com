@@ -7,9 +7,9 @@ github: epoberezkin/elevator-state-machine
 
 ## Why?
 
-The reason to use types to model state transitions is to guarantee the correctness of [state machine](https://en.wikipedia.org/wiki/Finite-state_machine) implementation by the way it is constructed, so that invalid implementation would fail to compile.
+The reason to use types to model state transitions is to guarantee the correctness of [state machine](https://en.wikipedia.org/wiki/Finite-state_machine) implementation by the way it is constructed, so that invalid implementations fail to compile.
 
-When we model a state machine we usually create some diagram or, more rarely, use some meta-language to show allowed state transitions. The code implementing the logic of the state machine is disconnected from this diagram, and it can be large enough to make it impossible or very difficult to validate that the implementation only supports allowed state transitions.
+When we model a state machine we usually create some diagram or use some meta-language to show allowed state transitions. The code implementing the logic of the state machine is disconnected from this diagram, and it can be large enough to make it impossible or very difficult to validate that the implementation only supports allowed state transitions.
 
 We could use some DSL or library to raise the level of abstraction so that allowed state transitions are more visible in code. It mitigates the problem, but it creates additional complexity and dependency on the component (DSL interpreter or state-machine library) that also can have implementation mistakes.
 
@@ -18,16 +18,16 @@ Modeling state transition in types offers a simple alternative to ensure that on
 
 ## How?
 
-Using parametrized types it is possible to express state machine transitions where state can be part of the transition type. Further,  using [dependent types](https://en.wikipedia.org/wiki/Dependent_type) it is possible to make transition depend on some run time states. Haskell does not support dependent types directly, but it is possible to have an equivalent of dependent types with singleton types and [singletons](https://hackage.haskell.org/package/singletons) - see [this post](2020-05-17-using-dependent-types-haskell-singletons.html).
+Using parametrized types it is possible to express state machine transitions where state can be part of the transition type. Further, using [dependent types](https://en.wikipedia.org/wiki/Dependent_type) it is possible to make transitions depend on some run time states. Haskell does not support dependent types directly, but it is possible to have an equivalent of dependent types with singleton types and [singletons](https://hackage.haskell.org/package/singletons) - see [this post](2020-05-17-using-dependent-types-haskell-singletons.html).
 
 
 ## Modeling elevator (aka lift) states
 
 We will model state transition of a simplified [elevator](https://en.wikipedia.org/wiki/Elevator) state changes.
 
-The state of the elevator has 3 dimensions: its door can be opened or closed, it can be stopped or going up or down, and it can be on different floors. Not all combinations are allowed though - the elevator must not move with the opened door and it must not open the door while moving. Allowed elevator commands and states are shown on the diagram.
+The state of the elevator has 3 dimensions: its door can be opened or closed, it can be stopped or going up or down, and it can be on different floors. Not all combinations are allowed though - the elevator must not move with the opened door and it must not open the door while moving. Elevator states and allowed actions and states are shown on the diagram.
 
-[![Elevator states](/images/elevator.svg source)](https://github.com/epoberezkin/poberezkin.com/tree/master/dot/elevator.gv)
+[![Elevator states](/images/elevator.svg "source")](https://github.com/epoberezkin/poberezkin.com/tree/master/dot/elevator.gv)
 
 In addition to that elevator cannot go below than the ground floor (type-level natural number `0` will be used for it).
 
@@ -47,7 +47,6 @@ import Data.Singletons
 import Data.Singletons.Prelude
 import Data.Singletons.TH
 import Data.Singletons.TypeLits
-import Data.Singletons.Decide
 import System.IO
 import System.IO.Interact
 ```
@@ -92,7 +91,7 @@ The two functions above define that the floor should increase when the elevator 
 
 Singletons library generates code that adds type families `NextFloor` and `NextMoveState` to the above declaration and equivalent functions on singletons (`sNextFloor` and `sNextMoveState`). They are defined similarly to the below (but you do not need to add this code - it is added automatically):
 
-```haskell ignore
+```haskell-ignore
 type family NextFloor (m :: MoveState) (f :: Nat) :: Nat where
   NextFloor Stopped f = f
   NextFloor Up f = f + 1
@@ -179,7 +178,7 @@ program =
 
 This sequence of actions has type `Action '(Opened, Stopped, 0) '(Opened, Stopped, 0)` - the elevator starts and ends on the ground floor, with the opened door and stopped. If you try to write a program that performs the sequence of actions that is not allowed, it will not compile:
 
-```haskell ignore
+```haskell-ignore
 badElevator :: ElevatorProgram 0 1
 badElevator =
   Close
@@ -275,7 +274,8 @@ actionFromString name (SomeSing st) = action name st
     action "up" s@(STuple3 SClosed SStopped f) =
       act (Move SUp) s (STuple3 SClosed SUp (sNextFloor SUp f))
     action "down" s@(STuple3 SClosed SStopped f) =
-      act (Move SDown) s (STuple3 SClosed (sNextMoveState SDown f) (sNextFloor SDown f))
+      act (Move SDown) s
+        (STuple3 SClosed (sNextMoveState SDown f) (sNextFloor SDown f))
     action "stop" s@(STuple3 SClosed _ f) =
       act Stop s (STuple3 SClosed SStopped f)
     action "wait" s@(STuple3 d m f) =
@@ -325,13 +325,13 @@ You can try these problems with this elevator example (possible solutions are in
 
 1. Create an operation that chains "run-time" actions `SomeAction`:
 
-```haskell ignore
+```haskell-ignore
 (>>:) :: SomeAction -> SomeAction -> Maybe SomeAction
 ```
 
 2. Create a function that given initial state and a list of commands returns elevator "program" to perform this sequence of actions, if it is valid:
 
-```haskell ignore
+```haskell-ignore
 elevatorProgram :: SomeSing Elevator -> [String] -> Maybe SomeAction
 ```
 
@@ -339,7 +339,7 @@ elevatorProgram :: SomeSing Elevator -> [String] -> Maybe SomeAction
 
 4. Create a function that given the current elevator state and the requested floor, returns an action sequence in `SomeAction` to send it to the specific floor, in case it is stopped and the door is opened, and `Nothing` otherwise:
 
-```haskell ignore
+```haskell-ignore
 elevatorToFloor :: SomeSing Elevator -> Natural -> Maybe SomeAction
 ```
 

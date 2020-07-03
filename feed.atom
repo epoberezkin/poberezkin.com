@@ -274,6 +274,9 @@ badElevator =
 <p><a id="interact"><sup>*</sup> disclaimer - I created it</a></p>
   </section>
   <section class="links">
+    
+      <a href="https://www.reddit.com/r/haskell/comments/hkg9q8/modeling_state_machines_with_dependent_types_in/" target="_blank"><img src="/images/reddit.png"></a>
+    
     <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Modeling%20state%20machines%20with%20dependent%20types%20in%20Haskell%3A%20Part%201&hashtags=haskell%2Cexecutable%2Ccoding&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2020-06-29-modeling-state-machine-dependent-types-haskell-1.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2020-06-29-modeling-state-machine-dependent-types-haskell-1.html" target="_blank"><img src="/images/tweet.png"></a>
     
       <a href="https://github.com/epoberezkin/elevator-state-machine" target="_blank"><img src="/images/repo.png"></a>
@@ -338,6 +341,7 @@ badElevator =
 <p>Until then, we can use singletons library for type-driven development of complex systems, modelling their state transitions and all the relationships in “dependent” types.</p>
   </section>
   <section class="links">
+    
     <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Using%20dependent%20types%20in%20Haskell%20with%20singletons&hashtags=haskell%2Ccoding&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2020-05-17-using-dependent-types-haskell-singletons.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2020-05-17-using-dependent-types-haskell-singletons.html" target="_blank"><img src="/images/tweet.png"></a>
     
   </section>
@@ -506,6 +510,7 @@ orgMembers (Org _ ms) = ms</code></pre>
 <p>Haskell offers many different approaches to design your whole system, not just its data, in types. This post is just a small sample of what is possible with advanced Haskell types.</p>
   </section>
   <section class="links">
+    
     <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Why%20use%20advanced%20Haskell%20types%3F&hashtags=haskell%2Ccoding&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2020-04-29-why-use-advanced-haskell-types.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2020-04-29-why-use-advanced-haskell-types.html" target="_blank"><img src="/images/tweet.png"></a>
     
       <a href="https://github.com/epoberezkin/advanced-haskell-types" target="_blank"><img src="/images/repo.png"></a>
@@ -644,6 +649,7 @@ main = (writeFile &quot;docs.md&quot; . markdown) apiDocs</code></pre>
 <p>Haskell being type-based language with context-dependent semantics is a higher order language that is almost one of a kind — there seems to be no other mature programming language that allows the same level of expressiveness as Haskell does.</p>
   </section>
   <section class="links">
+    
     <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Haskell%20%E2%80%94%20a%20higher%20order%20language&hashtags=haskell%2Cexecutable%2Ccoding&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2020-03-15-haskell-a-higher-order-language.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2020-03-15-haskell-a-higher-order-language.html" target="_blank"><img src="/images/tweet.png"></a>
     
   </section>
@@ -687,6 +693,7 @@ main = (writeFile &quot;docs.md&quot; . markdown) apiDocs</code></pre>
 </blockquote>
   </section>
   <section class="links">
+    
     <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Why%20you%20should%20Open-Source%20for%20Real&hashtags=talk%2Ccoding%2Copen-source&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2019-07-10-talk-why-you-should-open-source-for-real.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2019-07-10-talk-why-you-should-open-source-for-real.html" target="_blank"><img src="/images/tweet.png"></a>
     
   </section>
@@ -727,6 +734,7 @@ main = (writeFile &quot;docs.md&quot; . markdown) apiDocs</code></pre>
 <p>We can discover our own truths about who we are, what we want and to write the story of our life ourselves. Until then, we can follow the opportunities and keep our options open — the story of our life may just write itself.</p>
   </section>
   <section class="links">
+    
     <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Locked%20in%20the%20Narrative%3F&hashtags=essay&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2019-05-31-locked-in-the-narrative.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2019-05-31-locked-in-the-narrative.html" target="_blank"><img src="/images/tweet.png"></a>
     
   </section>
@@ -773,6 +781,7 @@ main = (writeFile &quot;docs.md&quot; . markdown) apiDocs</code></pre>
 </blockquote>
   </section>
   <section class="links">
+    
     <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Auditing%20development%20guidelines%20in%20GitHub%20repos&hashtags=talk%2Cgithub%2Ccoding%2Copen-source&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2017-07-12-talk-auditing-development-guidelines-in-github-repositories.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2017-07-12-talk-auditing-development-guidelines-in-github-repositories.html" target="_blank"><img src="/images/tweet.png"></a>
     
       <a href="https://github.com/mailonline/gh-lint" target="_blank"><img src="/images/repo.png"></a>
@@ -819,6 +828,7 @@ main = (writeFile &quot;docs.md&quot; . markdown) apiDocs</code></pre>
 </blockquote>
   </section>
   <section class="links">
+    
     <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=WTF%20is%20Reactive%20Programming&hashtags=talk%2Creactive&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2017-04-28-talk-wtf-is-reactive-programming.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2017-04-28-talk-wtf-is-reactive-programming.html" target="_blank"><img src="/images/tweet.png"></a>
     
   </section>
@@ -913,6 +923,7 @@ main = (writeFile &quot;docs.md&quot; . markdown) apiDocs</code></pre>
 <p><img src="/images/tdd5.png" alt="Acheived 100% code coverage" title="… but the bug is still there" max-width="100%"></p>
   </section>
   <section class="links">
+    
     <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=TDD%20doesn%E2%80%99t%20work%E2%80%A6%20Maybe%20CDD%20would%3F&hashtags=tests%2Ccoding&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2017-02-19-tdd-doesnt-work-maybe-cdd-would.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2017-02-19-tdd-doesnt-work-maybe-cdd-would.html" target="_blank"><img src="/images/tweet.png"></a>
     
   </section>
@@ -1132,6 +1143,7 @@ main = (writeFile &quot;docs.md&quot; . markdown) apiDocs</code></pre>
 <p>So while code generation can be used to achieve serious performance benefits, direct calls to <em>eval</em> should be avoided. Instead <em>Function</em> constructor (or at least <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval">indirect calls</a> to <em>eval</em>) should be used.</p>
   </section>
   <section class="links">
+    
     <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Eval%20is%20evil%2C%20but%20not%20why%20you%20may%20think&hashtags=javascript%2Ccoding&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2016-09-10-eval-is-evil-but-not-why-you-may-think.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2016-09-10-eval-is-evil-but-not-why-you-may-think.html" target="_blank"><img src="/images/tweet.png"></a>
     
       <a href="https://github.com/epoberezkin/eval-is-evil" target="_blank"><img src="/images/repo.png"></a>
@@ -1187,6 +1199,7 @@ main = (writeFile &quot;docs.md&quot; . markdown) apiDocs</code></pre>
 </blockquote>
   </section>
   <section class="links">
+    
     <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Batch%20API%20requests%20with%20JSONScript&hashtags=talk%2Cjavascript%2Copen-source&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2016-07-13-talk-batch-execution-existing-endpoints-services-jsonscript.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2016-07-13-talk-batch-execution-existing-endpoints-services-jsonscript.html" target="_blank"><img src="/images/tweet.png"></a>
     
       <a href="https://github.com/JSONScript/jsonscript" target="_blank"><img src="/images/repo.png"></a>
@@ -1228,6 +1241,7 @@ main = (writeFile &quot;docs.md&quot; . markdown) apiDocs</code></pre>
 </ul>
   </section>
   <section class="links">
+    
     <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Validating%20data%20with%20JSON-schema&hashtags=json-schema%2Ctutorial%2Ccoding&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2016-03-03-validating-data-with-json-schema.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2016-03-03-validating-data-with-json-schema.html" target="_blank"><img src="/images/tweet.png"></a>
     
       <a href="https://github.com/epoberezkin/tutsplus-json-schema" target="_blank"><img src="/images/repo.png"></a>
@@ -1276,6 +1290,7 @@ main = (writeFile &quot;docs.md&quot; . markdown) apiDocs</code></pre>
 </blockquote>
   </section>
   <section class="links">
+    
     <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Milo%20-%20The%20Reactive%20Javascript%20Framework&hashtags=talk%2Cjavascript%2Copen-source%2Creactive&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2014-10-23-talk-milo-reactive-javascript-framework.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2014-10-23-talk-milo-reactive-javascript-framework.html" target="_blank"><img src="/images/tweet.png"></a>
     
       <a href="https://github.com/milojs/milo" target="_blank"><img src="/images/repo.png"></a>

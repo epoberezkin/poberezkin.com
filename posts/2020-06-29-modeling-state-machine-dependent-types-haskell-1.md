@@ -5,6 +5,9 @@ tags: haskell, executable, coding
 github: epoberezkin/elevator-state-machine
 ---
 
+This post is "literate" haskell (thanks to [markdown-unlit](https://github.com/sol/markdown-unlit)), it can be run on GHC 8.8.3 with `stack run elevator`.
+
+
 ## Why?
 
 The reason to use types to model state transitions is to guarantee the correctness of [state machine](https://en.wikipedia.org/wiki/Finite-state_machine) implementation by the way it is constructed, so that invalid implementations fail to compile.
@@ -321,7 +324,7 @@ You can run the code right from this post by cloning the [site repo](https://git
 
 ## Problems 
 
-You can try these problems with this elevator example (possible solutions are in the [linked repo](https://github.com/epoberezkin/elevator-state-machine/src/Problems.hs)):
+You can try these problems with this elevator example (possible solutions are in the [linked repo](https://github.com/epoberezkin/elevator-state-machine/blob/master/src/Problems.hs)):
 
 1. Create an operation that chains "run-time" actions `SomeAction`:
 

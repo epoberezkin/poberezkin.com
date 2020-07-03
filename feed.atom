@@ -33,7 +33,8 @@
     </div>
   </section>
   <section>
-    <h2 id="why">Why?</h2>
+    <p>This post is “literate” haskell (thanks to <a href="https://github.com/sol/markdown-unlit">markdown-unlit</a>), it can be run on GHC 8.8.3 with <code>stack run elevator</code>.</p>
+<h2 id="why">Why?</h2>
 <p>The reason to use types to model state transitions is to guarantee the correctness of <a href="https://en.wikipedia.org/wiki/Finite-state_machine">state machine</a> implementation by the way it is constructed, so that invalid implementations fail to compile.</p>
 <p>When we model a state machine we usually create some diagram or use some meta-language to show allowed state transitions. The code implementing the logic of the state machine is disconnected from this diagram, and it can be large enough to make it impossible or very difficult to validate that the implementation only supports allowed state transitions.</p>
 <p>We could use some DSL or library to raise the level of abstraction so that allowed state transitions are more visible in code. It mitigates the problem, but it creates additional complexity and dependency on the component (DSL interpreter or state-machine library) that also can have implementation mistakes.</p>
@@ -248,7 +249,7 @@ badElevator =
 <p>The “elevator” now support actions “open”, “close”, “up”, “down”, “wait” and “stop” and prints its current state after each action.</p>
 <p>You can run the code right from this post by cloning the <a href="https://github.com/epoberezkin/poberezkin.com">site repo</a> and executing <code>stack run elevator</code>. The source code without the text is available <a href="https://github.com/epoberezkin/elevator-state-machine">here</a>.</p>
 <h2 id="problems">Problems</h2>
-<p>You can try these problems with this elevator example (possible solutions are in the <a href="https://github.com/epoberezkin/elevator-state-machine/src/Problems.hs">linked repo</a>):</p>
+<p>You can try these problems with this elevator example (possible solutions are in the <a href="https://github.com/epoberezkin/elevator-state-machine/blob/master/src/Problems.hs">linked repo</a>):</p>
 <ol type="1">
 <li>Create an operation that chains “run-time” actions <code>SomeAction</code>:</li>
 </ol>

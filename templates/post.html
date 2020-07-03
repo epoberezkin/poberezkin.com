@@ -21,9 +21,7 @@
     $body$
   </section>
   <section class="links">
-    $if(reddit)$
-      <a href="https://www.reddit.com/$reddit$" target="_blank"><img src="/images/reddit.png"></a>
-    $endif$
+    <a href="$toReddit(url)$" target="_blank"><img src="/images/reddit.png"></a>
     <a href="$twitter(url)$" target="_blank"><img src="/images/tweet.png"></a>
     $if(github)$
       <a href="https://github.com/$github$" target="_blank"><img src="/images/repo.png"></a>

@@ -8,6 +8,9 @@ cfg = defaultConfiguration
         { deployCommand = "./publish.sh"
         }
 
+siteRoot :: String
+siteRoot = "https://www.poberezkin.com"
+
 static :: Rules ()
 static = do
   match "images/*" $ do
@@ -63,7 +66,8 @@ postList ptrn title tmpl = do
 
 postCtx :: Context String
 postCtx = dateField "date" "%B %e, %Y"
-          <> twitterShareIntentField "twitter" "https://www.poberezkin.com" "epoberezkin"
+          <> twitterShareIntentField "twitter" siteRoot "epoberezkin"
+          <> redditShareIntentField "toReddit" siteRoot
           <> tagField "talk" "talk"
           <> defaultContext
 
@@ -81,7 +85,7 @@ feeds = do
               { feedAuthorEmail = "evgeny@poberezkin.com"
               , feedAuthorName = "Evgeny Poberezkin"
               , feedDescription = "Evgeny Poberezkin's blog"
-              , feedRoot = "http://www.poberezkin.com"
+              , feedRoot = siteRoot
               , feedTitle = "Evgeny Poberezkin"
               }
     ctx = bodyField "description"

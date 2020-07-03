@@ -28,6 +28,20 @@ twitterShareIntentField key root name = functionField key shareIntent
               ++ "&original_referer=" ++ url
               ++ "&url=" ++ url
 
+-- | Creates a function 'field' to use as href in reddit share intent link (without any JS).
+-- Post $url$ should be passed as a parameter to this field.
+redditShareIntentField :: String    -- ^ Destination key
+                       -> String    -- ^ site root url
+                       -> Context a -- ^ Resulting context
+redditShareIntentField key root = functionField key shareIntent
+  where
+    shareIntent :: [String] -> Item a -> Compiler String
+    shareIntent [] _ = return ""
+    shareIntent (path:_) i = do
+      metadata <- getMetadata $ itemIdentifier i
+      let url = encode $ root ++ path
+          submit = "submit?url=" ++ url ++ "&title=" ++ fromJust (lookupString "title" metadata)
+      return $ "https://www.reddit.com/" ++ fromMaybe submit (lookupString "reddit" metadata)
 
 -- | Creates a 'field' that checks post tag presence to use with the $if()$ template macro.
 tagField :: String    -- ^ Destination key

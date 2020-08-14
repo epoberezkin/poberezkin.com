@@ -7,8 +7,63 @@
         <description><![CDATA[Evgeny Poberezkin's blog]]></description>
         <atom:link href="https://www.poberezkin.com/feed.rss" rel="self"
                    type="application/rss+xml" />
-        <lastBuildDate>Mon, 29 Jun 2020 00:00:00 UT</lastBuildDate>
+        <lastBuildDate>Fri, 14 Aug 2020 00:00:00 UT</lastBuildDate>
         <item>
+    <title>Ajv JSON Schema validator: Mozilla MOSS grant and OpenJS Foundation</title>
+    <link>https://www.poberezkin.com/posts/2020-08-14-ajv-json-validator-mozilla-open-source-grant-openjs-foundation.html</link>
+    <description><![CDATA[<article>
+  <section class="header">
+    <div class="info">
+      Posted on
+      
+        August 14, 2020
+      
+      
+        by Evgeny Poberezkin
+      
+    </div>
+    <div class="info">
+      
+        Tags: <a title="All pages tagged &#39;open-source&#39;." href="/tags/open-source.html">open-source</a>, <a title="All pages tagged &#39;javascript&#39;." href="/tags/javascript.html">javascript</a>, <a title="All pages tagged &#39;json-schema&#39;." href="/tags/json-schema.html">json-schema</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html">coding</a>, <a title="All pages tagged &#39;ajv&#39;." href="/tags/ajv.html">ajv</a>
+      
+    </div>
+  </section>
+  <section>
+    <p><a href="https://www.mozilla.org/en-US/moss/"><img src="/images/mozilla.svg" alt="Mozilla" width="33.3%" style="min-width: 165px; float: right; margin: 0 0 5% 5%;"></a></p>
+<p><a href="https://openjsf.org/"><img src="/images/openjs.png" width="30%" style="min-width: 150px; clear:right; float: right; margin: 0 1.65% 5% 5%;"></a></p>
+<p><a href="https://github.com/ajv-validator/ajv"><img src="/images/ajv.svg" width="20%" style="min-width: 100px; clear:right; float: right; margin: 0 1.65% 2.5% 5%;"></a></p>
+<p>I am really excited to share this news: <a href="https://github.com/ajv-validator/ajv">Ajv</a> has been awarded a grant from Mozilla’s <a href="https://www.mozilla.org/en-US/moss/">Open Source Support (MOSS) program</a> in the “Foundational Technology” track and it joined the <a href="https://openjsf.org">OpenJS Foundation</a>!</p>
+<h2 id="what-is-ajv">What is Ajv?</h2>
+<p>Ajv is a JavaScript open-source library for data validation using <a href="https://json-schema.org/">JSON Schema standard</a>.</p>
+<p>I started developing Ajv 5 years ago, because all validators I’ve tested failed some of the tests I had. At the time I thought that JSON Schema is a relatively simple standard and it should not take more than 3-4 weekends to make a working library. It took 4 months of weekends and evenings, outside of work, and it took another year to stabilize and to fix bugs.</p>
+<p>Without the help from contributors and users, Ajv would had never become as widely used as it is – I am very grateful to <a href="https://github.com/ajv-validator/ajv/graphs/contributors">almost 100 contributors</a> who helped shape Ajv over 5 years.</p>
+<h2 id="why-grant-from-mozilla">Why grant from Mozilla?</h2>
+<p>Ajv started when JSON Schema standard was at version 4, it now supports version 7. The current version of JSON Schema (version 8 – draft 2019-09) introduced 2 substantial validation paradigm changes. The additional features increased implementation complexity – to consistently implement these features in Ajv will require substantial re-write. Also, a new promising standard for JSON validation appeared – <a href="https://tools.ietf.org/html/draft-ucarion-json-type-definition-04">JSON Type Definition</a> (JTD).</p>
+<p>Ajv users are interested in the support of the latest JSON version, but it was not sustainable for me to implement it in my free time – it is a large amount of work, particularly given how important it is to allow all existing users to migrate without disruption. Support from the users via OpenCollective and GitHub sponsors has confirmed that Ajv needs to be developed further, so I’ve also applied to Mozilla Open Source Support fund. I am very happy that Mozilla awarded the grant.</p>
+<h2 id="openjs-foundation">OpenJS Foundation</h2>
+<p>OpenJS Foundation supports many critical JavaScript open-source projects with both infrastructure and organization. As Ajv became a part of millions of web applications, having this support will ensure the longevity and stability of Ajv for all users.</p>
+<p>Working with OpenJS foundation will also help better align Ajv with the JavaScript ecosystem and to grow the number of contributors, and may help with wider enterprise adoption through greater confidence in the project.</p>
+<p>There is more information, and many supportive words from OpenJS Foundation in <a href="https://openjsf.org/blog/2020/08/14/ajv-joins-openjs-foundation-as-an-incubation-project/">the announcement</a>.</p>
+<h2 id="what-is-next">What is next?</h2>
+<p>I’ve already started working on the next major version of Ajv. The plan is to support both the last version of JSON Schema and JTD in Ajv, so that the users can choose the standard that works best for them – and the users will be able to package only the functionality they actually use.</p>
+<p>I am looking for the long-term maintainers joining me to share the ownership of Ajv – please reach out if you are interested! I am working with <a href="https://www.thereadyset.co/">ReadySet</a>, also sponsored by Mozilla, to establish guidelines for the role of a “maintainer” and the contribution standards, to adjust our code of conduct to fit our users and contributors community better, and to encourage a wider, more inclusive, contribution from the community.</p>
+<p>We believe that it will lower the barrier for the new contributors and maintainers, for all experience levels, and will make expectations clear - how long it usually takes to review and to decide whether the change is necessary, and what are the requirements.</p>
+<p>I am looking forward to the next phase of Ajv development that is possible thanks to Mozilla.</p>
+  </section>
+  <section class="links">
+    <a href="https://www.reddit.com/submit?url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2020-08-14-ajv-json-validator-mozilla-open-source-grant-openjs-foundation.html&title=Ajv JSON Schema validator: Mozilla MOSS grant and OpenJS Foundation" target="_blank"><img src="/images/reddit.png"></a>
+    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Ajv%20JSON%20Schema%20validator%3A%20Mozilla%20MOSS%20grant%20and%20OpenJS%20Foundation&hashtags=open-source%2Cjavascript%2Cjson-schema%2Ccoding%2Cajv&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2020-08-14-ajv-json-validator-mozilla-open-source-grant-openjs-foundation.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2020-08-14-ajv-json-validator-mozilla-open-source-grant-openjs-foundation.html" target="_blank"><img src="/images/tweet.png"></a>
+    
+      <a href="https://github.com/ajv-validator/ajv" target="_blank"><img src="/images/repo.png"></a>
+    
+  </section>
+</article>
+]]></description>
+    <pubDate>Fri, 14 Aug 2020 00:00:00 UT</pubDate>
+    <guid>https://www.poberezkin.com/posts/2020-08-14-ajv-json-validator-mozilla-open-source-grant-openjs-foundation.html</guid>
+    <dc:creator>Evgeny Poberezkin</dc:creator>
+</item>
+<item>
     <title>Modeling state machines with dependent types in Haskell: Part 1</title>
     <link>https://www.poberezkin.com/posts/2020-06-29-modeling-state-machine-dependent-types-haskell-1.html</link>
     <description><![CDATA[<article>
@@ -537,7 +592,7 @@ orgMembers (Org _ ms) = ms</code></pre>
     </div>
   </section>
   <section>
-    <p><img src="/images/haskell.png" width="40%" style="float: left; margin: 20px 20px 10px 0;" /></p>
+    <p><img src="/images/haskell.png" width="40%" style="float: left; margin: 20px 20px 10px 0;"></p>
 <p>The thesis here is that Haskell is not just one of many functional programming languages — it is a different, more advanced programming paradigm.</p>
 <p>Haskell is indeed a functional language, but calling Haskell “a functional language” is like calling a skyscraper “a dwelling” — while technically correct, it does not describe how the latter is much more than just a place to live.</p>
 <p>What defines a programming language? From the point of view of category theory, there are two major components of each programming language: data types and transformations between them — in category theory terminology, “objects” and “morphisms”.</p>
@@ -1221,7 +1276,7 @@ main = (writeFile &quot;docs.md&quot; . markdown) apiDocs</code></pre>
     </div>
     <div class="info">
       
-        Tags: <a title="All pages tagged &#39;json-schema&#39;." href="/tags/json-schema.html">json-schema</a>, <a title="All pages tagged &#39;tutorial&#39;." href="/tags/tutorial.html">tutorial</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html">coding</a>
+        Tags: <a title="All pages tagged &#39;json-schema&#39;." href="/tags/json-schema.html">json-schema</a>, <a title="All pages tagged &#39;tutorial&#39;." href="/tags/tutorial.html">tutorial</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html">coding</a>, <a title="All pages tagged &#39;ajv&#39;." href="/tags/ajv.html">ajv</a>
       
     </div>
   </section>
@@ -1236,7 +1291,7 @@ main = (writeFile &quot;docs.md&quot; . markdown) apiDocs</code></pre>
   </section>
   <section class="links">
     <a href="https://www.reddit.com/submit?url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2016-03-03-validating-data-with-json-schema.html&title=Validating data with JSON-schema" target="_blank"><img src="/images/reddit.png"></a>
-    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Validating%20data%20with%20JSON-schema&hashtags=json-schema%2Ctutorial%2Ccoding&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2016-03-03-validating-data-with-json-schema.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2016-03-03-validating-data-with-json-schema.html" target="_blank"><img src="/images/tweet.png"></a>
+    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Validating%20data%20with%20JSON-schema&hashtags=json-schema%2Ctutorial%2Ccoding%2Cajv&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2016-03-03-validating-data-with-json-schema.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2016-03-03-validating-data-with-json-schema.html" target="_blank"><img src="/images/tweet.png"></a>
     
       <a href="https://github.com/epoberezkin/tutsplus-json-schema" target="_blank"><img src="/images/repo.png"></a>
     

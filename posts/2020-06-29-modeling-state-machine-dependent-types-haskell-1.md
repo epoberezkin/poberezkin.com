@@ -4,7 +4,7 @@ author: Evgeny Poberezkin
 tags: haskell, executable, coding
 github: epoberezkin/elevator-state-machine
 reddit: r/haskell/comments/hkg9q8/modeling_state_machines_with_dependent_types_in/
-image: elevator.svg
+image: elevator.jpg
 ---
 
 This post is "literate" haskell (thanks to [markdown-unlit](https://github.com/sol/markdown-unlit)), it can be run on GHC 8.8.3 with `stack run elevator`.

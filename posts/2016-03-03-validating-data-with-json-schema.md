@@ -1,7 +1,7 @@
 ---
 title: Validating data with JSON-schema
 author: Evgeny Poberezkin
-tags: json-schema, tutorial, coding
+tags: json-schema, tutorial, coding, ajv
 github: epoberezkin/tutsplus-json-schema
 ---
 

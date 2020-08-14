@@ -2,6 +2,7 @@
 title: "WTF is Reactive Programming"
 author: Evgeny Poberezkin
 tags: talk, reactive
+image: talk2017_1.png
 ---
 
 This is a [talk at Progscon 2017](https://www.infoq.com/presentations/reactive-programming-evolution/).

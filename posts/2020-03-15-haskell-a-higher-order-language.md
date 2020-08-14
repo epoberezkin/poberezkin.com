@@ -3,9 +3,10 @@ title: Haskell — a higher order language
 author: Evgeny Poberezkin
 tags: haskell, executable, coding
 ref: https://medium.com/@epoberezkin/haskell-a-higher-order-language-ade461d453c7
+image: haskell.png
 ---
 
-<img src="/images/haskell.png" width="40%" style="float: left; margin: 20px 20px 10px 0;" />
+<img src="/images/haskell.png" width="40%" style="float: left; margin: 20px 20px 10px 0;">
 
 The thesis here is that Haskell is not just one of many functional programming languages — it is a different, more advanced programming paradigm.
 

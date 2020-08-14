@@ -2,6 +2,7 @@
 title: Using dependent types in Haskell with singletons
 author: Evgeny Poberezkin
 tags: haskell, coding
+image: singletons1.jpg
 ---
 
 Haskell has a very advanced type system, but it does not yet have [dependent types](https://en.wikipedia.org/wiki/Dependent_type). Yet, singleton types and [singletons library](https://hackage.haskell.org/package/singletons) provide a very good approximation of dependent types, that is shown on this diagram - the explanations to follow.

@@ -9,7 +9,6 @@ image: elevator.jpg
 
 This post is "literate" haskell (thanks to [markdown-unlit](https://github.com/sol/markdown-unlit)), it can be run on GHC 8.8.3 with `stack run elevator`.
 
-
 ## Why?
 
 The reason to use types to model state transitions is to guarantee the correctness of [state machine](https://en.wikipedia.org/wiki/Finite-state_machine) implementation by the way it is constructed, so that invalid implementations fail to compile.
@@ -20,11 +19,9 @@ We could use some DSL or library to raise the level of abstraction so that allow
 
 Modeling state transition in types offers a simple alternative to ensure that only allowed state transitions can be implemented - the code that attempts to perform the state transition that is not allowed will not compile.
 
-
 ## How?
 
 Using parametrized types it is possible to express state machine transitions where state can be part of the transition type. Further, using [dependent types](https://en.wikipedia.org/wiki/Dependent_type) it is possible to make transitions depend on some run time states. Haskell does not support dependent types directly, but it is possible to have an equivalent of dependent types with singleton types and [singletons](https://hackage.haskell.org/package/singletons) - see [this post](2020-05-17-using-dependent-types-haskell-singletons.html).
-
 
 ## Modeling elevator (aka lift) states
 
@@ -39,10 +36,10 @@ In addition to that elevator cannot go below than the ground floor (type-level n
 To have the state of the elevator available both in types, and also at run-time we will use singletons library and we will need to enable some GHC extensions:
 
 ```haskell
-{-# LANGUAGE ConstraintKinds, DataKinds, DeriveAnyClass, EmptyCase, 
-  FlexibleContexts, FlexibleInstances, FunctionalDependencies, GADTs, 
-  InstanceSigs, LambdaCase, PartialTypeSignatures, PolyKinds, RankNTypes, 
-  ScopedTypeVariables, StandaloneDeriving, TemplateHaskell, 
+{-# LANGUAGE ConstraintKinds, DataKinds, DeriveAnyClass, EmptyCase,
+  FlexibleContexts, FlexibleInstances, FunctionalDependencies, GADTs,
+  InstanceSigs, LambdaCase, PartialTypeSignatures, PolyKinds, RankNTypes,
+  ScopedTypeVariables, StandaloneDeriving, TemplateHaskell,
   TypeApplications, TypeFamilies, TypeOperators, UndecidableInstances #-}
 {-# OPTIONS_GHC -Werror=incomplete-patterns #-}
 {-# OPTIONS_GHC -fno-warn-unticked-promoted-constructors #-}
@@ -212,7 +209,6 @@ It almost literally says that "to open door, the elevator must be stopped, it ca
 
 To "fix" the program you just need to add `Stop` before `Open`.
 
-
 ## What's the point?
 
 We have the program, but what can we do with it? It is not code, so we cannot just run it.
@@ -232,7 +228,6 @@ printElevator (a :>> prog) = printElevator a >> printElevator prog
 ```
 
 The same approach can be used in real code - there could be an interpreter to control the real elevator. But it is now safe, as by defining allowed operations on the type level we ensured that we cannot perform unsafe actions - opening the door while the elevator is moving, or starting to move without closing the door.
-
 
 ## How to make it interactive?
 
@@ -290,7 +285,6 @@ actionFromString name (SomeSing st) = action name st
 
 We need to specify both initial and final states of the action here, so at first it may seem that we can violate the type restrictions in the Action type and create disallowed action. But if any mistake is made in the function above that could lead to the creation of disallowed command, this function will not compile - try changing any of the state values above.
 
-
 ## Let's run it!
 
 We will let "the passengers" control the elevator, but if they try to perform the action that is not allowed it will be rejected.
@@ -302,7 +296,7 @@ show' :: SomeSing Elevator -> String
 show' (SomeSing s) = show (fromSing s)
 ```
 
-To create an interactive REPL that modifies and prints the elevator state in a loop we will use [interact](https://hackage.haskell.org/package/interact) library<sup>[*](#interact)</sup>:
+To create an interactive REPL that modifies and prints the elevator state in a loop we will use [interact](https://hackage.haskell.org/package/interact) library<sup>[\*](#interact)</sup>:
 
 ```haskell
 main :: IO ()
@@ -323,8 +317,7 @@ The "elevator" now support actions "open", "close", "up", "down", "wait" and "st
 
 You can run the code right from this post by cloning the [site repo](https://github.com/epoberezkin/poberezkin.com) and executing `stack run elevator`. The source code without the text is available [here](https://github.com/epoberezkin/elevator-state-machine).
 
-
-## Problems 
+## Problems
 
 You can try these problems with this elevator example (possible solutions are in the [linked repo](https://github.com/epoberezkin/elevator-state-machine/blob/master/src/Problems.hs)):
 
@@ -357,4 +350,4 @@ You may have already asked some of the following questions:
 
 All these questions will be answered in Part 2.
 
-<a id="interact"><sup>*</sup> disclaimer - I created it</a>
+<a id="interact"><sup>\*</sup> disclaimer - I created it</a>

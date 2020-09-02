@@ -296,7 +296,7 @@ show' :: SomeSing Elevator -> String
 show' (SomeSing s) = show (fromSing s)
 ```
 
-To create an interactive REPL that modifies and prints the elevator state in a loop we will use [interact](https://hackage.haskell.org/package/interact) library<sup>[\*](#interact)</sup>:
+To create an interactive REPL that modifies and prints the elevator state in a loop we will use [interact](https://hackage.haskell.org/package/interact) library <a id="interact_text"></a>[\*](#interact):
 
 ```haskell
 main :: IO ()
@@ -317,7 +317,7 @@ The "elevator" now support actions "open", "close", "up", "down", "wait" and "st
 
 You can run the code right from this post by cloning the [site repo](https://github.com/epoberezkin/poberezkin.com) and executing `stack run elevator`. The source code without the text is available [here](https://github.com/epoberezkin/elevator-state-machine).
 
-## Problems
+## Exercises
 
 You can try these problems with this elevator example (possible solutions are in the [linked repo](https://github.com/epoberezkin/elevator-state-machine/blob/master/src/Problems.hs)):
 
@@ -350,4 +350,4 @@ You may have already asked some of the following questions:
 
 All these questions will be answered in Part 2.
 
-<a id="interact"><sup>\*</sup> disclaimer - I created it</a>
+<a id="interact"></a>[\*](#interact_text) disclaimer - I created it

@@ -62,8 +62,8 @@ data ToggleState = On | Off
   deriving (Show, Read, Eq)
 
 data Command (s :: ToggleState) (s' :: ToggleState) a :: Type where
-  TurnOn :: a -> Command Off On b
-  TurnOff :: Command On Off a
+  TurnOn :: Command Off On a
+  TurnOff :: a -> Command On Off b
   (:>>=) :: Command s1 s2 a -> (a -> Command s2 s3 b)  -> Command s1 s3 b
 ```
 

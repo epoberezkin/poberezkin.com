@@ -44,6 +44,15 @@ executables:
       - interact == 0.2.*
       - singletons == 2.6.*
 
+  atm:
+    source-dirs: posts
+    main: 2020-09-04-dependent-types-to-code-are-what-static-types-to-data.lhs
+    ghc-options: -pgmL markdown-unlit
+    dependencies:
+      - markdown-unlit == 0.5.*
+      - freer-indexed == 0.1.*
+      - singletons == 2.6.*
+
 ghc-options:
   - -Wall
   - -Wcompat

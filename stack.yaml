@@ -42,6 +42,7 @@ packages:
 extra-deps:
   - hakyll-4.13.3.0@sha256:7d8903f03974691aec049a6188ace8d93457563bad9f078c6faf4c9156e27a33,8867
   - interact-0.2.0.0@sha256:5fe9941fd817affa27317ea5bc8e402ddbc3752ee208f3eb205519a2e1695ff7,1939
+  - freer-indexed-0.1.0.0@sha256:b247be91b8ad2154fe1a514dec7c6a2553281d89325f0bc213d1d832d4c1a0e9,3007
 # Override default flag values for local packages and extra-deps
 # flags: {}
 

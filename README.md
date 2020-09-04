@@ -15,6 +15,7 @@ To avoid building the site itself comment `executables/my-site` section in [pack
 
 - `stack run users-api`: example from [Haskell — a higher order language](http://www.poberezkin.com/posts/2020-03-15-haskell-a-higher-order-language.html).
 - `stack run elevator`: example from [Modeling state machines with dependent types in Haskell: Part 1](https://www.poberezkin.com/posts/2020-06-29-modeling-state-machine-dependent-types-haskell-1.html).
+- `stack run atm`: example from [Dependent types to code are what static types to data (state machines: part 2)](https://www.poberezkin.com/posts/2020-09-04-dependent-types-to-code-are-what-static-types-to-data.html).
 
 ## License
 

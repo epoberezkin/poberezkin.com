@@ -26,3 +26,4 @@ cabal.project.local~
 # hakyll output
 _site/
 _cache/
+*.lock

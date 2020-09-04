@@ -1,0 +1,1 @@
+2020-09-04-dependent-types-to-code-are-what-static-types-to-data.md

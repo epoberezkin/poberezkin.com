@@ -7,7 +7,7 @@ reddit: r/haskell/comments/hkg9q8/modeling_state_machines_with_dependent_types_i
 image: elevator.jpg
 ---
 
-This post is "literate" haskell (thanks to [markdown-unlit](https://github.com/sol/markdown-unlit)), it can be run on GHC 8.8.3 with `stack run elevator`.
+This post is "literate" haskell (thanks to [markdown-unlit](https://github.com/sol/markdown-unlit)), it can be run using GHC 8.8.3 with `stack run elevator`.
 
 ## Why?
 

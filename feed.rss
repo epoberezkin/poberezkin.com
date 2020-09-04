@@ -286,7 +286,7 @@ runATM = runXFree runATMCmd</code></pre>
 <p>Solving the problem of modelling distributed state transitions might be part 3 some day.</p>
   </section>
   <section class="links">
-    <a href="https://www.reddit.com/submit?url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2020-09-04-dependent-types-to-code-are-what-static-types-to-data.html&title=Dependent types to code are what static types to data" target="_blank"><img src="/images/reddit.png"></a>
+    <a href="https://www.reddit.com/r/haskell/comments/imefh1/dependent_types_to_code_are_what_static_types_to/" target="_blank"><img src="/images/reddit.png"></a>
     <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Dependent%20types%20to%20code%20are%20what%20static%20types%20to%20data&hashtags=haskell%2Cexecutable%2Ccoding&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2020-09-04-dependent-types-to-code-are-what-static-types-to-data.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2020-09-04-dependent-types-to-code-are-what-static-types-to-data.html" target="_blank"><img src="/images/tweet.png"></a>
     
       <a href="https://github.com/epoberezkin/atm-state-machine" target="_blank"><img src="/images/repo.png"></a>

@@ -60,7 +60,7 @@
     </div>
   </section>
   <section>
-    <p>This post is “literate” haskell (thanks to <a href="https://github.com/sol/markdown-unlit">markdown-unlit</a>), it can be run on GHC 8.8.3 with <code>stack run elevator</code>.</p>
+    <p>This post is “literate” haskell (thanks to <a href="https://github.com/sol/markdown-unlit">markdown-unlit</a>), it can be run using GHC 8.8.3 with <code>stack run elevator</code>.</p>
 <h2 id="why">Why?</h2>
 <p>The reason to use types to model state transitions is to guarantee the correctness of <a href="https://en.wikipedia.org/wiki/Finite-state_machine">state machine</a> implementation by the way it is constructed, so that invalid implementations fail to compile.</p>
 <p>When we model a state machine we usually create some diagram or use some meta-language to show allowed state transitions. The code implementing the logic of the state machine is disconnected from this diagram, and it can be large enough to make it impossible or very difficult to validate that the implementation only supports allowed state transitions.</p>
@@ -286,8 +286,8 @@ badElevator =
 </ol>
 <pre class="haskell-ignore"><code>elevatorProgram :: SomeSing Elevator -&gt; [String] -&gt; Maybe SomeAction</code></pre>
 <ol start="3" type="1">
-<li>If you “close” the door on the ground floor and send the elevator “down”, it will remain <code>Stopped</code>, but the command will not be rejected. How to modify the type definition for <code>Action</code> to disallow it? If you do it, <code>actionFromString</code> will no longer compile - it has to be modified as well.</li>
-<li>Create a function that given the current elevator state and the requested floor, returns an action sequence in <code>SomeAction</code> to send it to the specific floor, in case it is stopped and the door is opened, and <code>Nothing</code> otherwise:</li>
+<li><p>If you “close” the door on the ground floor and send the elevator “down”, it will remain <code>Stopped</code>, but the command will not be rejected. How to modify the type definition for <code>Action</code> to disallow it? If you do it, <code>actionFromString</code> will no longer compile - it has to be modified as well.</p></li>
+<li><p>Create a function that given the current elevator state and the requested floor, returns an action sequence in <code>SomeAction</code> to send it to the specific floor, in case it is stopped and the door is opened, and <code>Nothing</code> otherwise:</p></li>
 </ol>
 <pre class="haskell-ignore"><code>elevatorToFloor :: SomeSing Elevator -&gt; Natural -&gt; Maybe SomeAction</code></pre>
 <h2 id="whats-next">What’s next?</h2>

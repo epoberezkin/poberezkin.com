@@ -8,8 +8,298 @@
         <name>Evgeny Poberezkin</name>
         <email>evgeny@poberezkin.com</email>
     </author>
-    <updated>2020-08-14T00:00:00Z</updated>
+    <updated>2020-09-04T00:00:00Z</updated>
     <entry>
+    <title>Dependent types to code are what static types to data</title>
+    <link href="https://www.poberezkin.com/posts/2020-09-04-dependent-types-to-code-are-what-static-types-to-data.html" />
+    <id>https://www.poberezkin.com/posts/2020-09-04-dependent-types-to-code-are-what-static-types-to-data.html</id>
+    <published>2020-09-04T00:00:00Z</published>
+    <updated>2020-09-04T00:00:00Z</updated>
+    <summary type="html"><![CDATA[<article>
+  <section class="header">
+    <div class="info">
+      Posted on
+      
+        September  4, 2020
+      
+      
+        by Evgeny Poberezkin
+      
+    </div>
+    <div class="info">
+      
+        Tags: <a title="All pages tagged &#39;haskell&#39;." href="/tags/haskell.html">haskell</a>, <a title="All pages tagged &#39;executable&#39;." href="/tags/executable.html">executable</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html">coding</a>
+      
+    </div>
+  </section>
+  <section>
+    <h2 id="modeling-state-machines-with-dependent-types-in-haskell-part-2">Modeling state machines with dependent types in Haskell: Part 2</h2>
+<p>This post is “literate” haskell (thanks to <a href="https://github.com/sol/markdown-unlit">markdown-unlit</a>), it can be run from the site repo using GHC 8.8.3 with <code>stack run atm</code>.</p>
+<p>You may want to read first “<a href="/posts/2020-06-29-modeling-state-machine-dependent-types-haskell-1.html">Modeling state machines with dependent types in Haskell: Part 1</a>”, - this post builds upon it and answers the questions raised there.</p>
+<p>If you used <a href="https://hackage.haskell.org/package/singletons">singletons</a> package and aware of the state of dependent types support in Haskell (that is, no support, but good workarounds allowing to emulate them), it should be ok to read independently.</p>
+<h2 id="why">Why?</h2>
+<p>In the first part I wrote about the motivation to use dependent types, but having read a post by Alexis King “<a href="https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/">Parse don’t validate</a>” about static type systems, I had an analogy to add to the motivation that is in this post title:</p>
+<blockquote>
+<h4 id="dependent-types-to-code-are-what-static-types-to-data">dependent types to code are what static types to data</h4>
+</blockquote>
+<p>In the same way the static type systems ensure data validity by construction and prevent writing code that expects or creates invalid data, dependent types can ensure code validity on the code flow, logic and state transitions level.</p>
+<h2 id="questions-to-cover">Questions to cover</h2>
+<p><a href="https://www.manning.com/books/type-driven-development-with-idris"><img src="/images/idris-book.png" alt="Edwin Brady: Type driven development in Idris" width="33.3%" style="min-width: 165px; float: right; margin: 0 0 5% 5%;"></a></p>
+<p>The part 1 left open these questions:</p>
+<ol type="1">
+<li>How can we write code with dependently typed actions in a more conventional way with <code>do</code> notation.</li>
+<li>How to make actions return results and to have state changes depend on these results.</li>
+</ol>
+<p>The ATM (cash machine) example for the second question is borrowed from the excellent book by Edwin Brady: “<a href="https://www.manning.com/books/type-driven-development-with-idris">Type driven development with Idris</a>”. Even if you are not interested in Idris, I highly recommend this book, as it could give you many ideas for writing code in any language - particularly in Haskell, as Idris is syntactically very similar, but with the types as first class citizens and full dependent types support.</p>
+<p>We will use singletons library and we will need to enable “a few” GHC extensions:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="ot">{-# LANGUAGE DataKinds, FlexibleInstances, GADTs, InstanceSigs,</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="ot">  LambdaCase, PolyKinds, ScopedTypeVariables, TemplateHaskell,</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a><span class="ot">  TypeApplications, TypeFamilies, UndecidableInstances #-}</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a><span class="ot">{-# OPTIONS_GHC -Wall -Werror=incomplete-patterns #-}</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true"></a><span class="ot">{-# OPTIONS_GHC -fno-warn-unticked-promoted-constructors #-}</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true"></a><span class="kw">import</span> <span class="dt">Control.Monad</span> (void, forever)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true"></a><span class="kw">import</span> <span class="dt">Control.XFreer</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true"></a><span class="kw">import</span> <span class="dt">Control.XMonad</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true"></a><span class="kw">import</span> <span class="dt">Data.Kind</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true"></a><span class="kw">import</span> <span class="dt">Data.Singletons</span> ()</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true"></a><span class="kw">import</span> <span class="dt">Data.Singletons.TH</span></span></code></pre></div>
+<h1 id="dependent-types-ergonomics">Dependent types ergonomics</h1>
+<p>Let’s deal with the first question first - how to write dependently typed code so it looks, well, like code.</p>
+<p>Consider a super simple not-so-abstract example of some state transitions:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="kw">data</span> <span class="dt">ToggleState</span> <span class="ot">=</span> <span class="dt">On</span> <span class="op">|</span> <span class="dt">Off</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>  <span class="kw">deriving</span> (<span class="dt">Show</span>, <span class="dt">Read</span>, <span class="dt">Eq</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a><span class="kw">data</span> <span class="dt">Command</span> (<span class="ot">s ::</span> <span class="dt">ToggleState</span>) (<span class="ot">s&#39; ::</span> <span class="dt">ToggleState</span>)<span class="ot"> a ::</span> <span class="dt">Type</span> <span class="kw">where</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a>  <span class="dt">TurnOn</span><span class="ot"> ::</span> a <span class="ot">-&gt;</span> <span class="dt">Command</span> <span class="dt">Off</span> <span class="dt">On</span> b</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a>  <span class="dt">TurnOff</span><span class="ot"> ::</span> <span class="dt">Command</span> <span class="dt">On</span> <span class="dt">Off</span> a</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true"></a><span class="ot">  (:&gt;&gt;=) ::</span> <span class="dt">Command</span> s1 s2 a <span class="ot">-&gt;</span> (a <span class="ot">-&gt;</span> <span class="dt">Command</span> s2 s3 b)  <span class="ot">-&gt;</span> <span class="dt">Command</span> s1 s3 b</span></code></pre></div>
+<p>It defines Command type with two constructors parameterized on the result type that change the type-level state from On to Off and back. The last constructor allows chaining them. It is very much like a monadic bind, but it is parameterized on the toggle state to ensure that the sequence is type-aligned, that is the final type of the first argument is the same as the initial type of the second, and the combined type also matches.</p>
+<p>We can define a functor instance for this type, but because of the parameterization we cannot define Applicative and Monad. Relatively well covered concept that allows to abstract what is needed here is called parameterized monads - I will not go the into details here, please review it in other sources:</p>
+<ul>
+<li><a href="http://okmij.org/ftp/Computation/monads.html#param-monad">Parameterized monads</a> by Oleg Kiselev</li>
+<li><a href="https://leanpub.com/thinking-with-types/">Thinking with Types</a> (Indexed monads chapter) by Sandy Maguire</li>
+</ul>
+<p>Rather than defining the instances of indexed applicative and monad by hand, it is possible to use indexed freer monads - an evolution of <a href="http://okmij.org/ftp/Haskell/extensible/more.pdf">freer monads</a> generalized to indexed monads. It has also been covered in <a href="http://okmij.org/ftp/Haskell/extensible/index.html#extext">Parameterized extensible effects and session types</a> by Oleg Kiselev.</p>
+<p>These are all fascinating subjects that probably deserve a separate tutorial-style post, please let me know if you have seen it or if you wrote it.</p>
+<p>Long story short, we will use <a href="https://hackage.haskell.org/package/freer-indexed">freer-indexed</a> package to create functor, indexed applicative (<code>XApplicative</code>) and indexed monad (<code>XMonad</code>) instances of a derived type with just a few lines of code without the need to manually define monadic operations:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a><span class="kw">data</span> <span class="dt">Command&#39;</span> (<span class="ot">s ::</span> <span class="dt">ToggleState</span>) (<span class="ot">s&#39; ::</span> <span class="dt">ToggleState</span>)<span class="ot"> res ::</span> <span class="dt">Type</span> <span class="kw">where</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>  <span class="dt">TurnOn&#39;</span><span class="ot"> ::</span> <span class="dt">Command&#39;</span> <span class="dt">Off</span> <span class="dt">On</span> a</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a>  <span class="dt">TurnOff&#39;</span><span class="ot"> ::</span> a <span class="ot">-&gt;</span> <span class="dt">Command&#39;</span> <span class="dt">On</span> <span class="dt">Off</span> b</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true"></a><span class="kw">type</span> <span class="dt">Cmd</span> <span class="ot">=</span> <span class="dt">XFree</span> <span class="dt">Command&#39;</span></span></code></pre></div>
+<p>A modified <code>Command'</code> type does not need to define its own bind constructor, instead it can use <code>XMonad</code> instance of <code>XFree Command'</code> type - the same approach that is used in algebraic effects systems. <code>Command'</code> is in essence an algebraic effect (without any means to compose it with other effects though). <code>XFree</code> is defined in this way in freer-indexed:</p>
+<pre class="haskell-ignore"><code>data XFree f p q a where
+  Pure :: a -&gt; XFree f p p a
+  Bind :: f p q x -&gt; (x -&gt; XFree f q r a) -&gt; XFree f p r a
+
+xfree :: f p q a -&gt; XFree f p q a
+xfree fa = Bind fa Pure</code></pre>
+<p>So <code>XFree</code> gives you an indexed monad to your algebraic effect. <code>Cmd</code> type created with <code>XFree</code> is the easiest to use with functions <code>turnOn</code> and <code>turnOff</code>, rather than with <code>XFree</code> constructors:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="ot">turnOn ::</span> <span class="dt">Cmd</span> <span class="dt">Off</span> <span class="dt">On</span> a</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a>turnOn <span class="ot">=</span> xfree <span class="dt">TurnOn&#39;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a><span class="ot">turnOff ::</span> a <span class="ot">-&gt;</span> <span class="dt">Cmd</span> <span class="dt">On</span> <span class="dt">Off</span> b</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a>turnOff <span class="ot">=</span> xfree <span class="op">.</span> <span class="dt">TurnOff&#39;</span></span></code></pre></div>
+<p>Now, having briefly covered the required abstractions, let’s get over to syntax. To use these indexed monads with <code>do</code> GHC has an extension <a href="https://downloads.haskell.org/ghc/latest/docs/html/users_guide/glasgow_exts.html#extension-RebindableSyntax">RebindableSyntax</a> that, regardless its reputation of redefining too many things at once, is quite useful here - it allows to redefine <code>&gt;&gt;=</code> and <code>&gt;&gt;</code> to be used with indexed monads, and once it is done they can be used with <code>do</code>. The downside is that you cannot combine indexed and normal monads in the same module. It should become better when the new extension <a href="https://www.tweag.io/blog/2020-07-13-qualified-do-announcement/">QualifiedDo</a> is available.</p>
+<p>With all these great things we can now write:</p>
+<pre class="haskell-ignore"><code>{-# LANGUAGE RebindableSyntax #-}
+import Control.XMonad.Do
+import Prelude hiding ((&gt;&gt;), (&gt;&gt;=))
+
+toggle :: Cmd Off Off Int
+toggle = do
+  m &lt;- turnOn
+  turnOff m</code></pre>
+<p>or without do notation:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a><span class="ot">toggle ::</span> <span class="dt">Cmd</span> <span class="dt">Off</span> <span class="dt">Off</span> <span class="dt">Int</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true"></a>toggle <span class="ot">=</span> turnOn <span class="op">&gt;&gt;=:</span> \m <span class="ot">-&gt;</span> turnOff m</span></code></pre></div>
+<p>and it wouldn’t have compiled if state transitions didn’t match.</p>
+<p><code>&gt;&gt;=:</code> and <code>&gt;&gt;:</code> operations for indexed monads are defined in <a href="https://hackage.haskell.org/package/freer-indexed">freer-indexed</a> package - it also provides all other monadic operations similar to those defined in <code>Control.Monad</code>, but for indexed monads, e.g. <code>&gt;=&gt;:</code>, <code>xjoin</code> etc.</p>
+<h2 id="dependent-types-for-real">Dependent types for real</h2>
+<p>Onwards and upwards from here. Having all the necessary indexed monadic machinery in place, we can now get to the main issue at hand: how to make state changes expressed on the type level dependent on the data-level results of the previous actions - that is what dependent types are about.</p>
+<p>As promised, the ATM example from the book by Edwin Brady will be implemented here in Haskell.</p>
+<p>The possible state transitions of our ATM are shown on the diagram below - it is reproduced here from <a href="https://www.manning.com/books/type-driven-development-with-idris">the book</a> with the kind permission of the publisher, Manning Publications.</p>
+<p><img src="/images/atm.png" alt="ATM state transitions (from Type driven development in Idris)" width="100%"></p>
+<p>The main thing here is that we want to ensure, on the type level, that the money can be dispensed only if the correct PIN provided at the run time.</p>
+<p>We will need to have the state of the ATM available both in types, and also at run-time, so we need to create singleton types for them:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true"></a><span class="op">$</span>( singletons</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true"></a>     [d|</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true"></a>       data ATMState = Ready | CardInserted | Session</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true"></a>         deriving (Show)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true"></a>       |]</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true"></a> )</span></code></pre></div>
+<p>This is a constraint type family for type-level check that the ATM has card in it:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true"></a><span class="kw">type</span> <span class="kw">family</span> <span class="dt">HasCard</span> (<span class="ot">s ::</span> <span class="dt">ATMState</span>)<span class="ot"> ::</span> <span class="dt">Constraint</span> <span class="kw">where</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true"></a>  <span class="dt">HasCard</span> <span class="dt">CardInserted</span> <span class="ot">=</span> ()</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true"></a>  <span class="dt">HasCard</span> <span class="dt">Session</span> <span class="ot">=</span> ()</span></code></pre></div>
+<p>We will also need the types and singletons to define command result on which our state transition depends:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true"></a><span class="op">$</span>( singletons</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true"></a>     [d|</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true"></a>       data PINCheck = CorrectPIN | WrongPIN</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true"></a>         deriving (Show)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true"></a>       |]</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true"></a> )</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true"></a></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true"></a><span class="op">$</span>( promoteOnly</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true"></a>     [d|</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true"></a>       pinCheckToState :: PINCheck -&gt; ATMState</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true"></a>       pinCheckToState = \case</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true"></a>         CorrectPIN -&gt; Session</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true"></a>         WrongPIN -&gt; CardInserted</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true"></a>       |]</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true"></a> )</span></code></pre></div>
+<p><code>pinCheckToState</code> expresses the state transition dependency that we need - if the correct PIN is provided, the state can change to <code>Session</code> that allows dispensing money. But if the PIN is incorrect, the ATM will remain in <code>CardInserted</code> state and getting money from it will be prohibited on the type level.</p>
+<p>Same as in the example in part 1, based on the function <code>pinCheckToState</code> singletons package creates type family and function on singletons.</p>
+<p>Now we can define the type for all allowed ATM commands:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true"></a><span class="kw">type</span> <span class="dt">PIN</span> <span class="ot">=</span> <span class="dt">String</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true"></a><span class="kw">data</span> <span class="dt">ATMCommand</span> (<span class="ot">s ::</span> <span class="dt">ATMState</span>) (<span class="ot">s&#39; ::</span> <span class="dt">ATMState</span>)<span class="ot"> a ::</span> <span class="dt">Type</span> <span class="kw">where</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true"></a>  <span class="dt">InsertCard</span> <span class="ot">::</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true"></a>    <span class="dt">ATMCommand</span> <span class="dt">Ready</span> <span class="dt">CardInserted</span> ()</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true"></a>  <span class="dt">EjectCard</span> <span class="ot">::</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true"></a>    <span class="dt">HasCard</span> s <span class="ot">=&gt;</span> <span class="dt">ATMCommand</span> s <span class="dt">Ready</span> ()</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true"></a>  <span class="dt">GetPIN</span> <span class="ot">::</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true"></a>    <span class="dt">ATMCommand</span> <span class="dt">CardInserted</span> <span class="dt">CardInserted</span> <span class="dt">PIN</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true"></a>  <span class="dt">CheckPIN</span> <span class="ot">::</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true"></a>    <span class="dt">PIN</span> <span class="ot">-&gt;</span> <span class="dt">ATMCommand</span> <span class="dt">CardInserted</span> <span class="dt">CardInserted</span> <span class="dt">PINCheck</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true"></a>  <span class="dt">StartSession</span> <span class="ot">::</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true"></a>    <span class="dt">SPINCheck</span> p <span class="ot">-&gt;</span> <span class="dt">ATMCommand</span> <span class="dt">CardInserted</span> (<span class="dt">PinCheckToState</span> p) ()</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true"></a>  <span class="dt">GetAmount</span> <span class="ot">::</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true"></a>    <span class="dt">HasCard</span> s <span class="ot">=&gt;</span> <span class="dt">ATMCommand</span> s s <span class="dt">Int</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true"></a>  <span class="dt">Dispense</span> <span class="ot">::</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true"></a>    <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">ATMCommand</span> <span class="dt">Session</span> <span class="dt">Session</span> ()</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true"></a>  <span class="dt">Message</span> <span class="ot">::</span></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true"></a>    <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">ATMCommand</span> s s ()</span></code></pre></div>
+<p>You can check with the state transition diagram that this type correctly expresses all allowed state transitions. <code>StartSession</code> command final state depends on whether the PIN was correct.</p>
+<p>Unlike the elevator code from part 1, we will not write ATM code with these constructors, as we did not define a constructor to bind these commands in a sequence. Instead we will use indexed free monad covered above to create our building blocks for the ATM program:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true"></a><span class="kw">type</span> <span class="dt">ATMCmd</span> <span class="ot">=</span> <span class="dt">XFree</span> <span class="dt">ATMCommand</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true"></a><span class="ot">insertCard ::</span> <span class="dt">ATMCmd</span> <span class="dt">Ready</span> <span class="dt">CardInserted</span> ()</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true"></a>insertCard <span class="ot">=</span> xfree <span class="dt">InsertCard</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true"></a></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true"></a><span class="ot">ejectCard ::</span> <span class="dt">HasCard</span> s <span class="ot">=&gt;</span> <span class="dt">ATMCmd</span> s <span class="dt">Ready</span> ()</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true"></a>ejectCard <span class="ot">=</span> xfree <span class="dt">EjectCard</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true"></a></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true"></a><span class="ot">getPIN ::</span> <span class="dt">ATMCmd</span> <span class="dt">CardInserted</span> <span class="dt">CardInserted</span> <span class="dt">PIN</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true"></a>getPIN <span class="ot">=</span> xfree <span class="dt">GetPIN</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true"></a></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true"></a><span class="ot">checkPIN ::</span> <span class="dt">PIN</span> <span class="ot">-&gt;</span> <span class="dt">ATMCmd</span> <span class="dt">CardInserted</span> <span class="dt">CardInserted</span> <span class="dt">PINCheck</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true"></a>checkPIN <span class="ot">=</span> xfree <span class="op">.</span> <span class="dt">CheckPIN</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true"></a></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true"></a><span class="ot">startSession ::</span> <span class="dt">SPINCheck</span> p <span class="ot">-&gt;</span> <span class="dt">ATMCmd</span> <span class="dt">CardInserted</span> (<span class="dt">PinCheckToState</span> p) ()</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true"></a>startSession <span class="ot">=</span> xfree <span class="op">.</span> <span class="dt">StartSession</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true"></a></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true"></a><span class="ot">getAmount ::</span> <span class="dt">HasCard</span> s <span class="ot">=&gt;</span> <span class="dt">ATMCmd</span> s s <span class="dt">Int</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true"></a>getAmount <span class="ot">=</span> xfree <span class="dt">GetAmount</span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true"></a></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true"></a><span class="ot">dispense ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">ATMCmd</span> <span class="dt">Session</span> <span class="dt">Session</span> ()</span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true"></a>dispense <span class="ot">=</span> xfree <span class="op">.</span> <span class="dt">Dispense</span></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true"></a></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true"></a><span class="ot">message ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">ATMCmd</span> s s ()</span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true"></a>message <span class="ot">=</span> xfree <span class="op">.</span> <span class="dt">Message</span></span></code></pre></div>
+<p>That’s a bit of the boilerplate - you would have to do the same with any algebraic effect system (or use template haskell in case of <a href="https://hackage.haskell.org/package/polysemy">polysemy</a>).</p>
+<p>Now, using <code>RebindableSyntax</code>, we can write code using <code>do</code>.</p>
+<pre class="haskell-ignore"><code>atm :: ATMCmd Ready Ready ()
+atm = do
+  insertCard
+  message &quot;Hello&quot;
+  pin &lt;- getPIN
+  pinOK &lt;- checkPIN pin
+  case pinOK of
+    FromSing ok -&gt; do
+      startSession ok
+      case ok of
+        SCorrectPIN -&gt; do
+          amount &lt;- getAmount
+          dispense amount -- this command would fail to compile in SWrongPIN branch
+          ejectCard
+          message &quot;Remove card and cash&quot;
+        SWrongPIN -&gt; do
+          message &quot;Incorrect PIN&quot;
+          ejectCard</code></pre>
+<p>Compare how similar the <a href="https://github.com/edwinb/TypeDD-Samples/blob/master/Chapter14/ATM.idr#L69">Idris code</a> from the book is to Haskell code we just wrote. Even though emulating dependent types requires some workarounds in Haskell, the ergonomics are quite decent.</p>
+<p>What we have above is a data structure yet to be interpreted, but it very much looks like code. The type-level state transitions depend on whether the PIN is correct, and if you try to trick our ATM into giving you 100 without a valid PIN by adding <code>dispense 100</code> into the <code>SWrongPIN</code> branch, the code will not compile - exactly as we wanted.</p>
+<p>The main difference with Idris code is that in Haskell the transition between PIN check result on the data level (<code>pinOK</code>) and the type level (<code>ok</code>) has to be explicit with <code>FromSing</code> pattern, and we needed a separate command <code>startSession</code> to change type-level state based on PIN check.</p>
+<p>The above is not the actual code that runs if you execute this post - it is used in <a href="https://github.com/epoberezkin/atm-state-machine">atm-state-machine</a> repo. As I wrote, <code>RebindableSyntax</code> does not allow combining indexed and normal monads in the same file, and we need an interpreter that uses IO monad to execute this code.</p>
+<p>Fear not, the code above can be re-written without <code>do</code> - it even looks almost like code:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true"></a><span class="ot">atm&#39; ::</span> <span class="dt">ATMCmd</span> <span class="dt">Ready</span> <span class="dt">Ready</span> ()</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true"></a>atm&#39; <span class="ot">=</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true"></a>  insertCard</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true"></a>    <span class="op">&gt;&gt;:</span> message <span class="st">&quot;Hello&quot;</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true"></a>    <span class="op">&gt;&gt;:</span> getPIN</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true"></a>    <span class="op">&gt;&gt;=:</span> checkPIN</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true"></a>    <span class="op">&gt;&gt;=:</span> \(<span class="dt">FromSing</span> ok) <span class="ot">-&gt;</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true"></a>      startSession ok</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true"></a>        <span class="op">&gt;&gt;:</span> <span class="kw">case</span> ok <span class="kw">of</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true"></a>          <span class="dt">SCorrectPIN</span> <span class="ot">-&gt;</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true"></a>            getAmount</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true"></a>              <span class="op">&gt;&gt;=:</span> dispense</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true"></a>              <span class="op">&gt;&gt;:</span> ejectCard</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true"></a>              <span class="op">&gt;&gt;:</span> message <span class="st">&quot;Remove card and cash&quot;</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true"></a>          <span class="dt">SWrongPIN</span> <span class="ot">-&gt;</span></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true"></a>            message <span class="st">&quot;Incorrect PIN&quot;</span></span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true"></a>              <span class="op">&gt;&gt;:</span> ejectCard</span></code></pre></div>
+<p>To execute our ATM program we need to interpret it. We will make a console demo, but it could have been connected to the real ATM:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true"></a><span class="ot">runATMCmd ::</span> <span class="dt">ATMCommand</span> s s&#39; a <span class="ot">-&gt;</span> <span class="dt">IO</span> a</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true"></a>runATMCmd <span class="dt">InsertCard</span> <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true"></a>  <span class="fu">putStrLn</span> <span class="st">&quot;Insert card (press enter)&quot;</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true"></a>  void <span class="fu">getLine</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true"></a>runATMCmd <span class="dt">EjectCard</span> <span class="ot">=</span> <span class="fu">putStrLn</span> <span class="st">&quot;Card ejected&quot;</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true"></a>runATMCmd <span class="dt">GetPIN</span> <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true"></a>  <span class="fu">putStrLn</span> <span class="st">&quot;Enter pin:&quot;</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true"></a>  <span class="fu">getLine</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true"></a>runATMCmd (<span class="dt">CheckPIN</span> pin) <span class="ot">=</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true"></a>  <span class="kw">if</span> pin <span class="op">==</span> <span class="st">&quot;1234&quot;</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true"></a>    <span class="kw">then</span> <span class="fu">return</span> <span class="dt">CorrectPIN</span></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true"></a>    <span class="kw">else</span> <span class="fu">return</span> <span class="dt">WrongPIN</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true"></a>runATMCmd (<span class="dt">StartSession</span> _) <span class="ot">=</span> <span class="fu">return</span> ()</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true"></a>runATMCmd <span class="dt">GetAmount</span> <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true"></a>  <span class="fu">putStrLn</span> <span class="st">&quot;Enter amount:&quot;</span></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true"></a>  <span class="fu">read</span> <span class="op">&lt;$&gt;</span><span class="ot"> getLine ::</span> <span class="dt">IO</span> <span class="dt">Int</span></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true"></a>runATMCmd (<span class="dt">Dispense</span> cash) <span class="ot">=</span> <span class="fu">putStrLn</span> <span class="op">$</span> <span class="st">&quot;Here is &quot;</span> <span class="op">++</span> <span class="fu">show</span> cash</span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true"></a>runATMCmd (<span class="dt">Message</span> msg) <span class="ot">=</span> <span class="fu">putStrLn</span> msg</span></code></pre></div>
+<p>Note how <code>StartSession</code> does nothing here - but it ensures correct type-level state transition.</p>
+<p>This interpreter only knows how to execute individual commands, but we also need the interpreter to execute ATM program - for that we need to interpret <code>Pure</code> and <code>Bind</code> constructors of <code>XFree</code>:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true"></a><span class="ot">runATM ::</span> <span class="dt">ATMCmd</span> s s&#39; a <span class="ot">-&gt;</span> <span class="dt">IO</span> a</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true"></a>runATM (<span class="dt">Pure</span> x) <span class="ot">=</span> <span class="fu">return</span> x</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true"></a>runATM (<span class="dt">Bind</span> c f) <span class="ot">=</span> runATMCmd c <span class="op">&gt;&gt;=</span> \x <span class="ot">-&gt;</span> runATM (f x)</span></code></pre></div>
+<h2 id="lets-run-it">Let’s run it!</h2>
+<p>The code to run our ATM program is very simple:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true"></a>main <span class="ot">=</span> runATM <span class="op">$</span> forever atm&#39;</span></code></pre></div>
+<p>Why were we able to use <code>forever</code> from <code>Control.Monad</code> with our ATM program? Isn’t <code>atm'</code> an indexed monad, and <code>forever</code> is defined for normal monads?</p>
+<p>The reason we could do so is because <code>freer-indexed</code> defines <code>Applicative</code> and <code>Monad</code> instances for indexed free monads with the same initial and final states. So even though our ATM program uses indexed monads internally, it can be embedded into normal monads.</p>
+<p>This is quite important - dependent types and indexed monads are not all or nothing proposition. You can use indexed monads only for some small critical part of your code where you want additional type-level safety, and use normal monads in the rest of your code.</p>
+<p>This is it! You can run the code right from this post by cloning the <a href="https://github.com/epoberezkin/poberezkin.com">site repo</a> and executing <code>stack run atm</code>. The source code without the text is available in <a href="https://github.com/epoberezkin/atm-state-machine">atm-state-machine</a>.</p>
+<h2 id="unsolved-problems">Unsolved problems</h2>
+<ol type="1">
+<li>It was a bit annoying to write two interpreters where we should have only needed one. Interpreting ATM commands we created ourselves is fine, but interpreting <code>XFree</code> constructors that we have only seen once, could be better done in the library. A good exercise would be to write a generic interpreter to have any command executed in any monad, not only <code>IO</code>. It would accept <code>runATMCmd</code> as a parameter, but writing its type is a good challenge in itself. So, if we had this function, we could get our runATM interpreter in this way:</li>
+</ol>
+<pre><code>runATM :: ATMCmd s s&#39; a -&gt; IO a
+runATM = runXFree runATMCmd</code></pre>
+<p>It would be great to add <code>runXFree</code> function to <a href="https://hackage.haskell.org/package/freer-indexed">freer-indexed</a>.</p>
+<ol start="2" type="1">
+<li>While what we did here is very similar to algebraic effect systems generalized to indexed effects, the huge difference is that our ATM effect is not composable. If we only needed to track one resource state on the type level, or the resources were independent, we could get away with it - their logic can be written separately and embedded into normal monads or effects as we did with <code>forever atm'</code>.</li>
+</ol>
+<p>But real life is rarely that simple - what starts as separated often becomes interconnected later.</p>
+<p>Generalizing <a href="https://hackage.haskell.org/package/freer-simple">freer-simple</a> effects to indexed monads would be an interesting project - so far I got stuck with it in the branch of <a href="https://github.com/epoberezkin/freer-indexed/tree/effects/src">freer-indexed</a>.</p>
+<h2 id="whats-next">What’s next?</h2>
+<p>A generalization of this approach can be used to model distributed state transitions with multiple system participants, each having their own view on the system state.</p>
+<p>A non-trivial problem is to define an interaction / communication protocol on the type level in such a way that it can be used to write both protocol scenarios with all participants involved and also separate implementations for participants in a type-safe way, using the same protocol type.</p>
+<p>Solving the problem of modelling distributed state transitions might be part 3 some day.</p>
+  </section>
+  <section class="links">
+    <a href="https://www.reddit.com/submit?url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2020-09-04-dependent-types-to-code-are-what-static-types-to-data.html&title=Dependent types to code are what static types to data" target="_blank"><img src="/images/reddit.png"></a>
+    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Dependent%20types%20to%20code%20are%20what%20static%20types%20to%20data&hashtags=haskell%2Cexecutable%2Ccoding&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2020-09-04-dependent-types-to-code-are-what-static-types-to-data.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2020-09-04-dependent-types-to-code-are-what-static-types-to-data.html" target="_blank"><img src="/images/tweet.png"></a>
+    
+      <a href="https://github.com/epoberezkin/atm-state-machine" target="_blank"><img src="/images/repo.png"></a>
+    
+  </section>
+</article>
+]]></summary>
+</entry>
+<entry>
     <title>Ajv JSON Schema validator: Mozilla MOSS grant and OpenJS Foundation</title>
     <link href="https://www.poberezkin.com/posts/2020-08-14-ajv-json-validator-mozilla-open-source-grant-openjs-foundation.html" />
     <id>https://www.poberezkin.com/posts/2020-08-14-ajv-json-validator-mozilla-open-source-grant-openjs-foundation.html</id>
@@ -88,7 +378,7 @@
     </div>
   </section>
   <section>
-    <p>This post is “literate” haskell (thanks to <a href="https://github.com/sol/markdown-unlit">markdown-unlit</a>), it can be run on GHC 8.8.3 with <code>stack run elevator</code>.</p>
+    <p>This post is “literate” haskell (thanks to <a href="https://github.com/sol/markdown-unlit">markdown-unlit</a>), it can be run using GHC 8.8.3 with <code>stack run elevator</code>.</p>
 <h2 id="why">Why?</h2>
 <p>The reason to use types to model state transitions is to guarantee the correctness of <a href="https://en.wikipedia.org/wiki/Finite-state_machine">state machine</a> implementation by the way it is constructed, so that invalid implementations fail to compile.</p>
 <p>When we model a state machine we usually create some diagram or use some meta-language to show allowed state transitions. The code implementing the logic of the state machine is disconnected from this diagram, and it can be large enough to make it impossible or very difficult to validate that the implementation only supports allowed state transitions.</p>
@@ -314,8 +604,8 @@ badElevator =
 </ol>
 <pre class="haskell-ignore"><code>elevatorProgram :: SomeSing Elevator -&gt; [String] -&gt; Maybe SomeAction</code></pre>
 <ol start="3" type="1">
-<li>If you “close” the door on the ground floor and send the elevator “down”, it will remain <code>Stopped</code>, but the command will not be rejected. How to modify the type definition for <code>Action</code> to disallow it? If you do it, <code>actionFromString</code> will no longer compile - it has to be modified as well.</li>
-<li>Create a function that given the current elevator state and the requested floor, returns an action sequence in <code>SomeAction</code> to send it to the specific floor, in case it is stopped and the door is opened, and <code>Nothing</code> otherwise:</li>
+<li><p>If you “close” the door on the ground floor and send the elevator “down”, it will remain <code>Stopped</code>, but the command will not be rejected. How to modify the type definition for <code>Action</code> to disallow it? If you do it, <code>actionFromString</code> will no longer compile - it has to be modified as well.</p></li>
+<li><p>Create a function that given the current elevator state and the requested floor, returns an action sequence in <code>SomeAction</code> to send it to the specific floor, in case it is stopped and the door is opened, and <code>Nothing</code> otherwise:</p></li>
 </ol>
 <pre class="haskell-ignore"><code>elevatorToFloor :: SomeSing Elevator -&gt; Natural -&gt; Maybe SomeAction</code></pre>
 <h2 id="whats-next">What’s next?</h2>

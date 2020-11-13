@@ -46,7 +46,7 @@ I am really excited about this change, as it should simplify using Ajv to implem
 
 Users will also be able to use it both to define their own collections of keywords (JSON Schema specification calls them "vocabularies") and also to use a subset of included keywords to reduce the size of the browser bundle.
 
-One other exciting milestone for Ajv coming in 2021 is support of the new specification for JSON data: [JSON Type Definition](https://datatracker.ietf.org/doc/rfc8927/) - it started from [this conversation](https://github.com/json-schema-org/json-schema-spec/issues/710) in JSON Schema GitHub organization and has been approved as RFC just a week ago.
+One other exciting milestone for Ajv coming in 2021 is the support of the new specification for JSON data: [JSON Type Definition](https://jsontypedef.com) - it started from [this conversation](https://github.com/json-schema-org/json-schema-spec/issues/710) in JSON Schema GitHub organization and has been [approved as RFC8927](https://datatracker.ietf.org/doc/rfc8927/) just a week ago.
 
 We finally have a language to define JSON structure that enterprise users will be confident using because of its RFC status. It is super simple and much less error-prone (although with the new Ajv strict mode writing JSON Schemas became less error-prone too).
 

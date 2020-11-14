@@ -3,6 +3,7 @@ title: "Ajv validator: time to migrate to version 7!"
 author: Evgeny Poberezkin
 tags: open-source, javascript, json-schema, coding, ajv
 github: ajv-validator/ajv
+reddit: r/javascript/comments/jtzk94/ajv_validator_time_to_migrate_to_version_7_lots/
 image: ajv.png
 ---
 

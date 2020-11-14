@@ -12,10 +12,10 @@ image: ajv.png
 
 My relationship with [Ajv](https://github.com/ajv-validator/ajv) changed over time, going full circle:
 
-- the weekend project to enable another project almost nobody knows about (this short [conference talk](https://www.poberezkin.com/posts/2019-07-10-talk-why-you-should-open-source-for-real.html) can give you some context).
+- the weekend project to enable another project almost nobody knows about (this short [conference talk](./2019-07-10-talk-why-you-should-open-source-for-real.html) can give you some context).
 - the project I had a growing excitement about as it was becoming more and more adopted, with some huge number of JavaScript developers using it [all over the world](https://www.google.com/maps/d/u/1/edit?mid=1MGRV8ciFUGIbO1l0EKFWNJGYE7iSkDxP&ll=21.319581133324633%2C-23.649554920324135&z=3), millions of GitHub projects depending on it and over 100 million [npm downloads](https://www.npmjs.com/package/ajv) every month.
 - a huge burden I could not allow myself to drop long after I stopped being interested in it.
-- realisation that I will develop it further only if I am paid for it and applying for Mozilla's Open Source Support grant - and [having it awarded](https://www.poberezkin.com/posts/2020-08-14-ajv-json-validator-mozilla-open-source-grant-openjs-foundation.html) to my excitement.
+- realisation that I will develop it further only if I am paid for it and applying for Mozilla's Open Source Support grant - and [having it awarded](./2020-08-14-ajv-json-validator-mozilla-open-source-grant-openjs-foundation.html) to my excitement.
 - being as excited about it as I was 5 years ago, having fully re-written Ajv in version 7 at my current level of the problem understanding and competence (I removed lots of embarrassing 5 year old code), thanks to the grant that paid for this work - and there is lots more work to do.
 
 ## What's changed in version 7
@@ -50,9 +50,9 @@ One other exciting milestone for Ajv coming in 2021 is the support of the new sp
 
 We finally have a language to define JSON structure that enterprise users will be confident using because of its RFC status. It is super simple and much less error-prone (although with the new Ajv strict mode writing JSON Schemas became less error-prone too).
 
-### Strict mode for JSON Schemas
+### Strict mode for JSON Schema
 
-Ajv version 6 has several options to reduce errors when writing JSON Schemas: `strictKeywords`, `unknownFormats`, etc. It helped to reduce errors to the users who enabled these options, but all the new users had to learn about these problems from their own mistakes.
+Ajv version 6 has several options to reduce errors when writing schemas: `strictKeywords`, `unknownFormats`, etc. It helped to reduce errors to the users who enabled these options, but all the new users had to learn about these problems from their own mistakes.
 
 Version 7 of Ajv changed this approach to make ["strict mode"](https://github.com/ajv-validator/ajv/blob/master/docs/strict-mode.md) default - it is an opinionated (and optional) set of restrictions about how JSON Schema should be written. For example, a common mistake for the new JSON Schema users is this schema (that is a valid JSON Schema):
 
@@ -105,9 +105,10 @@ Another breaking change is that support of JSON Schema formats was split to a se
 
 ## Time to migrate to version 7!
 
-Although Ajv version 7 is still in beta, I believe it is stable enough and safe to use. Just make the version fixed until the major version is out of beta - there may be some small incompatible API changes.
+Although Ajv version 7 is still in beta, I believe it is stable enough and safe to use. Just make the version fixed until the major version is out of beta - there may be small API changes.
 
 There are several benefits to switch to Ajv [v7.0.0-beta.4](https://github.com/ajv-validator/ajv/releases):
+
 - support of all important JSON Schema draft-2019-09 features:
   - many [new validation keywords](https://github.com/ajv-validator/ajv/blob/master/docs/json-schema.md#json-schema-draft-2019-09), including `unevaluatedProperties` than many users needed.
   - dynamic recursive references to enable [extending recursive schemas](https://github.com/ajv-validator/ajv/blob/master/docs/validation.md#extending-recursive-schemas)

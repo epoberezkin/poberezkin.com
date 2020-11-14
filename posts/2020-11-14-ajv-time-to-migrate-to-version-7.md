@@ -8,7 +8,7 @@ image: ajv.png
 
 [<img src="/images/ajv.svg" width="20%" style="min-width: 100px; clear:right; float: right; margin: 0 1.65% 2.5% 5%;">](https://github.com/ajv-validator/ajv)
 
-## Prolog
+## Prologue
 
 My relationship with [Ajv](https://github.com/ajv-validator/ajv) changed over time, going full circle:
 
@@ -16,7 +16,7 @@ My relationship with [Ajv](https://github.com/ajv-validator/ajv) changed over ti
 - the project I had a growing excitement about as it was becoming more and more adopted, with some huge number of JavaScript developers using it [all over the world](https://www.google.com/maps/d/u/1/edit?mid=1MGRV8ciFUGIbO1l0EKFWNJGYE7iSkDxP&ll=21.319581133324633%2C-23.649554920324135&z=3), millions of GitHub projects depending on it and over 100 million [npm downloads](https://www.npmjs.com/package/ajv) every month.
 - a huge burden I could not allow myself to drop long after I stopped being interested in it.
 - realisation that I will develop it further only if I am paid for it and applying for Mozilla's Open Source Support grant - and [having it awarded](https://www.poberezkin.com/posts/2020-08-14-ajv-json-validator-mozilla-open-source-grant-openjs-foundation.html) to my excitement.
-- being as excited about it as I was 5 years ago, having fully re-written Ajv in version 7 at my current level of the problem understanding and competence (I removed lots of embarassing 5 year old code), thanks to the grant that paid for this work - and there is lots more work to do.
+- being as excited about it as I was 5 years ago, having fully re-written Ajv in version 7 at my current level of the problem understanding and competence (I removed lots of embarrassing 5 year old code), thanks to the grant that paid for this work - and there is lots more work to do.
 
 ## What's changed in version 7
 

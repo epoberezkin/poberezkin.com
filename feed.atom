@@ -8,8 +8,114 @@
         <name>Evgeny Poberezkin</name>
         <email>evgeny@poberezkin.com</email>
     </author>
-    <updated>2020-09-04T00:00:00Z</updated>
+    <updated>2020-11-14T00:00:00Z</updated>
     <entry>
+    <title>Ajv validator: time to migrate to version 7!</title>
+    <link href="https://www.poberezkin.com/posts/2020-11-14-ajv-time-to-migrate-to-version-7.html" />
+    <id>https://www.poberezkin.com/posts/2020-11-14-ajv-time-to-migrate-to-version-7.html</id>
+    <published>2020-11-14T00:00:00Z</published>
+    <updated>2020-11-14T00:00:00Z</updated>
+    <summary type="html"><![CDATA[<article>
+  <section class="header">
+    <div class="info">
+      Posted on
+      
+        November 14, 2020
+      
+      
+        by Evgeny Poberezkin
+      
+    </div>
+    <div class="info">
+      
+        Tags: <a title="All pages tagged &#39;open-source&#39;." href="/tags/open-source.html">open-source</a>, <a title="All pages tagged &#39;javascript&#39;." href="/tags/javascript.html">javascript</a>, <a title="All pages tagged &#39;json-schema&#39;." href="/tags/json-schema.html">json-schema</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html">coding</a>, <a title="All pages tagged &#39;ajv&#39;." href="/tags/ajv.html">ajv</a>
+      
+    </div>
+  </section>
+  <section>
+    <p><a href="https://github.com/ajv-validator/ajv"><img src="/images/ajv.svg" width="20%" style="min-width: 100px; clear:right; float: right; margin: 0 1.65% 2.5% 5%;"></a></p>
+<h2 id="prologue">Prologue</h2>
+<p>My relationship with <a href="https://github.com/ajv-validator/ajv">Ajv</a> changed over time, going full circle:</p>
+<ul>
+<li>the weekend project to enable another project almost nobody knows about (this short <a href="./2019-07-10-talk-why-you-should-open-source-for-real.html">conference talk</a> can give you some context).</li>
+<li>the project I had a growing excitement about as it was becoming more and more adopted, with some huge number of JavaScript developers using it <a href="https://www.google.com/maps/d/u/1/edit?mid=1MGRV8ciFUGIbO1l0EKFWNJGYE7iSkDxP&amp;ll=21.319581133324633%2C-23.649554920324135&amp;z=3">all over the world</a>, millions of GitHub projects depending on it and over 100 million <a href="https://www.npmjs.com/package/ajv">npm downloads</a> every month.</li>
+<li>a huge burden I could not allow myself to drop long after I stopped being interested in it.</li>
+<li>realisation that I will develop it further only if I am paid for it and applying for Mozilla’s Open Source Support grant - and <a href="./2020-08-14-ajv-json-validator-mozilla-open-source-grant-openjs-foundation.html">having it awarded</a> to my excitement.</li>
+<li>being as excited about it as I was 5 years ago, having fully re-written Ajv in version 7 at my current level of the problem understanding and competence (I removed lots of embarrassing 5 year old code), thanks to the grant that paid for this work - and there is lots more work to do.</li>
+</ul>
+<h2 id="whats-changed-in-version-7">What’s changed in version 7</h2>
+<p>5 years of adding features and resolving bugs resulted in somewhat tangled mess of <a href="https://github.com/olado/doT">doT templates</a> (doT engine is still a solid piece of software though) and ES5 code that quite a few people managed to figure out - I am super grateful to <a href="https://github.com/ajv-validator/ajv/graphs/contributors">almost 100 contributors</a>.</p>
+<p>Now that Ajv is fully re-written in TypeScript I hope that it can enable much wider contributions from Ajv users.</p>
+<h3 id="code-generation">Code generation</h3>
+<p><a href="https://github.com/olado/doT">doT templates</a> are replaced with a new code generation API (any suggestions how it can be improved would be super helpful) to generate control flow code using light-weight syntax trees. This tree is optimized, reducing generated code size by 10-15%, compared with version 6.</p>
+<p>To generate expressions (and conditions) Ajv now uses tagged template literals that make the code easy to read (unlike string concatenation or doT templates), but at the same time make accidental mistakes impossible - otherwise they could lead to remote code injection (when untrusted schemas are used). If Ajv internal code were to use an unsafe string where a number or variable name is expected, it would be quoted and not executed - so the schema would fail to compile or throw an exception, but not execute untrusted code.</p>
+<p>As a side effect it made the code of validation keywords much more concise and expressive. See <a href="https://github.com/ajv-validator/ajv/blob/master/docs/codegen.md">code generation</a> in Ajv docs. I believe it may have a value as a standalone library - let me know if you have any use cases for it, I am considering splitting it from Ajv.</p>
+<h3 id="schema-compilation">Schema compilation</h3>
+<p>The code that manages schema compilation and reference resolution is radically simplified - the same functionality is achieved with half of the code, with many recursive functions removed or refactored, without losing support of any edge cases. It also allowed to implement support for dynamic recursive references (JSON Schema draft-2019-09) that enable <a href="https://github.com/ajv-validator/ajv/blob/master/docs/validation.md#extending-recursive-schemas">extension of recursive schemas</a>.</p>
+<h3 id="validation-keywords-definition">Validation keywords definition</h3>
+<p>Ajv version 6 has two types of validation keywords - “standard” JSON Schema keywords, hard-wired into Ajv, and “custom keywords” - they have their own API in version 6.</p>
+<p>Defining the keywords that are as performant as “standard” keywords required either using string concatenation, which is difficult, or doT templates - that nobody liked. Ajv version 7 removed the difference between bundled and user-defined keywords. While there remains a very small number of hard-wired keywords that are fundamental to how schema compilation and code generation logic works - <code>type</code>, <code>$id</code> and <code>$ref</code> - all other keywords are defined using <a href="https://github.com/ajv-validator/ajv/blob/master/docs/keywords.md#define-keyword-with-code-generation-function">the same new API</a> that is available to the users to define the additional keywords.</p>
+<p>I am really excited about this change, as it should simplify using Ajv to implement any JSON schema language specification, not only JSON Schema with a capital “S”, and even wider - to implement any DSL for JSON data processing and transformation. By the time version 7 becomes the main version in December 2020 you will be able to use core Ajv class without any bundled keywords, as the foundation for your own JSON-based DSL compiler.</p>
+<p>Users will also be able to use it both to define their own collections of keywords (JSON Schema specification calls them “vocabularies”) and also to use a subset of included keywords to reduce the size of the browser bundle.</p>
+<p>One other exciting milestone for Ajv coming in 2021 is the support of the new specification for JSON data: <a href="https://jsontypedef.com">JSON Type Definition</a> - it started from <a href="https://github.com/json-schema-org/json-schema-spec/issues/710">this conversation</a> in JSON Schema GitHub organization and has been <a href="https://datatracker.ietf.org/doc/rfc8927/">approved as RFC8927</a> just a week ago.</p>
+<p>We finally have a language to define JSON structure that enterprise users will be confident using because of its RFC status. It is super simple and much less error-prone (although with the new Ajv strict mode writing JSON Schemas became less error-prone too).</p>
+<h3 id="strict-mode-for-json-schema">Strict mode for JSON Schema</h3>
+<p>Ajv version 6 has several options to reduce errors when writing schemas: <code>strictKeywords</code>, <code>unknownFormats</code>, etc. It helped to reduce errors to the users who enabled these options, but all the new users had to learn about these problems from their own mistakes.</p>
+<p>Version 7 of Ajv changed this approach to make <a href="https://github.com/ajv-validator/ajv/blob/master/docs/strict-mode.md">“strict mode”</a> default - it is an opinionated (and optional) set of restrictions about how JSON Schema should be written. For example, a common mistake for the new JSON Schema users is this schema (that is a valid JSON Schema):</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="fu">{</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a>  <span class="dt">&quot;properties&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a>    <span class="dt">&quot;foo&quot;</span><span class="fu">:</span> <span class="fu">{</span><span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;string&quot;</span><span class="fu">}</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a>  <span class="fu">}</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true"></a><span class="fu">}</span></span></code></pre></div>
+<p>A majority of the new users of JSON Schema reasonably expect that this schema requires that your data is an object with a property “foo” that is a string - and it would be actually correct if it were <a href="https://jsontypedef.com">JSON Type Definition</a> schema. But in JSON Schema specification this schema means the following:</p>
+<blockquote>
+<p>IF your data is an <code>object</code>, AND this object has a property <code>"foo"</code>, THEN the type of this property should be a <code>string</code>.</p>
+</blockquote>
+<p>So any non-object is valid against this schema, and also any object without a property “foo”. Quite a surprise!</p>
+<p>In <a href="https://github.com/ajv-validator/ajv/blob/master/docs/strict-mode.md">strict mode</a> that Ajv has enabled by default this schema would log a warning (or optionally throw an exception with <code>strictTypes: true</code> option) unless you add “type” keyword:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="fu">{</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>  <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;object&quot;</span><span class="fu">,</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>  <span class="dt">&quot;properties&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a>    <span class="dt">&quot;foo&quot;</span><span class="fu">:</span> <span class="fu">{</span><span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;string&quot;</span><span class="fu">}</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a>  <span class="fu">}</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a><span class="fu">}</span></span></code></pre></div>
+<p>It still allows objects without property “foo” - you need to use the “required” keyword, but at least it won’t allow non-objects now.</p>
+<p>If you use TypeScript there is an even stricter option now - you can use a generic type <code>JSONSchemaType&lt;T&gt;</code> as a type for the schema itself (assuming the data has type <code>T</code>) that would fail TypeScript compilation unless you add some other keywords - see the <a href="https://github.com/ajv-validator/ajv#getting-started">example in readme</a>.</p>
+<p>While strict mode is designed to avoid mistakes, it does not change JSON Schema semantics or validation results - if a schema is correct in “strict mode”, it is also correct without it and it produces the same validation results.</p>
+<h3 id="parse-dont-validate">Parse don’t validate</h3>
+<p>Users of static type systems live by <a href="https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/">this mantra</a>, and for TypeScript users compiled validation functions are now type guards - validating data narrows its type according to the used schema.</p>
+<p>Ajv users who use TypeScript <a href="https://github.com/ajv-validator/ajv/issues/736">asked to add it</a> for a couple of years - 70 people voted for this feature! Now that TypeScript support is first class, and not an afterthought, both this and another important problem of Ajv is addressed - validation errors now belong to tagged union type.</p>
+<p>I am now thinking whether it should be taken it a step further - extending Ajv to generate parsing code that would not just validate the object that was pre-parsed by <code>JSON.parse()</code>, but would parse JSON and validate it at the same time, returning data of the expected type if the validation succeeds, and failing as soon as schema violation is encountered when it is possible (some validation keywords would still require parsing the whole JSON). I am not promising it, but it may happen some time next year.</p>
+<h2 id="what-was-removed">What was removed</h2>
+<p>Some people may get sad - I definitely am - that Ajv version 7 no longer supports draft-04 of JSON Schema specification. Draft-04 was the first version of JSON Schema that Ajv supported since 2015 and removing its support is a big decision - it is still used in some old schemas. But the specification has so substantially evolved in draft-06, -07 and -2019-09 that continuing to support draft-04 would further complicate already complex code - removing it brought some simplicity back.</p>
+<p>So you will either have to migrate your schemas to draft-06 or later (e.g. using <a href="https://github.com/ajv-validator/ajv-cli">ajv-cli</a>) or to continue using Ajv version 6 that will be supported until the end of Q1 2021 and will remain stable for a much longer time.</p>
+<p>Another breaking change is that support of JSON Schema formats was split to a separate package <a href="https://github.com/ajv-validator/ajv-formats">ajv-formats</a>. The first reason was that JSON Schema specification draft-2019-09 made format validation optional. The second, and more important, reason is that semantic string validation is complex, and it is impossible to find the right balance between correctness, performance and complexity that is acceptable to all users and applications. While you still can easily add the formats provided by ajv-formats package, it is up to you to assess their suitability and, if needed, to replace with other implementations that are appropriate for your use cases.</p>
+<h2 id="time-to-migrate-to-version-7">Time to migrate to version 7!</h2>
+<p>Although Ajv version 7 is still in beta, I believe it is stable enough and safe to use. Just make the version fixed until the major version is out of beta - there may be small API changes.</p>
+<p>There are several benefits to switch to Ajv <a href="https://github.com/ajv-validator/ajv/releases">v7.0.0-beta.4</a>:</p>
+<ul>
+<li>support of all important JSON Schema draft-2019-09 features:
+<ul>
+<li>many <a href="https://github.com/ajv-validator/ajv/blob/master/docs/json-schema.md#json-schema-draft-2019-09">new validation keywords</a>, including <code>unevaluatedProperties</code> than many users needed.</li>
+<li>dynamic recursive references to enable <a href="https://github.com/ajv-validator/ajv/blob/master/docs/validation.md#extending-recursive-schemas">extending recursive schemas</a></li>
+</ul></li>
+<li>new, easy to use keyword definition and code generation APIs, both used for included keywords and available to the users - <a href="https://github.com/ajv-validator/ajv-keywords/releases/tag/v4.0.0-beta.0">ajv-keywords</a> package was also updated to use these APIs.</li>
+<li>smaller bundle size (10% reduction with the all new features added) and reduced generated code size (10-15%) - while it was not an objective, it is a nice side effect. For a moment, I was wondering if the energy savings it might create on a global scale would save one tree…</li>
+</ul>
+<p>Have fun migrating to Ajv version 7 - it is available to all of us, thanks to Mozilla’s grant and support. I hope these changes help you - if so, share it with other people.</p>
+<p>Any feedback and suggestions would be super helpful - thank you!</p>
+  </section>
+  <section class="links">
+    <a href="https://www.reddit.com/submit?url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2020-11-14-ajv-time-to-migrate-to-version-7.html&title=Ajv validator: time to migrate to version 7!" target="_blank"><img src="/images/reddit.png"></a>
+    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Ajv%20validator%3A%20time%20to%20migrate%20to%20version%207%21&hashtags=open-source%2Cjavascript%2Cjson-schema%2Ccoding%2Cajv&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2020-11-14-ajv-time-to-migrate-to-version-7.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2020-11-14-ajv-time-to-migrate-to-version-7.html" target="_blank"><img src="/images/tweet.png"></a>
+    
+      <a href="https://github.com/ajv-validator/ajv" target="_blank"><img src="/images/repo.png"></a>
+    
+  </section>
+</article>
+]]></summary>
+</entry>
+<entry>
     <title>Dependent types to code are what static types to data</title>
     <link href="https://www.poberezkin.com/posts/2020-09-04-dependent-types-to-code-are-what-static-types-to-data.html" />
     <id>https://www.poberezkin.com/posts/2020-09-04-dependent-types-to-code-are-what-static-types-to-data.html</id>

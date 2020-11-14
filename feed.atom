@@ -106,7 +106,7 @@
 <p>Any feedback and suggestions would be super helpful - thank you!</p>
   </section>
   <section class="links">
-    <a href="https://www.reddit.com/submit?url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2020-11-14-ajv-time-to-migrate-to-version-7.html&title=Ajv validator: time to migrate to version 7!" target="_blank"><img src="/images/reddit.png"></a>
+    <a href="https://www.reddit.com/r/javascript/comments/jtzk94/ajv_validator_time_to_migrate_to_version_7_lots/" target="_blank"><img src="/images/reddit.png"></a>
     <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Ajv%20validator%3A%20time%20to%20migrate%20to%20version%207%21&hashtags=open-source%2Cjavascript%2Cjson-schema%2Ccoding%2Cajv&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2020-11-14-ajv-time-to-migrate-to-version-7.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2020-11-14-ajv-time-to-migrate-to-version-7.html" target="_blank"><img src="/images/tweet.png"></a>
     
       <a href="https://github.com/ajv-validator/ajv" target="_blank"><img src="/images/repo.png"></a>

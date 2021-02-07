@@ -1,14 +1,16 @@
 ---
-title: "Ajv Version 7.1: Big changes and improvements"
+title: "Ajv Version 7: Big changes and improvements"
 author: Evgeny Poberezkin
 tags: open-source, javascript, json-schema, coding, ajv
 github: ajv-validator/ajv
 image: ajv.png
 ---
 
+[<img src="/images/ajv.svg" width="20%" style="min-width: 100px; clear:right; float: right; margin: 0 1.65% 2.5% 5%;">](https://github.com/ajv-validator/ajv)
+
 ## Version 7
 
-It's been over a month since Ajv version 7 was released and in this time,any users have migrated to the new version. Ajv v7 is a complete rewrite that both changed the language to TypeScript and changed the library design. I’m happy to share that it has been relatively smooth without any major issues.
+It's been over a month since Ajv version 7 was released, and in this time many users have migrated to the new version. Ajv v7 is a complete rewrite that both changed the language to TypeScript and also changed the library design. I’m happy to share that it has been relatively smooth, without any major issues.
 
 ## What's new
 
@@ -115,7 +117,7 @@ The configuration above would allow and ignore `email` format in your schemas, b
 
 The last approach to validate formats - defining your own functions or using a library - is strongly recommended as it allows you to achieve the right balance between validation security, speed and correctness that fits your application.
 
-## JSON Schema draft 4 should be used with version 6
+## Migrating from JSON Schema draft 4
 
 Draft 4 of the JSON Schema is the first version that Ajv supported, and since then there were several important changes in the specification that made supporting multiple versions of JSON Schema in the same code unnecessarily complex.
 

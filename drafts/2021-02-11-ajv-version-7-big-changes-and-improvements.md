@@ -1,5 +1,5 @@
 ---
-title: "Ajv JSON validator: how to migrate to version 7"
+title: "Ajv Version 7.1: Big changes and improvements"
 author: Evgeny Poberezkin
 tags: open-source, javascript, json-schema, coding, ajv
 github: ajv-validator/ajv
@@ -8,11 +8,11 @@ image: ajv.png
 
 ## Version 7
 
-It's been over a month since Ajv version 7 was released. Many users have migrated to the new version - given that v7 is a complete rewrite that both changed the language to TypeScript and changed the library design, it has been relatively smooth - there were no major issues.
+It's been over a month since Ajv version 7 was released and in this time,any users have migrated to the new version. Ajv v7 is a complete rewrite that both changed the language to TypeScript and changed the library design. I’m happy to share that it has been relatively smooth without any major issues.
 
 ## What's new
 
-I've [written previously]() about what has changed in version 7, to summarize:
+I've [written previously](http://www.poberezkin.com/posts/2020-11-14-ajv-time-to-migrate-to-version-7.html) about what has changed in version 7, to summarize:
 
 1. Support of the JSON Schema draft 2019-09 - users have been asking specifically for `unevaluatedProperties` keyword, which adds flexibility to the valuation scenarios, even if at a performance cost.
 2. More secure code generation in case untrusted schemas are used. Execution of code that might be embedded in untrusted schemas is now prevented by design, on a compiler type system level (and you don't need to use TypeScript to benefit from it, unless you are defining your own keywords).
@@ -22,18 +22,18 @@ That is a huge list of improvements that was possible thanks to Mozilla's MOSS p
 
 ## Better for community
 
-Since Ajv version 7 was released there is a growth in interest to contribute from its users, with some cases when independent users are interested to collaborate between them on some new features - it is really exciting.
+I’m also excited to share that Ajv v7  has grown contribution interest from its users, with some cases when independent users are interested to collaborate between them on some new features.
 
 There are several reasons for that, I believe:
 
 - the code is better organised and written on a higher level - it is easier to read and to change than before.
-- documentation is now better structured with additional section specifically for contributors - [code components](https://github.com/ajv-validator/ajv/blob/master/docs/components.md) and [code generation](https://github.com/ajv-validator/ajv/blob/master/docs/codegen.md).
+- documentation is now better structured with additional sections specifically for contributors - [code components](https://github.com/ajv-validator/ajv/blob/master/docs/components.md) and [code generation](https://github.com/ajv-validator/ajv/blob/master/docs/codegen.md).
 
 I am really looking forward to all the new ideas and features coming from Ajv users.
 
 ## What's changed and removed
 
-These improvements came at a cost of a full library re-design, that requires being aware of these changes during migration:
+These improvements came at a cost of a full library redesign, that requires being aware of these changes during migration:
 
 - Importing from your code
 - Installation
@@ -45,7 +45,7 @@ Below these changes are covered in detail - they were causing migration difficul
 
 ## Importing Ajv from your code
 
-To import Ajv in typescript you can still use default import:
+To import Ajv in typescript you can still use default import, as before:
 
 ```typescript
 import Ajv from "ajv"
@@ -68,15 +68,15 @@ import Ajv from "ajv"
 const ajv = new Ajv.default()
 ```
 
-This is a compromise approach that leads to a bit simpler compiled JavaScript code size of Ajv, and, what is more important, allows to export additional things alongside Ajv and does not force dependencies to use `esModuleInterop` setting of TypeScript. Possibly, there is a better way to export Ajv - please share any ideas to [this issue](https://github.com/ajv-validator/ajv/issues/1381).
+This is a compromise approach that leads to a bit smaller compiled JavaScript code size of Ajv, and, what is more important, allows to export additional things alongside Ajv and does not force dependencies to use `esModuleInterop` setting of TypeScript. Possibly, there is a better way to export Ajv - please share any ideas in [this issue](https://github.com/ajv-validator/ajv/issues/1381).
 
 ## Ajv installation
 
-Several users had issues related to version conflicts between old and new version. Because Ajv is a dependency of many JavaScript tools, the users can have both version 6 and version 7 installed at the same time.
+Several users, in particular those who use `yarn` rather than `npm`, had issues related to version conflicts between old and new versions. Because Ajv is a dependency of many JavaScript tools, the users can have both version 6 and version 7 installed at the same time.
 
-When version 6 was released 2 years ago there were a lot of version conflicts. Since then npm seems to have improved - it handles multiple versions correctly when performing a clean installation - at least I have not seen any example that shows version conflicts in this scenario. But when performing incremental installations version conflicts still happened to a few users.
+When version 6 was released 2 years ago there were a lot of version conflicts as well. Since then `npm` seems to have improved - it handles multiple versions correctly when performing a clean installation - at least I have not seen any example that shows version conflicts in this scenario. But when performing incremental installations version conflicts still happened to a few users.
 
-This situation should resolve itself as dependencies migrate, and in all cases clean installation resolved the problem.
+This situation should resolve itself as dependencies migrate, and in all cases clean `npm` installation resolved the problem.
 
 ## Code generation performance
 
@@ -84,13 +84,13 @@ Validation code that Ajv v7 generates is at least as efficient as code generated
 
 As as side effect, it also led to the reduction of Ajv bundle size.
 
-The downside that may be affecting some users though is that the code generation itself is 4-5 times slower.
+The downside that may be affecting some users is that the code generation itself is now 4-5 times slower.
 
 For most users it won't have an impact on the application performance, as schema compilation should only happen once, when the application is started, or when the schema is used for the first time. But there are several scenarios when it can be important:
 
-1. When using schemas in short lived environments when validation is performed only once or few times per compilation - it may include serverless environments, short-lived web pages, etc. In this case you should explore the possibility of using the standalone validation code to compile all your schemas at build time. Ajv v7 improved the stability of generating standalone validation code and it is now supported for all schemas.
+1. When using schemas in short-lived environments when validation is performed only once or few times per compilation - it may include serverless environments, short-lived web pages, etc. In this case you should explore the possibility of using the standalone validation code to compile all your schemas at build-time. Ajv v7 improved the stability of generating standalone validation code and it is now supported for all schemas.
 2. When schema is generated dynamically for each validation (or to perform a small number of validations). There is no solution for such scenario - Ajv (and any other validator that compiles schemas to code) is simply not a good fit for such scenarios, if the performance is critical. The main advantage of schema compilation is that the produced validation code is much faster than it would have been to interpret the schema. But if the schema is dynamic, then there is no benefit to the compilation - a validator that interprets the schema in the process of validation could be a better fit. While it may be 50-100 times slower to validate, it may still be faster than compiling schema to code. You need to run your own benchmarks and decide what is better for your application.
-3. When you used Ajv incorrectly and compiled schema for each validation. The correct usage is either to use the same Ajv instance to manage both schemas and compiled validation functions, or to manage (cache) them in your application code. In Ajv v7 this incorrect usage is more likely to be noticeable both because of slower compilation speed and also because Ajv caches the functions using schema itself as a key and not it's serialised presentation.
+3. When you used Ajv incorrectly and accidentally compiled schema for each validation. The correct usage is either to use the same Ajv instance to manage both schemas and compiled validation functions, or to manage (cache) them in your application code. In Ajv v7 this incorrect usage is more likely to be noticeable both because of slower compilation speed and also because Ajv caches the functions using schema itself as a key and not it's serialised presentation.
 
 To summarize, if you use Ajv correctly, as it is intended, it will be both safer and faster, but if you use(d) it incorrectly it may become slower.
 
@@ -111,7 +111,7 @@ new Ajv({formats: {email: true}})
 ```
 The configuration above would allow and ignore `email` format in your schemas, but would still throw exception if any other format is used. This approach is more performant than passing regular expression `/.*/` or function `() => true` because they would have to be executed, and in case of `true` no validation code is generated when this format is used.
 3. Use [ajv-formats](https://github.com/ajv-validator/ajv-formats) package - it includes all formats previously shipped as part of Ajv, some of the formats have two options - more performant and more correct (`fast` and `full` - see the docs to ajv-formats).
-4. Define your own functions (or use some a 3rd party library) to validate formats that suit your application - you can pass functions to ajv for each format you use and you can even use asynchronous validation if, for example, you want to validate the existence and/or configuration of domain name as part of `email` or `hostname` validation.
+4. Define your own functions (or use some a 3rd-party library) to validate formats that suit your application - you can pass functions to ajv for each format you use and you can even use asynchronous validation if, for example, you want to validate the existence and/or configuration of a domain name as part of `email` or `hostname` validation.
 
 The last approach to validate formats - defining your own functions or using a library - is strongly recommended as it allows you to achieve the right balance between validation security, speed and correctness that fits your application.
 
@@ -123,14 +123,14 @@ JSON Schema draft 2019-09 has introduced further complexity, so the support for 
 
 You can either continue using JSON Schema draft 4 with Ajv version 6, or if you want to have all the advantages of using Ajv version 7 you need to migrate your schemas - it is very simple with [ajv-cli](https://github.com/ajv-validator/ajv-cli#migrate-schemas) command line utility.
 
-## What is next in version 8
+## What is next
 
-Thanks for continuing sponsorship from Mozilla, many new improvements are coming in Ajv version 8 in a few months.
+Thanks for continuing sponsorship from Mozilla, many new improvements are coming in Ajv - the new major version 8 will be released in a few months.
 
-The most exciting one is the support for an alternative specification for JSON validation - [JSON Type Definition](https://jsontypedef.com) - it is [approved as RFC8927](https://datatracker.ietf.org/doc/rfc8927/). This is a much simpler standard that is much more restrictive than JSON Schema, enforces better data design, prevents mistakes by design and maps well to type systems of all major languages - so it is truly cross-platform.
+The most exciting new feature that was just released in [version 7.1.0](https://github.com/ajv-validator/ajv/releases/tag/v7.1.0) is the support for the alternative specification for JSON validation - [JSON Type Definition](https://jsontypedef.com) - it was [approved as RFC8927](https://datatracker.ietf.org/doc/rfc8927/) in November 2020. This is a much simpler and more restrictive standard than JSON Schema, and it enforces better data design for JSON APIs, prevents user mistakes and maps well to type systems of all major languages. See [Choosing schema language](https://github.com/ajv-validator/ajv/tree/master#choosing-schema-language) section in Ajv readme for a detailed comparison.
 
-Ajv version 8 will also support the changes in the most recent JSON Schema draft 2020-12.
+Ajv version 8 will bring many additional features and stability improvements and also will support the changes in the most recent JSON Schema draft 2020-12.
 
-The second exciting change that is coming soon is a new website for Ajv - to make the documentation more accessible and discoverable, and to make contributions easier.
+The second exciting change that is coming soon is a new Ajv website - to make the documentation more accessible and discoverable, and to make contributions easier.
 
 Thanks a lot for supporting Ajv!

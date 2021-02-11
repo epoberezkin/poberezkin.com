@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Evgeny Poberezkin - Ajv Version 7: Big changes and improvements</title>
+    <meta name="description" content="Evgeny Poberezkin's blog">
+    <meta name="author" content="Evgeny Poberezkin">
+    <meta property="og:title" content="Ajv Version 7: Big changes and improvements">
+    <meta property="og:url" content="https://www.poberezkin.com//posts/2021-02-11-ajv-version-7-big-changes-and-improvements.html">
+    <meta itemprop="name" content="Ajv Version 7: Big changes and improvements">
+    <meta name="twitter:title" content="Ajv Version 7: Big changes and improvements">
+    <meta name="twitter:site" content="@epoberezkin">
+    <meta name="twitter:creator" content="@epoberezkin">
+    
+      <meta property="og:image" content="https://www.poberezkin.com/images/ajv.png">
+      <meta itemprop="image" content="https://www.poberezkin.com/images/ajv.png"> 
+      <meta name="twitter:image:src" content="https://www.poberezkin.com/images/ajv.png"> 
+    
+    <link rel="alternate" title="Evgeny Poberezkin" type="application/atom+xml" href="../feed.atom">
+    <link rel="alternate" title="Evgeny Poberezkin" type="application/rss+xml" href="../feed.rss">
+    <link rel="stylesheet" href="../css/default.css" />
+    <link rel="stylesheet" href="../css/syntax.css" />
+  </head>
+  <body>
+    <div class="container">
+      <nav role="navigation">
+        <div class="source">
+          <div><a href="https://github.com/epoberezkin/poberezkin.com">source code</a></div>
+          <div><a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA</a></div>
+        </div>
+        <div class="logo">
+          <a href="../">Evgeny Poberezkin</a>
+        </div>
+        <a class="nav" href="../">Blog</a>
+        <a class="nav" href="../tags/coding.html">#coding</a>
+        <a class="nav" href="../tags/haskell.html">#haskell</a>
+        <a class="nav" href="../tags/talk.html">#talk</a>
+        <a class="nav" href="../about.html">About</a>
+      </nav>
+
+      <main role="main">
+        <h1>Ajv Version 7: Big changes and improvements</h1>
+        <article>
+  <section class="header">
+    <div class="info">
+      Posted on
+      
+        February 11, 2021
+      
+      
+        by Evgeny Poberezkin
+      
+    </div>
+    <div class="info">
+      
+        Tags: <a title="All pages tagged 'open-source'." href="../tags/open-source.html">open-source</a>, <a title="All pages tagged 'javascript'." href="../tags/javascript.html">javascript</a>, <a title="All pages tagged 'json-schema'." href="../tags/json-schema.html">json-schema</a>, <a title="All pages tagged 'coding'." href="../tags/coding.html">coding</a>, <a title="All pages tagged 'ajv'." href="../tags/ajv.html">ajv</a>
+      
+    </div>
+  </section>
+  <section>
+    <p><a href="https://github.com/ajv-validator/ajv"><img src="../images/ajv.svg" width="20%" style="min-width: 100px; clear:right; float: right; margin: 0 1.65% 2.5% 5%;"></a></p>
+<p>This post is <em><a href="https://openjsf.org/blog/2021/02/11/project-news-ajv-version-7-big-changes-and-improvements/">also published by OpenJS foundation</a></em></p>
+<h2 id="version-7">Version 7</h2>
+<p>It’s been over a month since Ajv version 7 was released, and in this time many users have migrated to the new version. Ajv v7 is a complete rewrite that both changed the language to TypeScript and also changed the library design. I’m happy to share that it has been relatively smooth, without any major issues.</p>
+<h2 id="whats-new">What’s new</h2>
+<p>I’ve <a href="http://www.poberezkin.com/posts/2020-11-14-ajv-time-to-migrate-to-version-7.html">written previously</a> about what has changed in version 7, to summarize:</p>
+<ol type="1">
+<li>Support of the JSON Schema draft 2019-09 - users have been asking specifically for <code>unevaluatedProperties</code> keyword, which adds flexibility to the valuation scenarios, even if at a performance cost.</li>
+<li>More secure code generation in case untrusted schemas are used. Execution of code that might be embedded in untrusted schemas is now prevented by design, on a compiler type system level (and you don’t need to use TypeScript to benefit from it, unless you are defining your own keywords).</li>
+<li>Standalone validation code generation is now comprehensively supported, for all schemas.</li>
+<li>Strict mode protecting users from common mistakes when writing JSON Schemas.</li>
+</ol>
+<p>That is a big list of improvements that was possible thanks to Mozilla’s MOSS program grant.</p>
+<h2 id="better-for-community">Better for community</h2>
+<p>I’m also excited to share that Ajv v7 has grown contribution interest from its users, with some cases when independent users are interested to collaborate between them on some new features.</p>
+<p>There are several reasons for that, I believe:</p>
+<ul>
+<li>the code is better organised and written on a higher level - it is easier to read and to change than before.</li>
+<li>documentation is now better structured with additional sections specifically for contributors - <a href="https://github.com/ajv-validator/ajv/blob/master/docs/components.md">code components</a> and <a href="https://github.com/ajv-validator/ajv/blob/master/docs/codegen.md">code generation</a>.</li>
+</ul>
+<p>I am really looking forward to all the new ideas and features coming from Ajv users.</p>
+<h2 id="whats-changed-and-removed">What’s changed and removed</h2>
+<p>These improvements came at a cost of a full library redesign, that requires being aware of these changes during migration:</p>
+<ul>
+<li>Importing from your code</li>
+<li>Installation</li>
+<li>Code generation performance</li>
+<li>Caching compiled schemas</li>
+<li>Validation of JSON Schema formats</li>
+<li>Migrating from JSON Schema draft 4</li>
+</ul>
+<p>Below these changes are covered in detail - they were causing migration difficulties to some users.</p>
+<h3 id="importing-ajv-from-your-code">Importing Ajv from your code</h3>
+<p>To import Ajv in typescript you can still use default import, as before:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="im">import</span> Ajv from <span class="st">&quot;ajv&quot;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a>const ajv <span class="op">=</span> <span class="kw">new</span> <span class="fu">Ajv</span>()</span></code></pre></div>
+<p>But to import in JavaScript you now need to use <code>default</code> property of the exported object:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="kw">const</span> Ajv <span class="op">=</span> <span class="pp">require</span>(<span class="st">&quot;ajv&quot;</span>)<span class="op">.</span><span class="at">default</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a><span class="co">// or const {default: Ajv} = require(&quot;ajv&quot;)</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a><span class="kw">const</span> ajv <span class="op">=</span> <span class="kw">new</span> <span class="fu">Ajv</span>()</span></code></pre></div>
+<p>And if you use JavaScript modules you need to import Ajv this way:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a><span class="co">// from .mjs file</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a><span class="im">import</span> Ajv <span class="im">from</span> <span class="st">&quot;ajv&quot;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a><span class="kw">const</span> ajv <span class="op">=</span> <span class="kw">new</span> Ajv<span class="op">.</span><span class="fu">default</span>()</span></code></pre></div>
+<p>This is a compromise approach that leads to a bit smaller compiled JavaScript code size of Ajv, and, what is more important, allows to export additional things alongside Ajv and does not force dependencies to use <code>esModuleInterop</code> setting of TypeScript. Possibly, there is a better way to export Ajv - please share any ideas in <a href="https://github.com/ajv-validator/ajv/issues/1381">this issue</a>.</p>
+<h3 id="ajv-installation">Ajv installation</h3>
+<p>Several users, in particular those who use <code>yarn</code> rather than <code>npm</code>, had issues related to version conflicts between old and new versions. Because Ajv is a dependency of many JavaScript tools, the users can have both version 6 and version 7 installed at the same time.</p>
+<p>When version 6 was released 2 years ago there were a lot of version conflicts as well. Since then <code>npm</code> seems to have improved - it handles multiple versions correctly when performing a clean installation - at least I have not seen any example that shows version conflicts in this scenario. But when performing incremental installations version conflicts still happened to a few users.</p>
+<p>This situation should resolve itself as dependencies migrate, and in all cases clean <code>npm</code> installation resolved the problem.</p>
+<h3 id="code-generation-performance">Code generation performance</h3>
+<p>Validation code that Ajv v7 generates is at least as efficient as code generated by v6, and in many cases it is faster - version 7 introduced <a href="https://github.com/ajv-validator/ajv/blob/master/docs/codegen.md#code-optimization">several tree optimisations</a> and other improvements for it. The primary objective to re-design code generation was to improve its security when using untrusted schemas and to make the code more maintainable.</p>
+<p>As as side effect, it also led to the reduction of Ajv bundle size.</p>
+<p>The downside that may be affecting some users is that the code generation itself is now 4-5 times slower.</p>
+<p>For most users it won’t have an impact on the application performance, as schema compilation should only happen once, when the application is started, or when the schema is used for the first time. But there are several scenarios when it can be important:</p>
+<ol type="1">
+<li>When using schemas in short-lived environments when validation is performed only once or few times per compilation - it may include serverless environments, short-lived web pages, etc. In this case you should explore the possibility of using the standalone validation code to compile all your schemas at build-time. Ajv v7 improved the stability of generating standalone validation code and it is now supported for all schemas.</li>
+<li>When schema is generated dynamically for each validation (or to perform a small number of validations). There is no solution for such scenario - Ajv (and any other validator that compiles schemas to code) is simply not a good fit for such scenarios, if the performance is critical. The main advantage of schema compilation is that the produced validation code is much faster than it would have been to interpret the schema. But if the schema is dynamic, then there is no benefit to the compilation - a validator that interprets the schema in the process of validation could be a better fit. While it may be 50-100 times slower to validate, it may still be faster than compiling schema to code. You need to run your own benchmarks and decide what is better for your application.</li>
+<li>When you used Ajv incorrectly and accidentally compiled schema for each validation. The correct usage is either to use the same Ajv instance to manage both schemas and compiled validation functions, or to manage (cache) them in your application code. In Ajv v7 this incorrect usage is more likely to be noticeable both because of slower compilation speed and also because Ajv caches the functions using schema itself as a key and not it’s serialised presentation.</li>
+</ol>
+<p>To summarize, if you use Ajv correctly, as it is intended, it will be both safer and faster, but if you use(d) it incorrectly it may become slower.</p>
+<h3 id="caching-compiled-schemas">Caching compiled schemas</h3>
+<p>Ajv compiles schemas to validation code that is very fast, but the compilation itself is costly, so it is important to reuse compiled validation functions.</p>
+<p>There are 2 possible approaches:</p>
+<ol type="1">
+<li>Compile schemas either at start time or on demand, lazily, and manage how validation functions are re-used in your application code:</li>
+</ol>
+<div class="sourceCode" id="cb4"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a><span class="kw">const</span> schema <span class="op">=</span> <span class="pp">require</span>(<span class="st">&quot;mu_schema.json&quot;</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a><span class="kw">const</span> validate <span class="op">=</span> ajv<span class="op">.</span><span class="fu">compile</span>(schema)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true"></a><span class="co">// ...</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true"></a><span class="co">// in this case schema compilation happens</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true"></a><span class="co">// when app is started, before any request is processed</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true"></a><span class="kw">async</span> <span class="kw">function</span> <span class="fu">processRequest</span>(req) {</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true"></a>  <span class="cf">if</span> (<span class="op">!</span><span class="fu">validate</span>(req<span class="op">.</span><span class="at">body</span>)) <span class="cf">throw</span> <span class="bu">Error</span>(<span class="st">&quot;bad request&quot;</span>)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true"></a>  <span class="co">// ...</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true"></a>}</span></code></pre></div>
+<p>It is important that <code>ajv.compile</code> is used outside of any API endpoints, as otherwise ajv may recompile the schema every time it is used (depending whether you pass the same schema reference or not).</p>
+<ol start="2" type="1">
+<li>Add all schemas to Ajv instance, using it as a cache of compiled validation functions, later retrieve them using either the schema <code>$id</code> attribute from the schema or the key passed to <code>addSchema</code> method.</li>
+</ol>
+<p>File <code>./my_schema.json</code>:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="fu">{</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a>  <span class="dt">&quot;$id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://example.com/schemas/my_schema&quot;</span><span class="fu">,</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a>  <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;object&quot;</span><span class="fu">,</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a>  <span class="dt">&quot;properties&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a>    <span class="dt">&quot;foo&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true"></a>      <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;string&quot;</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true"></a>    <span class="fu">}</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true"></a>  <span class="fu">}</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true"></a><span class="fu">}</span></span></code></pre></div>
+<p>Code:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a><span class="kw">const</span> schema <span class="op">=</span> <span class="pp">require</span>(<span class="st">&quot;./my_schema.json&quot;</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a>ajv<span class="op">.</span><span class="fu">addSchema</span>(schema<span class="op">,</span> <span class="st">&quot;my_schema&quot;</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true"></a><span class="co">// ...</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true"></a><span class="co">// schema compilation happens on demand</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true"></a><span class="co">// but only the first time the schema is used</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true"></a><span class="kw">async</span> <span class="kw">function</span> <span class="fu">processRequest</span>(req) {</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true"></a>  <span class="kw">const</span> validate <span class="op">=</span> ajv<span class="op">.</span><span class="fu">getSchema</span>(<span class="st">&quot;https://example.com/schemas/my_schema&quot;</span>)</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true"></a>  <span class="co">// or</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true"></a>  <span class="co">// const validate = ajv.getSchema(&quot;my_schema&quot;)</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true"></a>  <span class="cf">if</span> (<span class="op">!</span><span class="fu">validate</span>(req<span class="op">.</span><span class="at">body</span>)) <span class="cf">throw</span> <span class="bu">Error</span>(<span class="st">&quot;bad request&quot;</span>)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true"></a>  <span class="co">// ...</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true"></a>}</span></code></pre></div>
+<p>If you are passing exactly the same (and not just deeply equal) schema object to ajv, ajv would use a cached validation function anyway, using schema object reference as a key.</p>
+<p>But if you pass the new instance of the schema, even if the contents of the object is deeply equal, ajv would compile it again. In version 6 Ajv used a serialized schema as a cache key, and it partially protected from the incorrect usage of compiled validation functions, but it had both performance and memory costs. Some users had <a href="https://github.com/ajv-validator/ajv/issues/1413">this problem</a> when migrating to version 7.</p>
+<h3 id="validation-of-json-schema-formats">Validation of JSON Schema formats</h3>
+<p>Format validation has always been a difficult area, as it is not possible to find an optimal balance between validation performance, correctness and security - these objectives are contradictory, and, depending on your application, you would need a different approach to validate the same format.</p>
+<p>JSON Schema specification evolved to the point of declaring format validation as an optional, opt-in behaviour, and Ajv v7 made the same choice - formats are now released as a separate package <a href="https://github.com/ajv-validator/ajv-formats">ajv-formats</a>.</p>
+<p>Unlike JSON Schema specifies, Ajv does not just quietly ignore formats - it would have been error-prone - you have to explicitly configure it for the desired behaviour (or do not use formats in the schemas).</p>
+<p>You have several options:</p>
+<ol type="1">
+<li>Fully disable format validation with the option <code>validateFormats: false</code>. In this case, even if you use formats in the schema, they will be ignored.</li>
+<li>Define the list of formats that you want to be ignored by passing <code>true</code> values for some formats in <code>formats</code> option:</li>
+</ol>
+<div class="sourceCode" id="cb7"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a><span class="kw">new</span> <span class="fu">Ajv</span>({<span class="dt">formats</span><span class="op">:</span> {<span class="dt">email</span><span class="op">:</span> <span class="kw">true</span>}})</span></code></pre></div>
+<p>The configuration above would allow and ignore <code>email</code> format in your schemas, but would still throw exception if any other format is used. This approach is more performant than passing regular expression <code>/.*/</code> or function <code>() =&gt; true</code> because they would have to be executed, and in case of <code>true</code> no validation code is generated when this format is used. 3. Use <a href="https://github.com/ajv-validator/ajv-formats">ajv-formats</a> package - it includes all formats previously shipped as part of Ajv, some of the formats have two options - more performant and more correct (<code>fast</code> and <code>full</code> - see the docs to ajv-formats). 4. Define your own functions (or use some a 3rd-party library) to validate formats that suit your application - you can pass functions to ajv for each format you use and you can even use asynchronous validation if, for example, you want to validate the existence and/or configuration of a domain name as part of <code>email</code> or <code>hostname</code> validation.</p>
+<p>The last approach to validate formats - defining your own functions or using a library - is strongly recommended as it allows you to achieve the right balance between validation security, speed and correctness that fits your application.</p>
+<h3 id="migrating-from-json-schema-draft-4">Migrating from JSON Schema draft 4</h3>
+<p>Draft 4 of the JSON Schema is the first version that Ajv supported, and since then there were several important changes in the specification that made supporting multiple versions of JSON Schema in the same code unnecessarily complex.</p>
+<p>JSON Schema draft 2019-09 has introduced further complexity, so the support for draft 4 was removed.</p>
+<p>You can either continue using JSON Schema draft 4 with Ajv version 6, or if you want to have all the advantages of using Ajv version 7 you need to migrate your schemas - it is very simple with <a href="https://github.com/ajv-validator/ajv-cli#migrate-schemas">ajv-cli</a> command line utility.</p>
+<h2 id="what-is-next">What is next</h2>
+<p>Thanks for continuing sponsorship from Mozilla, many new improvements are coming in Ajv - the new major version 8 will be released in a few months.</p>
+<p>The most exciting new feature that was just released in <a href="https://github.com/ajv-validator/ajv/releases/tag/v7.1.0">version 7.1.0</a> is the support for the alternative specification for JSON validation - <a href="https://jsontypedef.com">JSON Type Definition</a> - it was <a href="https://datatracker.ietf.org/doc/rfc8927/">approved as RFC8927</a> in November 2020. This is a much simpler and more restrictive standard than JSON Schema, and it enforces better data design for JSON APIs, prevents user mistakes and maps well to type systems of all major languages. See <a href="https://github.com/ajv-validator/ajv/tree/master#choosing-schema-language">Choosing schema language</a> section in Ajv readme for a detailed comparison.</p>
+<p>Ajv version 8 will bring many additional features and stability improvements and also will support the changes in the most recent JSON Schema draft 2020-12.</p>
+<p>The second exciting change that is coming soon is a new Ajv website - to make the documentation more accessible and discoverable, and to make contributions easier.</p>
+<p>Thanks a lot for supporting Ajv!</p>
+  </section>
+  <section class="links">
+    <a href="https://www.reddit.com/submit?url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2021-02-11-ajv-version-7-big-changes-and-improvements.html&title=Ajv Version 7: Big changes and improvements" target="_blank"><img src="../images/reddit.png"></a>
+    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Ajv%20Version%207%3A%20Big%20changes%20and%20improvements&hashtags=open-source%2Cjavascript%2Cjson-schema%2Ccoding%2Cajv&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2021-02-11-ajv-version-7-big-changes-and-improvements.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2021-02-11-ajv-version-7-big-changes-and-improvements.html" target="_blank"><img src="../images/tweet.png"></a>
+    
+      <a href="https://github.com/ajv-validator/ajv" target="_blank"><img src="../images/repo.png"></a>
+    
+  </section>
+</article>
+
+      </main>
+    </div>
+  </body>
+</html>

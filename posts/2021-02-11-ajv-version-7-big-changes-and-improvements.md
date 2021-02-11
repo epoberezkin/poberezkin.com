@@ -8,6 +8,8 @@ image: ajv.png
 
 [<img src="/images/ajv.svg" width="20%" style="min-width: 100px; clear:right; float: right; margin: 0 1.65% 2.5% 5%;">](https://github.com/ajv-validator/ajv)
 
+This post is *[also published by OpenJS foundation](https://openjsf.org/blog/2021/02/11/project-news-ajv-version-7-big-changes-and-improvements/)*
+
 ## Version 7
 
 It's been over a month since Ajv version 7 was released, and in this time many users have migrated to the new version. Ajv v7 is a complete rewrite that both changed the language to TypeScript and also changed the library design. I’m happy to share that it has been relatively smooth, without any major issues.

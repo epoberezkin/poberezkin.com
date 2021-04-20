@@ -5,55 +5,57 @@ tags: haskell, coding, essay
 image: haskell.png
 ---
 
-This post started as a rant over email, moving to messaging, and then to LinkedIn... I tried to convert this rant into the collection of ideas that I hope could help both people who are just starting to learn Haskell and some of those who are getting through the advanced levels.
+<img src="/images/haskell.png" width="40%" style="float: left; margin: 20px 20px 10px 0;">
+
+
+This post started as a rant in the email to a colleague, moving to messages with my son, and then to LinkedIn exchanges with some well known people in Haskell community (who were kind enough not to ban me)...
+
+I tried to convert this rant into the collection of ideas that I hope could help both people who are just starting to learn Haskell and some of those who are getting through the advanced levels.
 
 ## Why Haskell?
 
-Many programmers using Haskell in production believe that it is the most advanced programming language that can be used for applications, giving its users the highest productivity and the lowest cost of ownership among all programming languages [1].
+Many programmers using Haskell in production believe that it is the most advanced programming language, giving its users the highest productivity and the lowest cost of application ownership among all programming languages [^productivity].
 
-Not only it has implementation of immutable data structures and the choice between lazy and strict evaluation, it has a very advanced type system, with polymorphism and inheritance for type classes (somewhat similar to interfaces in other languages), generalized algebraic data types and [ad-hoc dependent types](https://www.poberezkin.com/posts/2020-09-04-dependent-types-to-code-are-what-static-types-to-data.html).
+Not only it has the immutable data structures and both lazy and strict evaluation, it has a very advanced type system, with polymorphism and inheritance for type classes (somewhat similar to interfaces in other languages), generalized algebraic data types and [ad-hoc dependent types](https://www.poberezkin.com/posts/2020-09-04-dependent-types-to-code-are-what-static-types-to-data.html).
 
 I have written that Haskell is [a higher order language](https://www.poberezkin.com/posts/2020-03-15-haskell-a-higher-order-language.html), that allows to create an equivalent of the new language as a library. Even the core of the Haskell itself - data structures, Monads, concurrent channels and transactional memory, that might exist as language level primitives in other languages, are just libraries written in Haskell.
 
 ## Why so few engineers and companies use it?
 
-If Haskell is such an advanced and effective language why do we not see a much wider commercial adoption? I believe that the limited adoption is caused by how we teach it - it takes 5-6 times longer than it could.
+If Haskell is such an advanced and effective language why do we not see a much wider commercial adoption? I believe it is caused by how we teach it - it takes 5 times longer than it could have if the onboarding of the newcomers were more effective.
 
-Most engineers afford 2 months to get productive and fluent with a new language. It is exactly how much time it takes with Haskell if you are surrounded by other engineers who use it commercially [2], but if an engineer learns Haskell on their own, they usually get stuck.
+Most engineers afford 2 months to get productive and fluent with a new language. It is exactly how much time it takes with Haskell if you are surrounded by other engineers who use it [^fpcomplete], but if an engineer learns Haskell on their own, they usually get stuck.
 
-The tutorials and books I encountered teach Haskell in the same way as imperative languages are taught, without focussing on the fundamental differences about how to read and write Haskell programs. We do agree that functional programming is fundamentally different, yet we teach it in a classic way.
+Most tutorials and books teach Haskell in the same way as imperative languages are taught, without focussing on the differences on how to read and write Haskell programs. We do agree that functional programming is fundamentally different, yet we teach it in a "classic" way.
 
 ## So, what I wish somebody told me
 
-The post title is borrowed from Stephen Diehl's [What I wish I knew when learning Haskell](http://dev.stephendiehl.com/hask/) - a great reference that would give you a big picture, although still incomplete, of what can be done with Haskell - for some time it was my go to reference to find other resources.
+The post title is borrowed from Stephen Diehl's [What I wish I knew when learning Haskell](http://dev.stephendiehl.com/hask/) - a great writing that gave me a big picture of what can be done with Haskell - for some time it was my go to reference to find other resources.
 
-It lacks quite a few simple ideas that would have probably saved me several months as I was learning Haskell, if somebody shared them with me.
+But it lacks quite a few simple ideas that might have saved me several months as I was learning Haskell, if somebody shared them with me.
 
-The Haskell education and onboarding, in comparison with JavaScript, for example, is broken - quite a few people abandon it. There is a way to make people productive in Haskell quickly, but it needs to be done very differently. What seems missing is the basics:
+The Haskell education and onboarding, in comparison with JavaScript, for example, is broken - quite a few people abandon learning Haskell (I did too). There is a way to make people productive in Haskell quickly, but it needs to be done very differently. What seems missing is the basics:
 
 - clear instructions on how to read, write and think about “code”.
 - clear guidance on what works and should be used in production and what is best avoided.
-- many Haskell libraries define their own languages - while they offer much better return on investment to learn than a new language, they require higher investment.
 
-The last point applies to Haskell itself: it requires a substantially higher investment to master it, but it offers better returns on this investment. Paraphrasing a proverb [3], I don't have enough time to learn the languages that require less time to learn.
-
-I hope that below maxims would help reducing this investment - some of them helped me, and some I had to figure out in a hard way.
+I hope that below ideas could help reducing this investment - some of them helped me, and some I had to figure out in a hard way.
 
 ## How to read and think about code
 
 ### Read types first, not code
 
-We take it for granted that to understand "what the program does" you have to "read its code". Unfortunately, in most cases, coming from imperative languages, we do not see types as part of the code - we see them as annotations, something secondary.
+We take it for granted that to understand "what the program does" you have to "read its code". Unfortunately, coming from imperative languages, we do not see types as part of the code - we see them as annotations, something secondary, being there to appease compiler.
 
 This mindset does not work in Haskell. Trying to understand what the function does purely from its code is at least ineffective, and in many cases it is not possible.
 
 To get fluent and productive with Haskell you should not try to understand what a function "does", you should aim to understand what it "is" by looking at its type first, and to start seeing the types as the primary part of your code that drives, rather than restricts, your implementation.
 
-Once you get into the habit of reading the types first, you are likely to discover that most libraries have more than enough documentation to use them effectively, unlike a popular belief to the contrary.
+Once you get into the habit of reading the types first, you are likely to discover that most libraries have more than enough documentation to use them effectively, contrary to a popular belief.
 
 ### Read it slowly
 
-To be effective at reading Haskell code you will have to unlearn how you did it with imperative languages.
+To become effective at reading Haskell you have to unlearn how you read imperative languages.
 
 The problem for the beginners is that we are used that there is lots of code and it has to be read as prose. Haskell code is very succinct, and it has to be read slower, as if it were a formula in some cases. When you get used to it, you can write and read the same logic much faster - and it also makes it easier to understand it later.
 
@@ -67,7 +69,7 @@ It may seem insignificant, but using the correct terminology would help switchin
 
 - functions are not "called" and "executed", they are "used" and "evaluated".
 - functions do not "return" values, even when they use `return` function, they are a binding of function code to the function name.
-- preferring `pure` over `return` [4] would both save you typing and help switching mindset.
+- preferring `pure` over `return` [^pure] would both save you typing and help switching mindset.
 - "names" are not "variables" (they cannot "vary"), they are not "assigned", they are "bound" to values.
 - `do` syntax does not define execution steps, it defines the sequence of actions bound via their Monad type class interface.
 
@@ -103,9 +105,17 @@ The learning usually happens from specific examples to abstractions. While it is
 
 You would master Haskell faster if you are able to learn to operate on abstractions without worrying about particular examples.
 
-The comparison of Monads to the musical instruments suggested in ["monad tutorial fallacy"](https://two-wrongs.com/the-what-are-monads-fallacy) is flawed, because, unlike musical instruments, all Monad instances have the same interface [5].
+The comparison of Monads to the musical instruments suggested in ["monad tutorial fallacy"](https://two-wrongs.com/the-what-are-monads-fallacy) is flawed, because, unlike musical instruments, all Monad instances have the same interface [^monad].
 
 To understand Monad type class you also need to understand `Functor` and `Applicative`, that `Monad` inherits from. It means that monads have a richer interface than just bind method (`>>=`), so it is necessary to be fluent with these classes.
+
+### Haskell libraries can create a "new language"
+
+What comes as a surprise to newcomers is how large and complex Haskell libraries can be. Many Haskell libraries define their own "languages", using complex combinations of operators to express their logic that are not used anywhere else. [^lenses]
+
+Such libraries require higher investment than what would be considered a large library in other languages, and they offer much better return on investment than many small libraries or a new language.
+
+The last point applies to Haskell itself: it requires a substantially higher investment to master it, but it offers better returns on this investment. Paraphrasing a proverb [^rich], I don't have enough time to learn the languages that require less time to learn.
 
 ### Learn concurrent programming and STM
 
@@ -115,7 +125,7 @@ You would be better off investing this time to learn STM primitives and the mode
 
 ### Do NOT use algebraic effects (yet)
 
-I am talking about about an approach to modelling operations via data structures, that is provided by several libraries: polysemy, fused-effects, etc. [6]
+I am talking about about an approach to modelling operations via data structures, that is provided by several libraries: polysemy, fused-effects, etc. [^effects]
 
 The exception is when you work at some company that uses them already, and you have people to save you when you get stuck implementing any non-trivial scenario.
 
@@ -123,7 +133,7 @@ The problem is that there are lots of libraries you are likely to use that are i
 
 A very promising development is [Eff](https://github.com/hasura/eff) library that relies on the new core language primitive [proposed](https://github.com/lexi-lambda/ghc-proposals/blob/delimited-continuation-primops/proposals/0000-delimited-continuation-primops.md) by [Alexis King](https://github.com/lexi-lambda) that was just added to GHC - that might be the solution we have all been waiting for, but we are still probably 3-10 years away from the ecosystem catching up.
 
-For now, you would be much better off investing this time into getting fluent with Monad [transformers](http://hackage.haskell.org/package/transformers) and [mtl](https://hackage.haskell.org/package/mtl) libraries - `n^2` composition problem that is the main argument in support of algebraic effects is very unlikely to ever affect you, as `lift` between standard monads are already defined, and you probably won't need more than 1-2 (if any) Monads of your own - it's much easier to define the lifts you need to compose additional monads than to adopt any effect system [7].
+For now, you would be much better off investing this time into getting fluent with Monad [transformers](http://hackage.haskell.org/package/transformers) and [mtl](https://hackage.haskell.org/package/mtl) libraries - n<sup>2</sup> composition problem that is the main argument in support of algebraic effects is very unlikely to ever affect you, as `lift` between standard monads are already defined, and you probably won't need more than 1-2 (if any) Monads of your own - it's much easier to define the lifts you need to compose additional monads than to adopt any effect system [^n2].
 
 ### cheaper code
 
@@ -257,9 +267,9 @@ In many other languages you are likely to try to think how it is named, and then
 
 ### Do use recommendations from FP Complete
 
-Using `ReaderT` monad transformer (or `MonadReader` class) with [unliftio](https://hackage.haskell.org/package/unliftio) library would save you a lot of time when you get to handling exceptions (all real applications need it) [8].
+Using `ReaderT` monad transformer (or `MonadReader` class) with [unliftio](https://hackage.haskell.org/package/unliftio) library would save you a lot of time when you get to handling exceptions (all real applications need it) [^msnoyman].
 
-If the application is large, you can have a polymorphic type of the environment in each application component, that only requires a particular property in the environment, without being able to access the whole, and without the need to recompile a module when the type of the environment changes - no need for a large shared global object [9].
+If the application is large, you can have a polymorphic type of the environment in each application component, that only requires a particular property in the environment, without being able to access the whole, and without the need to recompile a module when the type of the environment changes - no need for a large shared global object [^hasfield].
 
 I am finding it also effective to have `MonadError` in the stack, but you may prefer normal exceptions. To me it feels "cleaner" to pass logical errors as `Either`, and without `MonadError` you would be either constantly handling them with `case` or with double functor applications (`<$$>`) - with `MonadError` the code is much simpler and in the end you still get `Either` from evaluating it with `runExceptT`.
 
@@ -269,7 +279,7 @@ The caveat here is that `unliftio` [does not define an instance](https://github.
 
 [Learn You a Haskell](http://learnyouahaskell.com) is branded as "the funkiest way to learn Haskell", but to me it was the book that killed my interest to Haskell for several years. It buries you under the barrage of insignificant details, never showing you a big picture about what Haskell is.
 
-If you must read it (e.g. your boss makes you read it), do it quickly and avoid the most detail heavy chapters. And once you have read it, do not assume you can write real world Haskell programs - this book has no intention to prepare you for it.
+If you must read it (e.g. your boss makes you read it), do it quickly and avoid the most detail-heavy chapters. And once you have read it, do not assume you can write real world Haskell programs - this book has no intention to prepare you for it.
 
 ### Read these books
 
@@ -295,20 +305,22 @@ Many people using Haskell believe that it is simpler to create and maintain reli
 
 Haskell adoption can be made substantially easier with a bit more structured communication from the Haskell community, which is exceptionally supportive and helpful.
 
-[1] As the measure of engineering productivity we can use the average time to launch a given set of requirements with a fixed size team, and as the cost of ownership - the engineering time required to maintain the application.
+[^productivity]: As the measure of engineering productivity we can use the average time to launch a given set of requirements with a fixed size team, and as the cost of ownership - the engineering time required to maintain the application.
 
-[2] It is worth watching [the video by the Aaron Contorer](https://www.youtube.com/watch?v=ybSBCVhVWs8), the chairman of FP Complete, about functional programming, where he tells how Haskell allows to achieve productivity, quality and performance without the need to compromise on any of them.
+[^fpcomplete]: It is worth watching [the video by the Aaron Contorer](https://www.youtube.com/watch?v=ybSBCVhVWs8), the chairman of FP Complete, about functional programming, where he tells how Haskell allows to achieve productivity, quality and performance without the need to compromise on any of them.
 
-[3] I am not rich enough to buy cheap things
+[^pure]: `pure` and `return` are the same for [well-behaved monads](https://hackage.haskell.org/package/base-4.15.0.0/docs/Control-Monad.html#t:Monad). [Idris](https://www.idris-lang.org) that is very similar to Haskell, with first class dependent types, completely removed `return` and only uses `pure` - you could do it too in your Haskell code.
 
-[4] `pure` and `return` are the same for [well-behaved monads](https://hackage.haskell.org/package/base-4.15.0.0/docs/Control-Monad.html#t:Monad). [Idris](https://www.idris-lang.org) that is very similar to Haskell, with first class dependent types, completely removed `return` and only uses `pure` - you could do it too in your Haskell code.
+[^monad]: "you don't need to understand how it works to play on it" - it is based on the [earlier post](https://byorgey.wordpress.com/2009/01/12/abstraction-intuition-and-the-monad-tutorial-fallacy/) by Brent Yorgey. Some specific monad instances have additional interfaces, but there is a common interface to them all. And you can still play on them differently.
 
-[5] "you don't need to understand how it works to play on it" - it is based on the [earlier post](https://byorgey.wordpress.com/2009/01/12/abstraction-intuition-and-the-monad-tutorial-fallacy/) by Brent Yorgey. Some specific monad instances have additional interfaces, but there is a common interface to them all. And you can still play on them differently.
+[^lenses]: Lenses are one such example.
 
-[6] There are some advanced composition scenarios that do require using effects, but they are quite rare.
+[^rich]: I am not rich enough to buy cheap things
 
-[7] Comparing with big-O notation, the cost to compose effects is linear, but there is a large constant factor, that makes mtl O(n^2)composition cheaper than linear effects composition in real world applications, particularly given that most of this cost has been covered by mtl library already.
+[^effects]: There are some advanced composition scenarios that do require using effects, but they are quite rare.
 
-[8] See great posts by Michael Snoyman about [ReaderT pattern](https://www.fpcomplete.com/blog/2017/06/readert-design-pattern/) and [unliftio (a tale of two brackets)](https://www.fpcomplete.com/blog/2017/06/tale-of-two-brackets/)
+[^n2]: Comparing with big-O notation, the cost to compose effects is linear, but there is a large constant factor, that makes mtl O(n<sup>2</sup>)composition cheaper than linear effects composition in real world applications, particularly given that most of this cost has been covered by mtl library already.
 
-[9] Using `HasField` from base or a fancier one from [generic-lens](https://hackage.haskell.org/package/generic-lens) package.
+[^msnoyman]: See great posts by Michael Snoyman about [ReaderT pattern](https://www.fpcomplete.com/blog/2017/06/readert-design-pattern/) and [unliftio (a tale of two brackets)](https://www.fpcomplete.com/blog/2017/06/tale-of-two-brackets/)
+
+[^hasfield]: Using `HasField` from base or a fancier one from [generic-lens](https://hackage.haskell.org/package/generic-lens) package.

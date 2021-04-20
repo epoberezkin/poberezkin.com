@@ -121,7 +121,7 @@ The last point applies to Haskell itself: it requires a substantially higher inv
 
 Tutorials often explain State monad, but it is rarely useful other than to implement imperative algorithms without side effects - there are usually more efficient equivalent functional algorithms available just a search away (quite often, already implemented as a library) or you do need side effects.
 
-You would be better off investing this time to learn STM primitives and the model of concurrency that Haskell uses - [Parallel and Concurrent Programming in Haskell](https://www.oreilly.com/library/view/parallel-and-concurrent/9781449335939/) is a great book that covers it.
+You would be better off investing this time to learn STM primitives and the model of concurrency that Haskell uses - [Parallel and Concurrent Programming in Haskell](https://www.oreilly.com/libqrary/view/parallel-and-concurrent/9781449335939/) is a great book that covers it.
 
 ### Do NOT use algebraic effects (yet)
 
@@ -135,7 +135,7 @@ A very promising development is [Eff](https://github.com/hasura/eff) library tha
 
 For now, you would be much better off investing this time into getting fluent with Monad [transformers](http://hackage.haskell.org/package/transformers) and [mtl](https://hackage.haskell.org/package/mtl) libraries - n<sup>2</sup> composition problem that is the main argument in support of algebraic effects is very unlikely to ever affect you, as `lift` between standard monads are already defined, and you probably won't need more than 1-2 (if any) Monads of your own - it's much easier to define the lifts you need to compose additional monads than to adopt any effect system [^n2].
 
-### cheaper code
+### Write concise code
 
 Some simple of equivalent code that would help me if somebody explained it earlier:
 

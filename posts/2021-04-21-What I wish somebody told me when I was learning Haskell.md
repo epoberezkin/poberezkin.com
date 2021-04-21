@@ -192,17 +192,13 @@ But the point is that you do not need to understand either code to effectively u
 
 ## Embrace purity
 
-### Functions do nothing
+### Function evaluation produces no side effects
 
 In a functional language a function does nothing - it simply defines a transformation between types - but it does not perform this transformation until it is... It is tempting to say "called", but the functions are not "called" in functional languages - they are evaluated and combined in bigger transformations, until the whole program is constructed.
 
-Only when the whole program is executed something happens - but you cannot simply break down program execution to the individual function calls - compiler can produce a more efficient machine code than if functions were individually called.
+Functions that do nothing cannot produce side effects. To my surprise this is true even for the functions that evaluate to the IO monad - it is conventional to say that such functions perform IO, are executed step by step, and have side effects.
 
-### Function evaluation produces no side effects
-
-This is the consequence of the fact that the function does nothing. To have a side effect it would have to do something, but it does not. To my surprise this is true even for functions that evaluate to the IO monad - it is conventional to say that such functions perform IO, are executed step by step, and have side effects.
-
-But in reality it is not function evaluation that produces side effects - a function simply evaluates to IO action. This action can be chained with another IO action or it can be passed as parameter and simply be thrown away based on some other function evaluation. The whole program is one combined IO action that is, when executed, does indeed produce side effects.
+But in reality it is not function evaluation that produces side effects - a function simply evaluates to an IO action. This action can be chained with another IO action or it can be passed as parameter and simply be thrown away based on some other function evaluation. The whole program is one combined IO action that is, when executed, does indeed produce side effects.
 
 Many tutorials separate code to functions with and without side effects, but it only increases the confusion about how the language works, and confronted with a simple function of the type `Bool -> IO a -> IO b -> IO (Either a b)` most beginners (myself included) are puzzled by what this function can possibly do.
 
@@ -221,8 +217,10 @@ My choices, mostly suggested by some pragmatic people, were:
 
 - stack, to avoid managing ghc and cabal separately, and always have compatible dependency versions that were tested against each other on stackage.org
 - simple-hpack project template, for simpler dependency management
+- Haskell Language Server for IDE
 - ormolu for code formatting
 - hlint - it is very helpful with its non-trivial suggestions on how the code could be simplified, making your code more concise.
+- if you use VS Code - [this extension](https://marketplace.visualstudio.com/items?itemName=haskell.haskell) includes ormolu and hlint out of the box.
 
 Patrick Thompson has a great post about [faster iteration in industrial Haskell](https://blog.sumtypeofway.com/posts/fast-iteration-with-haskell.html) on the subject.
 

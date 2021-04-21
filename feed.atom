@@ -8,8 +8,237 @@
         <name>Evgeny Poberezkin</name>
         <email>evgeny@poberezkin.com</email>
     </author>
-    <updated>2021-02-11T00:00:00Z</updated>
+    <updated>2021-04-21T00:00:00Z</updated>
     <entry>
+    <title>What I wish somebody told me when I was learning Haskell</title>
+    <link href="https://www.poberezkin.com/posts/2021-04-21-What%20I%20wish%20somebody%20told%20me%20when%20I%20was%20learning%20Haskell.html" />
+    <id>https://www.poberezkin.com/posts/2021-04-21-What%20I%20wish%20somebody%20told%20me%20when%20I%20was%20learning%20Haskell.html</id>
+    <published>2021-04-21T00:00:00Z</published>
+    <updated>2021-04-21T00:00:00Z</updated>
+    <summary type="html"><![CDATA[<article>
+  <section class="header">
+    <div class="info">
+      Posted on
+      
+        April 21, 2021
+      
+      
+        by Evgeny Poberezkin
+      
+    </div>
+    <div class="info">
+      
+        Tags: <a title="All pages tagged &#39;haskell&#39;." href="/tags/haskell.html">haskell</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html">coding</a>, <a title="All pages tagged &#39;essay&#39;." href="/tags/essay.html">essay</a>
+      
+    </div>
+  </section>
+  <section>
+    <p><img src="/images/haskell.png" width="40%" style="float: left; margin: 20px 20px 10px 0;"></p>
+<p>This post started as a rant in the email to a colleague, moving to messages with my son, and then to LinkedIn exchanges with some well known people in Haskell community (who were kind enough not to ban me)…</p>
+<p>I tried to convert this rant into the collection of ideas that I hope could help both the people who are just starting to learn Haskell and, maybe, some of those who are getting through the advanced levels.</p>
+<h2 id="why-haskell">Why Haskell?</h2>
+<p>Many programmers using Haskell in production believe that it is the most advanced programming language, giving its users the highest productivity and the lowest cost of application ownership among all programming languages <a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.</p>
+<p>Not only it has the immutable data structures and both lazy and strict evaluation, it has a very advanced type system, with polymorphism and inheritance for type classes (somewhat similar to interfaces in other languages), generic programming, quasi-quotes (allowing for embedded DSLs), type families, generalized algebraic data types, <a href="https://www.poberezkin.com/posts/2020-09-04-dependent-types-to-code-are-what-static-types-to-data.html">ad-hoc dependent types</a>, etc.</p>
+<p>I have written that Haskell is <a href="https://www.poberezkin.com/posts/2020-03-15-haskell-a-higher-order-language.html">a higher order language</a>, that allows to create an equivalent of the new language as a library. Even the core of the Haskell itself - data structures, Monads, concurrent channels and transactional memory, that might exist as language level primitives in other languages, are just libraries written in Haskell.</p>
+<h2 id="why-there-is-no-wider-adoption">Why there is no wider adoption?</h2>
+<p>If Haskell is such an advanced and effective language why do we not see a much wider commercial adoption? I believe it is caused by how we teach it - it takes 5 times longer than it could have if the onboarding of the newcomers were more effective.</p>
+<p>Most engineers afford 2 months to get productive and fluent with a new language. It is exactly how much time it takes with Haskell if you are surrounded by other engineers who use it <a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>, but if an engineer learns Haskell on their own, they usually get stuck.</p>
+<p>Most tutorials and books teach Haskell in a way similar to how imperative languages are taught, without focussing on the differences on how to read and write Haskell programs. We do agree that functional programming is fundamentally different, yet we teach it in a “classic” way.</p>
+<h2 id="so-what-i-wish-somebody-told-me">So, what I wish somebody told me</h2>
+<p>The post title is borrowed from a great writing <a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> that, sadly, lacks quite a few simple ideas that might have saved me several months as I was learning Haskell.</p>
+<p>The Haskell education and onboarding, in comparison with JavaScript, for example, is broken - quite a few people abandon learning Haskell (I did too). There is a way to make people productive in Haskell quickly, but it needs to be done very differently. What seems missing is the basics:</p>
+<ul>
+<li>advice on how to read, write and think about “code”.</li>
+<li>guidance on what works and should be used in production and what is best avoided.</li>
+</ul>
+<p>I hope that below ideas could help reducing this investment - some of them helped me, and some I had to figure out in a hard way.</p>
+<h2 id="how-to-read-and-think-about-code">How to read and think about code</h2>
+<h3 id="read-types-first-not-code">Read types first, not code</h3>
+<p>We take it for granted that to understand “what the program does” you have to “read its code”. Unfortunately, coming from imperative languages, we do not see types as part of the code - we see them as annotations, something secondary, being there to appease compiler.</p>
+<p>This mindset does not work in Haskell. Trying to understand what the function does purely from its code is at least ineffective, and in many cases it is not possible.</p>
+<p>To get fluent and productive with Haskell you should not try to understand what a function “does”, instead focussing on what it “is” by looking at its type first, and to start seeing the types as the primary part of your code that drives your implementation, rather than restricts it.</p>
+<p>Once you get into the habit of reading the types first, you are likely to discover that most libraries have more than enough documentation to use them effectively, contrary to a popular belief.</p>
+<h3 id="read-it-slowly">Read it slowly</h3>
+<p>To become effective at reading Haskell you have to unlearn how you read imperative languages.</p>
+<p>The problem for the beginners is that we are used to having a lot of code that has to be read as prose. Haskell code can be very terse, and it has to be read slower, in some cases, as if it were a formula. When you get used to it, you can write and read the same logic much faster - and it also makes it easier to understand it later.</p>
+<p>I had a particular example when 70 lines of TypeScript code took 8 one-line functions in Haskell (and all lines were normal length and quite readable), so 16 lines together with type signatures <a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a>.</p>
+<p>Reading each Haskell line can take twice longer, but because of much smaller overall size it is at least twice faster to write and to read than the equivalent logic in TypeScript.</p>
+<h3 id="avoid-terms-used-in-imperative-languages">Avoid terms used in imperative languages</h3>
+<p>It may seem insignificant, but using the correct terminology would help switching to the functional mindset:</p>
+<ul>
+<li>functions are not “called” and “executed”, they are “used” and “evaluated”.</li>
+<li>functions do not “return” values, even when they use <code>return</code> function, they are a binding of function code to the function name.</li>
+<li>preferring <code>pure</code> over <code>return</code> <a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a> would both save you typing and help switching mindset.</li>
+<li>“names” are not “variables”, they are not “assigned”, they are “bound” to values.</li>
+<li><code>do</code> syntax does not define execution steps, it defines the sequence of actions bound via their Monad type class interface.</li>
+</ul>
+<h2 id="model-your-program-with-types">Model your program with types</h2>
+<h3 id="types-are-the-model-of-your-program">Types are the model of your program</h3>
+<p>Types in Haskell are not just annotations - they are the core of the language used to model the program and to define the shape of the data and the constraints on the program actions.</p>
+<p>Looking at the function types you should be able to understand what the code is, without even looking at the code itself (and if it is not the case, consider using type synonyms or <code>newtype</code>).</p>
+<p>Most imperative programmers see types as restrictions on their data. The reason for that is that most type systems are quite limited. Haskell advanced type allows to codify not only your data structures, but also your code behaviours and invariants.</p>
+<h3 id="model-top-down-not-bottom-up">Model top down, not bottom up</h3>
+<p>It is tempting to model the program bottom up, starting from the elements that define some small parts of your program - this is what we often do with imperative languages.</p>
+<p>You would have a more effective design by modelling the program from top to bottom, breaking down the whole program to the small number of components, then breaking down each component to smaller parts, and so on until you have the whole program <a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a>.</p>
+<h3 id="understand-data-class-type-and-newtype-differences">Understand data, class, type and newtype differences</h3>
+<p>The term <code>class</code> creates confusion. In many languages “class” means a hybrid of a data record and type class in Haskell; such thing requires data mutability and internal state.</p>
+<p>Haskell class is a pure interface that can be implemented by many data types. The class does not tell you anything about the data, it only defines supported methods that can be implemented by class instances (another confusing term that does not mean the data instance, it actually means a particular, possibly parameterized type that implements the class).</p>
+<p>As for the rest, <code>data</code> means “data type”, <code>type</code> means type synonym (just a shorthand for another data type), and <code>newtype</code> means the data type container that allows to differentiate, on a type level, between the data types that have the same internal representation - with zero memory and execution time overhead.</p>
+<h3 id="become-fluent-with-monads-and-other-abstractions">Become fluent with monads (and other abstractions)</h3>
+<p>The learning usually happens from specific examples to abstractions. While it is effective to learn a few examples to understand the Monad type class, learning 10 different types of Monads, as some tutorials encourage you to do, would neither help you understand Monad abstraction, nor help understand when it would be helpful to make your own data type a Monad class instance.</p>
+<p>You would master Haskell faster if you learn to operate on abstractions regardless of examples.</p>
+<p>“<a href="https://two-wrongs.com/the-what-are-monads-fallacy">Monad tutorial fallacy</a>” post compares Monads to the musical instruments, saying that you can only learn a specific instrument, not an abstract one. This comparison is flawed though, because, unlike musical instruments, all Monad instances have the same interface <a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a>.</p>
+<p>To understand Monad type class you also need to understand Functor and Applicative, that Monad inherits from. It means that monads have a richer interface than just bind method (<code>&gt;&gt;=</code>), so it is necessary to be fluent with these classes.</p>
+<h3 id="write-concise-code">Write concise code</h3>
+<p>Some samples of equivalent code that would have helped me if somebody explained it earlier:</p>
+<ol type="1">
+<li>Changing value inside Monad:</li>
+</ol>
+<ul>
+<li>with do notation:</li>
+</ul>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="ot">getReversed ::</span> <span class="dt">IO</span> <span class="dt">String</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a>getReversed <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a>  a <span class="ot">&lt;-</span> <span class="fu">getLine</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a>  <span class="fu">return</span> <span class="op">$</span> <span class="fu">reverse</span> a</span></code></pre></div>
+<ul>
+<li>same with Functor methods:</li>
+</ul>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="ot">getReversed ::</span> <span class="dt">IO</span> <span class="dt">String</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>getReversed <span class="ot">=</span> <span class="fu">reverse</span> <span class="op">&lt;$&gt;</span> <span class="fu">getLine</span></span></code></pre></div>
+<ol start="2" type="1">
+<li>Combining values from 2 (or more) Monads</li>
+</ol>
+<ul>
+<li>with do notation:</li>
+</ul>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a><span class="co">-- assuming NoBuffering mode</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a><span class="ot">getName ::</span> <span class="dt">IO</span> <span class="dt">String</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a>getName <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true"></a>  <span class="fu">putStr</span> <span class="st">&quot;Name: &quot;</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true"></a>  name <span class="ot">&lt;-</span> <span class="fu">getLine</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true"></a>  <span class="fu">putStr</span> <span class="st">&quot;Surname: &quot;</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true"></a>  surname <span class="ot">&lt;-</span> <span class="fu">getLine</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true"></a>  <span class="fu">return</span> <span class="op">$</span> name <span class="op">&lt;&gt;</span> <span class="st">&quot; &quot;</span> <span class="op">&lt;&gt;</span> surname</span></code></pre></div>
+<ul>
+<li>with Functor and Applicative methods:</li>
+</ul>
+<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a><span class="ot">getName ::</span> <span class="dt">IO</span> <span class="dt">String</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a>getName <span class="ot">=</span> (<span class="op">&lt;&gt;</span>) <span class="op">&lt;$&gt;</span> get <span class="st">&quot;Name: &quot;</span> <span class="op">&lt;*&gt;</span> ((<span class="ch">&#39; &#39;</span> <span class="op">:</span>) <span class="op">&lt;$&gt;</span> get <span class="st">&quot;Surname: &quot;</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a>  <span class="kw">where</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true"></a>    get s <span class="ot">=</span> <span class="fu">putStr</span> s <span class="op">&gt;&gt;</span> <span class="fu">getLine</span></span></code></pre></div>
+<p>Many people would argue that the code in <code>do</code> notation is easier to read. If that is how you feel, it goes back to the point that you have to unlearn how you read code and learn it again.</p>
+<p><code>do</code> notation is easier to read because it does look like an imperative code, and, possibly, by adding this syntactic sugar Haskell might have made learning more complex, as it makes it look like you can write an imperative code in Haskell.</p>
+<p>As you learn, you will realise that while succinct code takes longer to read per line, it is much faster overall - so you are saving yourself time by making it more succinct. Also, many libraries use a succinct functional style, so getting fluent with it will pay back very quickly.</p>
+<h3 id="do-not-worry-about-the-glue-code">Do not worry about the glue code</h3>
+<p>Most of us use computers having quite vague ideas about how they work. Yet when it comes to reading the code, we have an expectation that we would have an equal understanding of every line and every character in our code.</p>
+<p>With Haskell it helps to differentiate between your application domain code, that you want to be as readable as possible, and the “glue code”, that simply connects different things.</p>
+<p>Such glue are, for example, various “lift” functions that allow to compose different Monad types. Next time you stumble on something that looks like “lift”, you can skip looking up what exactly it is - focus on the types around it and the functions that do something meaningful to your application - if compiler is happy and your code passes tests, understanding every bit of glue code is unnecessary.</p>
+<p>What helps is making reusable functions with short names that minimize the cognitive overhead.</p>
+<p>For example, one of the pieces of glue I found useful was this function:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="ot">liftError ::</span> (<span class="dt">MonadIO</span> m, <span class="dt">MonadError</span> e&#39; m) <span class="ot">=&gt;</span> (e <span class="ot">-&gt;</span> e&#39;) <span class="ot">-&gt;</span> <span class="dt">ExceptT</span> e <span class="dt">IO</span> a <span class="ot">-&gt;</span> m a</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a>liftError f a <span class="ot">=</span> liftIO (first f <span class="op">&lt;$&gt;</span> runExceptT a) <span class="op">&gt;&gt;=</span> liftEither</span></code></pre></div>
+<p>While it may look scary inside, like a computer, you don’t need to understand how it works to be able to use it effectively - it is enough to understand by looking at its type that it “lifts” an action expressed as <code>ExceptT e IO</code> monad to a more generic monad <code>(MonadIO m, MonadError e' m)</code>, transforming the error type at the same time - it is useful when composing different libraries or modules each using their own error type.</p>
+<p>An equivalent code in <code>do</code> notation might be easier to parse for the beginners:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a><span class="ot">liftError ::</span> (<span class="dt">MonadIO</span> m, <span class="dt">MonadError</span> e&#39; m) <span class="ot">=&gt;</span> (e <span class="ot">-&gt;</span> e&#39;) <span class="ot">-&gt;</span> <span class="dt">ExceptT</span> e <span class="dt">IO</span> a <span class="ot">-&gt;</span> m a</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a>liftError f a <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a>  b <span class="ot">&lt;-</span> liftIO <span class="op">$</span> runExceptT a</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true"></a>  <span class="kw">let</span> c <span class="ot">=</span> <span class="kw">case</span> b <span class="kw">of</span> <span class="co">-- this case is Bifunctor `first` method used above</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true"></a>        <span class="dt">Left</span> e <span class="ot">-&gt;</span> <span class="dt">Left</span> (f e)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true"></a>        <span class="dt">Right</span> x <span class="ot">-&gt;</span> <span class="dt">Right</span> x</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true"></a>  liftEither c</span></code></pre></div>
+<p>But the point is that you do not need to understand either code to effectively use this function, and you will see that short functions are easier to maintain.</p>
+<h2 id="embrace-purity">Embrace purity</h2>
+<h3 id="function-evaluation-produces-no-side-effects">Function evaluation produces no side effects</h3>
+<p>In a functional language a function does nothing - it simply defines a transformation between types - but it does not perform this transformation until it is… It is tempting to say “called”, but the functions are not “called” in functional languages - they are evaluated and combined in bigger transformations, until the whole program is constructed.</p>
+<p>Functions that do nothing cannot produce side effects. To my surprise this is true even for the functions that evaluate to the IO monad - it is conventional to say that such functions perform IO, are executed step by step, and have side effects.</p>
+<p>But in reality it is not function evaluation that produces side effects - a function simply evaluates to an IO action. This action can be chained with another IO action or it can be passed as parameter and simply be thrown away based on some other function evaluation. The whole program is one combined IO action that is, when executed, does indeed produce side effects.</p>
+<p>Many tutorials separate code to functions with and without side effects, but it only increases the confusion about how the language works, and confronted with a simple function of the type <code>Bool -&gt; IO a -&gt; IO b -&gt; IO (Either a b)</code> most beginners (myself included) are puzzled by what this function can possibly do.</p>
+<p>But once you remind yourself that functions do nothing, you may realize that this function probably evaluates to a single IO action by choosing one of two provided IO actions based on the boolean value (and none of the actions is performed, until the whole program runs):</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a>ifIO<span class="op">:</span> <span class="dt">Bool</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> b <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Either</span> a b)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true"></a>ifIO x a b <span class="ot">=</span> <span class="kw">if</span> x <span class="kw">then</span> <span class="dt">Right</span> <span class="op">&lt;$&gt;</span> b <span class="kw">else</span> <span class="dt">Left</span> <span class="op">&lt;$&gt;</span> a</span></code></pre></div>
+<h2 id="choose-effective-tools">Choose effective tools</h2>
+<h3 id="effective-developer-environment-for-fast-iteration">Effective developer environment for fast iteration</h3>
+<p>My choices, mostly suggested by some pragmatic people, were:</p>
+<ul>
+<li>stack, to avoid managing ghc and cabal separately, and always have compatible dependency versions that were tested against each other on stackage.org</li>
+<li>simple-hpack project template, for simpler dependency management</li>
+<li>Haskell Language Server for IDE</li>
+<li>ormolu for code formatting</li>
+<li>hlint - it is very helpful with its non-trivial suggestions on how the code could be simplified, making your code more concise.</li>
+<li>if you use VS Code - <a href="https://marketplace.visualstudio.com/items?itemName=haskell.haskell">this extension</a> includes ormolu and hlint out of the box.</li>
+</ul>
+<p>Patrick Thompson has a great post about <a href="https://blog.sumtypeofway.com/posts/fast-iteration-with-haskell.html">faster iteration in industrial Haskell</a> on the subject.</p>
+<p>Whichever tools you use, make sure they support fast code iteration.</p>
+<h3 id="use-hoogle">Use Hoogle</h3>
+<p>Hoogle is a great resource to find functions via their type signatures. You are likely to have many cases when you know what kind of function you need (that is, its type), and you may expect that some library has it - but how do you find it?</p>
+<p>In many other languages you would try to think how it is named, and then search for it by name. With Haskell all you need is to search for the type of a function.</p>
+<p>For example if you search for function with type <a href="https://hoogle.haskell.org/?hoogle=(b+-%3E+c)+-%3E+(a+-%3E+m+b)+-%3E+(a+-%3E+m+c)&amp;scope=set:stackage"><code>(a -&gt; b) -&gt; (c -&gt; f a) -&gt; c -&gt; f b</code></a> <a href="#fn8" class="footnote-ref" id="fnref8" role="doc-noteref"><sup>8</sup></a>, which is a composition inside Functor, you would find two packages that implement it as function <code>&lt;.&gt;</code> which looks similar to <code>&lt;$&gt;</code> (the latter being function application inside Functor) - you can either use this function from the library or just look at its code and see that <code>f &lt;.&gt; g</code> is exactly the same as <code>fmap f . g</code>, so you could just use this code.</p>
+<h2 id="more-advanced-things-that-worked-for-me">More advanced things that worked for me</h2>
+<h3 id="use-recommendations-from-fp-complete">Use recommendations from FP Complete</h3>
+<p>Using <code>ReaderT</code> monad transformer (or <code>MonadReader</code> class) with <a href="https://hackage.haskell.org/package/unliftio">unliftio</a> library would save you a lot of time when you get to handling exceptions (all real applications need it) <a href="#fn9" class="footnote-ref" id="fnref9" role="doc-noteref"><sup>9</sup></a>.</p>
+<p>If the application is large, you can have a polymorphic type of the environment in each application component, that only requires a particular property in the environment, without being able to access the whole, and without the need to recompile a module when the type of the environment changes - no need for a large shared global object <a href="#fn10" class="footnote-ref" id="fnref10" role="doc-noteref"><sup>10</sup></a>.</p>
+<p>Also, I found it effective to have <code>MonadError</code> in the stack than using exceptions - it seemed “better” to pass logical errors as <code>Either</code>, and without <code>MonadError</code> you would be either constantly handling them with <code>case</code> or with double functor applications <a href="#fn11" class="footnote-ref" id="fnref11" role="doc-noteref"><sup>11</sup></a>.</p>
+<h3 id="haskell-libraries-can-create-a-new-language">Haskell libraries can create a “new language”</h3>
+<p>What comes as a surprise to newcomers is how large and complex Haskell libraries can be - many of them define their own “languages”, using complex combinations of operators not used anywhere else to express their logic. <a href="#fn12" class="footnote-ref" id="fnref12" role="doc-noteref"><sup>12</sup></a></p>
+<p>Such libraries require a higher investment than some large libraries in other languages, but they require less time and offer better return on investment than learning a new language.</p>
+<p>The last point applies to Haskell itself: it requires a substantially higher investment to master it, but it offers better returns on this investment. Paraphrasing a proverb <a href="#fn13" class="footnote-ref" id="fnref13" role="doc-noteref"><sup>13</sup></a>, “I don’t have enough time to learn the languages that require less time to learn”.</p>
+<h3 id="learn-concurrent-programming-and-stm">Learn concurrent programming and STM</h3>
+<p>Tutorials often explain State monad, but it is rarely useful other than for imperative algorithms without side effects - there can be more efficient equivalent functional algorithms available just a search away (quite often, already implemented as a library) or you do need side effects.</p>
+<p>You would be better off investing this time to learn STM primitives and the Haskell model of concurrency - <a href="https://www.oreilly.com/libqrary/view/parallel-and-concurrent/9781449335939/">Parallel and Concurrent Programming in Haskell</a> is a great book that covers it.</p>
+<h3 id="do-not-use-algebraic-effects-yet">Do not use algebraic effects (yet)</h3>
+<p>I am talking about about an approach to modelling operations via algebraic data types, that is provided by several libraries: polysemy, fused-effects, etc. <a href="#fn14" class="footnote-ref" id="fnref14" role="doc-noteref"><sup>14</sup></a></p>
+<p>The exception is when you work with a project that uses them already, and you have people to save you when you get stuck implementing any non-trivial scenario.</p>
+<p>The problem is that there are lots of libraries you are likely to use that are implemented with Monads, and you would spend a large amount of time figuring out wiring between the parts of your code. Also, exception handling proved non-trivial.</p>
+<p>A very promising development is <a href="https://github.com/hasura/eff">Eff</a> library that relies on the new core language primitive <a href="https://github.com/lexi-lambda/ghc-proposals/blob/delimited-continuation-primops/proposals/0000-delimited-continuation-primops.md">proposed</a> by <a href="https://github.com/lexi-lambda">Alexis King</a> that was just added to GHC - that might be the solution we have all been waiting for, but we are still probably 3-10 years away from the ecosystem catching up.</p>
+<p>For now, you would be much better off investing this time into getting fluent with Monad <a href="http://hackage.haskell.org/package/transformers">transformers</a> and <a href="https://hackage.haskell.org/package/mtl">mtl</a> libraries, and not worry about n<sup>2</sup> composition cost <a href="#fn15" class="footnote-ref" id="fnref15" role="doc-noteref"><sup>15</sup></a>.</p>
+<h2 id="where-to-learn-from">Where to learn from</h2>
+<h3 id="do-not-read-lyah">Do not read LYAH</h3>
+<p><a href="http://learnyouahaskell.com">Learn You a Haskell</a> is branded as “the funkiest way to learn Haskell”, but to me it was the book that killed my interest to Haskell for several years. It has many details but it doesn’t provide a big picture.</p>
+<p>If you must read it (e.g. your boss makes you), do it quickly and avoid the most detail-heavy chapters. And once you have read it, do not assume you can write real world Haskell programs - this book does not prepare you for it.</p>
+<h3 id="what-to-read">What to read</h3>
+<p>In addition to the books and posts mentioned before, you could find these books helpful:</p>
+<p><a href="https://en.m.wikibooks.org/wiki/Haskell">Haskell in wikibooks</a> - it was one of the most helpful resources for me.</p>
+<p><a href="https://wiki.haskell.org/Typeclassopedia">Typeclassopedia</a> by Brent Yorgey.</p>
+<p><a href="https://leanpub.com/thinking-with-types">Thinking with Types</a> by Sandy Maguire will provide with a much deeper understanding of type system, once you are fluent with the basics.</p>
+<p><a href="http://book.realworldhaskell.org/read/">Real world Haskell</a> looks promising - I wasn’t lucky enough to stumble upon it when I needed it, but I’ve learned from other <a href="http://www.serpentine.com/blog/">writings</a> and <a href="http://hackage.haskell.org/user/BryanOSullivan">code</a> of Bryan O’Sullivan.</p>
+<p>There are lots of helpful blogs as well, the one by <a href="https://lexi-lambda.github.io">Alexis King</a> stands out with its simplicity and clarity of writing about type systems.</p>
+<p>Finally, <a href="https://www.reddit.com/r/haskell/">r/haskell</a> subreddit is a very engaged and supportive community of developers at all levels, where you can learn all the news and ask any questions.</p>
+<h2 id="learn-and-use-haskell">Learn and use Haskell!</h2>
+<p>When people get a bit fluent with Haskell they suddenly see not only its rigour and stability, but also its simplicity - which may be surprising for many people, as Haskell is not particularly famous for it.</p>
+<p>Many people using Haskell believe that it is simpler to create and maintain reliable, extensible and performant applications in Haskell than in any other language.</p>
+<p>Haskell adoption can be made substantially easier with a bit more structured communication from the Haskell community, which is exceptionally supportive and helpful.</p>
+<p>So, when you find yourself unable to maintain your own code after 3 years of writing it, time and time again, consider learning Haskell - some very complex and reliable systems are built using it.</p>
+<section class="footnotes" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1" role="doc-endnote"><p>As the measure of engineering productivity we can use the average time to launch a given set of requirements with a fixed size team, and as the cost of ownership - the engineering time required to maintain the application.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2" role="doc-endnote"><p>It is worth watching <a href="https://www.youtube.com/watch?v=ybSBCVhVWs8">the video by the Aaron Contorer</a>, the chairman of FP Complete, about functional programming, where he tells how Haskell allows to achieve productivity, quality and performance without the need to compromise on any of them.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3" role="doc-endnote"><p><a href="http://dev.stephendiehl.com/hask/">What I wish I knew when learning Haskell</a> is a great writing by Stephen Diehl that gave me a big picture of what can be done with Haskell - for some time it was my go to reference to find other resources.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4" role="doc-endnote"><p>I did took advantage of Haskell data immutability though, being able to use a dictionary as a key to another dictionary (by value) - in typescript I had to compute its hash.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5" role="doc-endnote"><p><code>pure</code> and <code>return</code> are the same for <a href="https://hackage.haskell.org/package/base-4.15.0.0/docs/Control-Monad.html#t:Monad">well-behaved monads</a>. <a href="https://www.idris-lang.org">Idris</a> that is very similar to Haskell, with first class dependent types, completely removed <code>return</code> and only has <code>pure</code> - you could do it too in your Haskell code.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6" role="doc-endnote"><p>A great book on modelling software systems is <a href="https://mitpress.mit.edu/sites/default/files/sicp/index.html">Structure and Interpretation of Computer Programs</a> that is used as MIT course text - you would become a much better programmer if you study it, regardless of the language you use, and it would help you with the functional programming in particular - it uses Lisp.<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn7" role="doc-endnote"><p>“you don’t need to understand how it works to play on it” - it is based on the <a href="https://byorgey.wordpress.com/2009/01/12/abstraction-intuition-and-the-monad-tutorial-fallacy/">earlier post</a> by Brent Yorgey. Some specific monad instances have additional interfaces, but there is a common interface to them all. And you can still play on them differently.<a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn8" role="doc-endnote"><p>The actual letters you use for different types do not matter.<a href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn9" role="doc-endnote"><p>See great posts by Michael Snoyman about <a href="https://www.fpcomplete.com/blog/2017/06/readert-design-pattern/">ReaderT pattern</a> and <a href="https://www.fpcomplete.com/blog/2017/06/tale-of-two-brackets/">unliftio</a><a href="#fnref9" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn10" role="doc-endnote"><p>Using <code>HasField</code> from base or a fancier one from <a href="https://hackage.haskell.org/package/generic-lens">generic-lens</a> package.<a href="#fnref10" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn11" role="doc-endnote"><p>We used this approach for <a href="https://github.com/simplex-chat/simplexmq/blob/master/src/Simplex/Messaging/Agent.hs#L106">SMP agent</a> that is part of <a href="https://simplex.chat">https://simplex.chat</a>. The caveat here is that <code>unliftio</code> <a href="https://github.com/fpco/unliftio/issues/68">does not define an instance</a> of <code>MonadUnliftIO</code> for <code>ExceptT</code>, so you would have to either have an orphan instance or <code>newtype</code> it, and be aware that both your logical errors and IO exceptions will be mixed into Either value - which is what you might want anyway.<a href="#fnref11" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn12" role="doc-endnote"><p>Lenses are one such example.<a href="#fnref12" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn13" role="doc-endnote"><p>“I am not rich enough to buy cheap things”.<a href="#fnref13" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn14" role="doc-endnote"><p>There are advanced composition scenarios that require using effects, but they are quite rare.<a href="#fnref14" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn15" role="doc-endnote"><p>The cost to compose effects is linear, but there is a large constant factor, that makes mtl n<sup>2</sup> composition cheaper in real world applications, particularly given that most of this cost has been covered by mtl library.<a href="#fnref15" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+  </section>
+  <section class="links">
+    <a href="https://www.reddit.com/submit?url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2021-04-21-What%2520I%2520wish%2520somebody%2520told%2520me%2520when%2520I%2520was%2520learning%2520Haskell.html&title=What I wish somebody told me when I was learning Haskell" target="_blank"><img src="/images/reddit.png"></a>
+    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=What%20I%20wish%20somebody%20told%20me%20when%20I%20was%20learning%20Haskell&hashtags=haskell%2Ccoding%2Cessay&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2021-04-21-What%2520I%2520wish%2520somebody%2520told%2520me%2520when%2520I%2520was%2520learning%2520Haskell.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2021-04-21-What%2520I%2520wish%2520somebody%2520told%2520me%2520when%2520I%2520was%2520learning%2520Haskell.html" target="_blank"><img src="/images/tweet.png"></a>
+    
+  </section>
+</article>
+]]></summary>
+</entry>
+<entry>
     <title>Ajv Version 7: Big changes and improvements</title>
     <link href="https://www.poberezkin.com/posts/2021-02-11-ajv-version-7-big-changes-and-improvements.html" />
     <id>https://www.poberezkin.com/posts/2021-02-11-ajv-version-7-big-changes-and-improvements.html</id>

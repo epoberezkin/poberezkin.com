@@ -66,7 +66,7 @@ Reading each Haskell line can take twice longer, but because of much smaller ove
 
 It may seem insignificant, but using the correct terminology would help switching to the functional mindset:
 
-- functions are not "called" and "executed", they are "used" and "evaluated".
+- functions are not "called" and "executed", they are "applied" and "evaluated".
 - functions do not "return" values, even when they use `return` function, they are a binding of function code to the function name.
 - preferring `pure` over `return` [^pure] would both save you typing and help switching mindset.
 - "names" are not "variables", they are not "assigned", they are "bound" to values.
@@ -148,6 +148,15 @@ Some samples of equivalent code that would have helped me if somebody explained 
   ```haskell
   getName :: IO String
   getName = (<>) <$> get "Name: " <*> ((' ' :) <$> get "Surname: ")
+    where
+      get s = putStr s >> getLine
+  ```
+
+  - with Monoid fold ([suggested by enobayram](https://www.reddit.com/r/haskell/comments/mvztwt/what_i_wish_somebody_told_me_when_i_was_learning/gvfd4il/?utm_source=reddit&utm_medium=web2x&context=3))
+
+  ```haskell
+  getName :: IO String
+  getName = fold [get "Name: ", pure " ", get "Surname: "]
     where
       get s = putStr s >> getLine
   ```

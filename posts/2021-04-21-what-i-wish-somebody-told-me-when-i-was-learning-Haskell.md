@@ -2,6 +2,7 @@
 title: "What I wish somebody told me when I was learning Haskell"
 author: Evgeny Poberezkin
 tags: haskell, coding, essay
+reddit: r/haskell/comments/mvztwt/what_i_wish_somebody_told_me_when_i_was_learning/
 image: haskell.png
 ---
 

@@ -62,7 +62,7 @@
 <h3 id="avoid-terms-used-in-imperative-languages">Avoid terms used in imperative languages</h3>
 <p>It may seem insignificant, but using the correct terminology would help switching to the functional mindset:</p>
 <ul>
-<li>functions are not “called” and “executed”, they are “used” and “evaluated”.</li>
+<li>functions are not “called” and “executed”, they are “applied” and “evaluated”.</li>
 <li>functions do not “return” values, even when they use <code>return</code> function, they are a binding of function code to the function name.</li>
 <li>preferring <code>pure</code> over <code>return</code> <a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a> would both save you typing and help switching mindset.</li>
 <li>“names” are not “variables”, they are not “assigned”, they are “bound” to values.</li>
@@ -123,6 +123,13 @@
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a>getName <span class="ot">=</span> (<span class="op">&lt;&gt;</span>) <span class="op">&lt;$&gt;</span> get <span class="st">&quot;Name: &quot;</span> <span class="op">&lt;*&gt;</span> ((<span class="ch">&#39; &#39;</span> <span class="op">:</span>) <span class="op">&lt;$&gt;</span> get <span class="st">&quot;Surname: &quot;</span>)</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a>  <span class="kw">where</span></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true"></a>    get s <span class="ot">=</span> <span class="fu">putStr</span> s <span class="op">&gt;&gt;</span> <span class="fu">getLine</span></span></code></pre></div>
+<ul>
+<li>with Monoid fold (<a href="https://www.reddit.com/r/haskell/comments/mvztwt/what_i_wish_somebody_told_me_when_i_was_learning/gvfd4il/?utm_source=reddit&amp;utm_medium=web2x&amp;context=3">suggested by enobayram</a>)</li>
+</ul>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="ot">getName ::</span> <span class="dt">IO</span> <span class="dt">String</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a>getName <span class="ot">=</span> fold [get <span class="st">&quot;Name: &quot;</span>, <span class="fu">pure</span> <span class="st">&quot; &quot;</span>, get <span class="st">&quot;Surname: &quot;</span>]</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a>  <span class="kw">where</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a>    get s <span class="ot">=</span> <span class="fu">putStr</span> s <span class="op">&gt;&gt;</span> <span class="fu">getLine</span></span></code></pre></div>
 <p>Many people would argue that the code in <code>do</code> notation is easier to read. If that is how you feel, it goes back to the point that you have to unlearn how you read code and learn it again.</p>
 <p><code>do</code> notation is easier to read because it does look like an imperative code, and, possibly, by adding this syntactic sugar Haskell might have made learning more complex, as it makes it look like you can write an imperative code in Haskell.</p>
 <p>As you learn, you will realise that while succinct code takes longer to read per line, it is much faster overall - so you are saving yourself time by making it more succinct. Also, many libraries use a succinct functional style, so getting fluent with it will pay back very quickly.</p>
@@ -132,17 +139,17 @@
 <p>Such glue are, for example, various “lift” functions that allow to compose different Monad types. Next time you stumble on something that looks like “lift”, you can skip looking up what exactly it is - focus on the types around it and the functions that do something meaningful to your application - if compiler is happy and your code passes tests, understanding every bit of glue code is unnecessary.</p>
 <p>What helps is making reusable functions with short names that minimize the cognitive overhead.</p>
 <p>For example, one of the pieces of glue I found useful was this function:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="ot">liftError ::</span> (<span class="dt">MonadIO</span> m, <span class="dt">MonadError</span> e&#39; m) <span class="ot">=&gt;</span> (e <span class="ot">-&gt;</span> e&#39;) <span class="ot">-&gt;</span> <span class="dt">ExceptT</span> e <span class="dt">IO</span> a <span class="ot">-&gt;</span> m a</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a>liftError f a <span class="ot">=</span> liftIO (first f <span class="op">&lt;$&gt;</span> runExceptT a) <span class="op">&gt;&gt;=</span> liftEither</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a><span class="ot">liftError ::</span> (<span class="dt">MonadIO</span> m, <span class="dt">MonadError</span> e&#39; m) <span class="ot">=&gt;</span> (e <span class="ot">-&gt;</span> e&#39;) <span class="ot">-&gt;</span> <span class="dt">ExceptT</span> e <span class="dt">IO</span> a <span class="ot">-&gt;</span> m a</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a>liftError f a <span class="ot">=</span> liftIO (first f <span class="op">&lt;$&gt;</span> runExceptT a) <span class="op">&gt;&gt;=</span> liftEither</span></code></pre></div>
 <p>While it may look scary inside, like a computer, you don’t need to understand how it works to be able to use it effectively - it is enough to understand by looking at its type that it “lifts” an action expressed as <code>ExceptT e IO</code> monad to a more generic monad <code>(MonadIO m, MonadError e' m)</code>, transforming the error type at the same time - it is useful when composing different libraries or modules each using their own error type.</p>
 <p>An equivalent code in <code>do</code> notation might be easier to parse for the beginners:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a><span class="ot">liftError ::</span> (<span class="dt">MonadIO</span> m, <span class="dt">MonadError</span> e&#39; m) <span class="ot">=&gt;</span> (e <span class="ot">-&gt;</span> e&#39;) <span class="ot">-&gt;</span> <span class="dt">ExceptT</span> e <span class="dt">IO</span> a <span class="ot">-&gt;</span> m a</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a>liftError f a <span class="ot">=</span> <span class="kw">do</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a>  b <span class="ot">&lt;-</span> liftIO <span class="op">$</span> runExceptT a</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true"></a>  <span class="kw">let</span> c <span class="ot">=</span> <span class="kw">case</span> b <span class="kw">of</span> <span class="co">-- this case is Bifunctor `first` method used above</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true"></a>        <span class="dt">Left</span> e <span class="ot">-&gt;</span> <span class="dt">Left</span> (f e)</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true"></a>        <span class="dt">Right</span> x <span class="ot">-&gt;</span> <span class="dt">Right</span> x</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true"></a>  liftEither c</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a><span class="ot">liftError ::</span> (<span class="dt">MonadIO</span> m, <span class="dt">MonadError</span> e&#39; m) <span class="ot">=&gt;</span> (e <span class="ot">-&gt;</span> e&#39;) <span class="ot">-&gt;</span> <span class="dt">ExceptT</span> e <span class="dt">IO</span> a <span class="ot">-&gt;</span> m a</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true"></a>liftError f a <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true"></a>  b <span class="ot">&lt;-</span> liftIO <span class="op">$</span> runExceptT a</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true"></a>  <span class="kw">let</span> c <span class="ot">=</span> <span class="kw">case</span> b <span class="kw">of</span> <span class="co">-- this case is Bifunctor `first` method used above</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true"></a>        <span class="dt">Left</span> e <span class="ot">-&gt;</span> <span class="dt">Left</span> (f e)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true"></a>        <span class="dt">Right</span> x <span class="ot">-&gt;</span> <span class="dt">Right</span> x</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true"></a>  liftEither c</span></code></pre></div>
 <p>But the point is that you do not need to understand either code to effectively use this function, and you will see that short functions are easier to maintain.</p>
 <h2 id="embrace-purity">Embrace purity</h2>
 <h3 id="function-evaluation-produces-no-side-effects">Function evaluation produces no side effects</h3>
@@ -151,8 +158,8 @@
 <p>But in reality it is not function evaluation that produces side effects - a function simply evaluates to an IO action. This action can be chained with another IO action or it can be passed as parameter and simply be thrown away based on some other function evaluation. The whole program is one combined IO action that is, when executed, does indeed produce side effects.</p>
 <p>Many tutorials separate code to functions with and without side effects, but it only increases the confusion about how the language works, and confronted with a simple function of the type <code>Bool -&gt; IO a -&gt; IO b -&gt; IO (Either a b)</code> most beginners (myself included) are puzzled by what this function can possibly do.</p>
 <p>But once you remind yourself that functions do nothing, you may realize that this function probably evaluates to a single IO action by choosing one of two provided IO actions based on the boolean value (and none of the actions is performed, until the whole program runs):</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a>ifIO<span class="op">:</span> <span class="dt">Bool</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> b <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Either</span> a b)</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true"></a>ifIO x a b <span class="ot">=</span> <span class="kw">if</span> x <span class="kw">then</span> <span class="dt">Right</span> <span class="op">&lt;$&gt;</span> b <span class="kw">else</span> <span class="dt">Left</span> <span class="op">&lt;$&gt;</span> a</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true"></a>ifIO<span class="op">:</span> <span class="dt">Bool</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> b <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Either</span> a b)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true"></a>ifIO x a b <span class="ot">=</span> <span class="kw">if</span> x <span class="kw">then</span> <span class="dt">Right</span> <span class="op">&lt;$&gt;</span> b <span class="kw">else</span> <span class="dt">Left</span> <span class="op">&lt;$&gt;</span> a</span></code></pre></div>
 <h2 id="choose-effective-tools">Choose effective tools</h2>
 <h3 id="effective-developer-environment-for-fast-iteration">Effective developer environment for fast iteration</h3>
 <p>My choices, mostly suggested by some pragmatic people, were:</p>

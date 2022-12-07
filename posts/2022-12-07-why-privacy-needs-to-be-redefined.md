@@ -2,7 +2,7 @@
 title: "Why privacy needs to be redefined"
 author: Evgeny Poberezkin
 tags: privacy, internet
-image: haskell.png
+reddit: r/SimpleXChat/comments/zf0j3x/why_privacy_needs_to_be_redefined/
 ---
 
 It’s been more than a year since I wrote here. Since December 2021 I’ve been working on SimpleX Chat [^simplex] non-stop.

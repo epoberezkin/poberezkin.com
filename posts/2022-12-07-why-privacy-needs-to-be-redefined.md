@@ -27,7 +27,7 @@ It starts from relatively benign violations of privacy via manipulative ads, tha
 
 These consequences continue with the manipulation of elections [^ca]. The violation of privacy doesn't just endanger our economics, they endanger democracy itself.
 
-But it doesn’t stop here. The most shocking, life-changing consequences are described in the memoir of Mohamedou Ould Slahi, recently shot as a movie The Mauritanian [^slahi]. When he was released after 14 years in prison the judge wrote in his opinion: _"... associations alone are not enough, of course, to make detention lawful."_
+But it doesn’t stop here. People can be prosecuted solely based on their associations. The most shocking, life-changing consequences are described in the memoir of Mohamedou Ould Slahi, recently shot as a movie The Mauritanian [^slahi]. When he was released after 14 years in prison the judge wrote in his opinion: _"... associations alone are not enough, of course, to make detention lawful."_
 
 ## Is Fourth Amendment enough?
 
@@ -43,7 +43,7 @@ Nowadays, for most people the postal service is replaced by large technology com
 
 Many people believe, quite religiously, that if the communication is end-to-end encrypted then it absolutely cannot be tampered with while in transit. What is end-to-end encryption? It is the application of cryptography to the content of the message that requires that the sender and the recipient somehow agree on the encryption key to use. It is not that different from putting your mail into a box with a complex lock on it, and somehow passing the key and the box to the recipient [^e2e]. If you then were to pass the box via the postal courier, then you probably wouldn’t want to pass the key to open the box via the same courier – it would be sensible to pass the key in some other way, maybe send it in a separate letter.
 
-But when we use electronic communications this common sense betrays us and we use the same courier to pass the key as we use to pass the messages locked with the key. Although the modern cryptography is designed in such a way that the courier cannot decrypt the message if it was encrypted with the recipient key, almost nothing stops the courier from intercepting the key of the recipient and replacing it with their own key [^mitm], and then having received the message to the recipient the courier would decrypt the message and re-encrypt it with the recipient key.
+But when we use electronic communications this common sense betrays us and we use the same courier to pass the key as we use to pass the messages locked with the key. Although the modern cryptography is designed in such a way that the courier cannot decrypt the message if it was encrypted with the recipient key, almost nothing stops the courier from intercepting the key of the recipient and replacing it with their own key [^mitm], and then the courier would decrypt the message in transit and re-encrypt it with the recipient key for the delivery.
 
 I am not saying that every single communication service performs such an attack on their users, and some of them (for example, Signal) allow the users to validate the keys by comparing the security codes [^verify]. But they do have technical ability to break into end-to-end encryption unless some alternative channel was used to pass the key, so a widely shared belief that end-to-end encryption cannot be tampered with is simply incorrect.
 

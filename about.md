@@ -12,8 +12,6 @@ You can connect to me and ask any questions via SimpleX Chat app by scanning the
 
 <img alt="Connect to me via SimpleX Chat" src="/images/simplex-address.jpg" width="240" />
 
-Email: <a href="mailto:evgeny@poberezkin.com">evgeny@poberezkin.com</a>
-
 [<img class="social" src="/images/github.png">](https://github.com/epoberezkin)
 [<img class="social" src="/images/twitter.png">](https://twitter.com/epoberezkin)
 [<img class="social" src="/images/linkedin.png">](https://www.linkedin.com/in/epoberezkin/)

@@ -1,0 +1,6 @@
+with-compiler: ghc-8.10.7
+
+-- You need this GHC version to run executable posts published in 2020
+-- with-compiler: ghc-8.6.5
+
+packages: .

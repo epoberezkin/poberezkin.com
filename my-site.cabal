@@ -1,0 +1,84 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.4.
+--
+-- see: https://github.com/sol/hpack
+
+name:           my-site
+version:        0.1.0.0
+synopsis:       poberezkin.com website
+category:       Web
+homepage:       https://github.com/epoberezkin/poberezkin.com
+bug-reports:    https://github.com/epoberezkin/poberezkin.com/issues
+author:         Evgeny Poberezkin
+maintainer:     Evgeny Poberezkin
+copyright:      2016-2020 Evgeny Poberezkin
+license:        MIT
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+
+source-repository head
+  type: git
+  location: https://github.com/epoberezkin/poberezkin.com
+
+-- executable atm
+--   main-is: 2020-09-04-dependent-types-to-code-are-what-static-types-to-data.lhs
+--   other-modules:
+--       Paths_my_site
+--   hs-source-dirs:
+--       posts
+--   ghc-options: -Wall -Wcompat -Worphans -Werror=incomplete-patterns -Wredundant-constraints -Wincomplete-record-updates -Wincomplete-uni-patterns -pgmL markdown-unlit
+--   build-depends:
+--       base >=4.7 && <5
+--     , freer-indexed ==0.1.*
+--     , markdown-unlit ==0.5.*
+--     , singletons
+--   default-language: Haskell2010
+
+-- executable elevator
+--   main-is: 2020-06-29-modeling-state-machine-dependent-types-haskell-1.lhs
+--   other-modules:
+--       Paths_my_site
+--   hs-source-dirs:
+--       posts
+--   ghc-options: -Wall -Wcompat -Worphans -Werror=incomplete-patterns -Wredundant-constraints -Wincomplete-record-updates -Wincomplete-uni-patterns -pgmL markdown-unlit
+--   build-depends:
+--       base >=4.7 && <5
+--     , interact ==0.2.*
+--     , markdown-unlit ==0.5.*
+--     , singletons
+--   default-language: Haskell2010
+
+-- executable users-api
+--   main-is: 2020-03-15-haskell-a-higher-order-language.lhs
+--   other-modules:
+--       Paths_my_site
+--   hs-source-dirs:
+--       posts
+--   ghc-options: -Wall -Wcompat -Worphans -Werror=incomplete-patterns -Wredundant-constraints -Wincomplete-record-updates -Wincomplete-uni-patterns -pgmL markdown-unlit
+--   build-depends:
+--       aeson ==1.5.*
+--     , base >=4.7 && <5
+--     , containers ==0.6.*
+--     , markdown-unlit ==0.5.*
+--     , servant
+--     , servant-server
+--     , warp ==3.3.*
+--   default-language: Haskell2010
+
+executable my-site
+  main-is: Main.hs
+  other-modules:
+      Fields
+      Paths_my_site
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Worphans -Werror=incomplete-patterns -Wredundant-constraints -Wincomplete-record-updates -Wincomplete-uni-patterns -threaded
+  build-depends:
+      base >=4.7 && <5
+    , hakyll ==4.15.*
+    , split ==0.2.*
+    , uri-encode ==1.5.*
+  default-language: Haskell2010

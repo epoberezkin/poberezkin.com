@@ -42,7 +42,7 @@ The nature of VC investment is to expect very high rewards with very high risk o
 
 The main wrong assumption here that the only way to make profit is by selling users' data.
 
-We are building the business that will sell privacy _to its customers_, who use its products, and not the one that sells privacy _of its users_ to their real customers. We believe that selling users data is unethical, even if people consented to it, and that it should be directly prohibited by law – it should become a focus of legislators.
+We are building the business that sells privacy, as a product, _to its customers_, and does not sell the data _of its customers_. We believe that selling users' data is unethical, even if people consented to it, and that it should be directly prohibited by law – it should become a focus of legislators.
 
 This myth also equates profit with corruption and greed. But having profit simply means earning more than spending, something that any responsible person, family or organisation must do. Making a profit is an important objective of any organisation that wants to be financially sustainable and self-reliant, whether it's a business or non-profit, and without profit the organisation remains dependent on its funders, open to negative influence.
 

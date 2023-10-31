@@ -95,16 +95,16 @@
 <p>Below these changes are covered in detail - they were causing migration difficulties to some users.</p>
 <h3 id="importing-ajv-from-your-code">Importing Ajv from your code</h3>
 <p>To import Ajv in typescript you can still use default import, as before:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="im">import</span> Ajv from <span class="st">&quot;ajv&quot;</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a>const ajv <span class="op">=</span> <span class="kw">new</span> <span class="fu">Ajv</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> Ajv <span class="im">from</span> <span class="st">&quot;ajv&quot;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> ajv <span class="op">=</span> <span class="kw">new</span> <span class="fu">Ajv</span>()</span></code></pre></div>
 <p>But to import in JavaScript you now need to use <code>default</code> property of the exported object:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="kw">const</span> Ajv <span class="op">=</span> <span class="pp">require</span>(<span class="st">&quot;ajv&quot;</span>)<span class="op">.</span><span class="at">default</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a><span class="co">// or const {default: Ajv} = require(&quot;ajv&quot;)</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a><span class="kw">const</span> ajv <span class="op">=</span> <span class="kw">new</span> <span class="fu">Ajv</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> Ajv <span class="op">=</span> <span class="pp">require</span>(<span class="st">&quot;ajv&quot;</span>)<span class="op">.</span><span class="at">default</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co">// or const {default: Ajv} = require(&quot;ajv&quot;)</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> ajv <span class="op">=</span> <span class="kw">new</span> <span class="fu">Ajv</span>()</span></code></pre></div>
 <p>And if you use JavaScript modules you need to import Ajv this way:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a><span class="co">// from .mjs file</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a><span class="im">import</span> Ajv <span class="im">from</span> <span class="st">&quot;ajv&quot;</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a><span class="kw">const</span> ajv <span class="op">=</span> <span class="kw">new</span> Ajv<span class="op">.</span><span class="fu">default</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">// from .mjs file</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> Ajv <span class="im">from</span> <span class="st">&quot;ajv&quot;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> ajv <span class="op">=</span> <span class="kw">new</span> Ajv<span class="op">.</span><span class="fu">default</span>()</span></code></pre></div>
 <p>This is a compromise approach that leads to a bit smaller compiled JavaScript code size of Ajv, and, what is more important, allows to export additional things alongside Ajv and does not force dependencies to use <code>esModuleInterop</code> setting of TypeScript. Possibly, there is a better way to export Ajv - please share any ideas in <a href="https://github.com/ajv-validator/ajv/issues/1381">this issue</a>.</p>
 <h3 id="ajv-installation">Ajv installation</h3>
 <p>Several users, in particular those who use <code>yarn</code> rather than <code>npm</code>, had issues related to version conflicts between old and new versions. Because Ajv is a dependency of many JavaScript tools, the users can have both version 6 and version 7 installed at the same time.</p>
@@ -127,46 +127,46 @@
 <ol type="1">
 <li>Compile schemas either at start time or on demand, lazily, and manage how validation functions are re-used in your application code:</li>
 </ol>
-<div class="sourceCode" id="cb4"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a><span class="kw">const</span> schema <span class="op">=</span> <span class="pp">require</span>(<span class="st">&quot;mu_schema.json&quot;</span>)</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a><span class="kw">const</span> validate <span class="op">=</span> ajv<span class="op">.</span><span class="fu">compile</span>(schema)</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true"></a><span class="co">// ...</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true"></a></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true"></a><span class="co">// in this case schema compilation happens</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true"></a><span class="co">// when app is started, before any request is processed</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true"></a><span class="kw">async</span> <span class="kw">function</span> <span class="fu">processRequest</span>(req) {</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true"></a>  <span class="cf">if</span> (<span class="op">!</span><span class="fu">validate</span>(req<span class="op">.</span><span class="at">body</span>)) <span class="cf">throw</span> <span class="bu">Error</span>(<span class="st">&quot;bad request&quot;</span>)</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true"></a>  <span class="co">// ...</span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> schema <span class="op">=</span> <span class="pp">require</span>(<span class="st">&quot;mu_schema.json&quot;</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> validate <span class="op">=</span> ajv<span class="op">.</span><span class="fu">compile</span>(schema)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co">// ...</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co">// in this case schema compilation happens</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co">// when app is started, before any request is processed</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="kw">async</span> <span class="kw">function</span> <span class="fu">processRequest</span>(req) {</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="op">!</span><span class="fu">validate</span>(req<span class="op">.</span><span class="at">body</span>)) <span class="cf">throw</span> <span class="bu">Error</span>(<span class="st">&quot;bad request&quot;</span>)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="co">// ...</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 <p>It is important that <code>ajv.compile</code> is used outside of any API endpoints, as otherwise ajv may recompile the schema every time it is used (depending whether you pass the same schema reference or not).</p>
 <ol start="2" type="1">
 <li>Add all schemas to Ajv instance, using it as a cache of compiled validation functions, later retrieve them using either the schema <code>$id</code> attribute from the schema or the key passed to <code>addSchema</code> method.</li>
 </ol>
 <p>File <code>./my_schema.json</code>:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="fu">{</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a>  <span class="dt">&quot;$id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://example.com/schemas/my_schema&quot;</span><span class="fu">,</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a>  <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;object&quot;</span><span class="fu">,</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a>  <span class="dt">&quot;properties&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a>    <span class="dt">&quot;foo&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true"></a>      <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;string&quot;</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true"></a>    <span class="fu">}</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true"></a>  <span class="fu">}</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true"></a><span class="fu">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;$id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://example.com/schemas/my_schema&quot;</span><span class="fu">,</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;object&quot;</span><span class="fu">,</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;properties&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;foo&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;string&quot;</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
 <p>Code:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a><span class="kw">const</span> schema <span class="op">=</span> <span class="pp">require</span>(<span class="st">&quot;./my_schema.json&quot;</span>)</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a>ajv<span class="op">.</span><span class="fu">addSchema</span>(schema<span class="op">,</span> <span class="st">&quot;my_schema&quot;</span>)</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true"></a><span class="co">// ...</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true"></a></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true"></a><span class="co">// schema compilation happens on demand</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true"></a><span class="co">// but only the first time the schema is used</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true"></a><span class="kw">async</span> <span class="kw">function</span> <span class="fu">processRequest</span>(req) {</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true"></a>  <span class="kw">const</span> validate <span class="op">=</span> ajv<span class="op">.</span><span class="fu">getSchema</span>(<span class="st">&quot;https://example.com/schemas/my_schema&quot;</span>)</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true"></a>  <span class="co">// or</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true"></a>  <span class="co">// const validate = ajv.getSchema(&quot;my_schema&quot;)</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true"></a>  <span class="cf">if</span> (<span class="op">!</span><span class="fu">validate</span>(req<span class="op">.</span><span class="at">body</span>)) <span class="cf">throw</span> <span class="bu">Error</span>(<span class="st">&quot;bad request&quot;</span>)</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true"></a>  <span class="co">// ...</span></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> schema <span class="op">=</span> <span class="pp">require</span>(<span class="st">&quot;./my_schema.json&quot;</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>ajv<span class="op">.</span><span class="fu">addSchema</span>(schema<span class="op">,</span> <span class="st">&quot;my_schema&quot;</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">// ...</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co">// schema compilation happens on demand</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co">// but only the first time the schema is used</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="kw">async</span> <span class="kw">function</span> <span class="fu">processRequest</span>(req) {</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> validate <span class="op">=</span> ajv<span class="op">.</span><span class="fu">getSchema</span>(<span class="st">&quot;https://example.com/schemas/my_schema&quot;</span>)</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="co">// or</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  <span class="co">// const validate = ajv.getSchema(&quot;my_schema&quot;)</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="op">!</span><span class="fu">validate</span>(req<span class="op">.</span><span class="at">body</span>)) <span class="cf">throw</span> <span class="bu">Error</span>(<span class="st">&quot;bad request&quot;</span>)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>  <span class="co">// ...</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 <p>If you are passing exactly the same (and not just deeply equal) schema object to ajv, ajv would use a cached validation function anyway, using schema object reference as a key.</p>
 <p>But if you pass the new instance of the schema, even if the contents of the object is deeply equal, ajv would compile it again. In version 6 Ajv used a serialized schema as a cache key, and it partially protected from the incorrect usage of compiled validation functions, but it had both performance and memory costs. Some users had <a href="https://github.com/ajv-validator/ajv/issues/1413">this problem</a> when migrating to version 7.</p>
 <h3 id="validation-of-json-schema-formats">Validation of JSON Schema formats</h3>
@@ -178,8 +178,10 @@
 <li>Fully disable format validation with the option <code>validateFormats: false</code>. In this case, even if you use formats in the schema, they will be ignored.</li>
 <li>Define the list of formats that you want to be ignored by passing <code>true</code> values for some formats in <code>formats</code> option:</li>
 </ol>
-<div class="sourceCode" id="cb7"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a><span class="kw">new</span> <span class="fu">Ajv</span>({<span class="dt">formats</span><span class="op">:</span> {<span class="dt">email</span><span class="op">:</span> <span class="kw">true</span>}})</span></code></pre></div>
-<p>The configuration above would allow and ignore <code>email</code> format in your schemas, but would still throw exception if any other format is used. This approach is more performant than passing regular expression <code>/.*/</code> or function <code>() =&gt; true</code> because they would have to be executed, and in case of <code>true</code> no validation code is generated when this format is used. 3. Use <a href="https://github.com/ajv-validator/ajv-formats">ajv-formats</a> package - it includes all formats previously shipped as part of Ajv, some of the formats have two options - more performant and more correct (<code>fast</code> and <code>full</code> - see the docs to ajv-formats). 4. Define your own functions (or use some a 3rd-party library) to validate formats that suit your application - you can pass functions to ajv for each format you use and you can even use asynchronous validation if, for example, you want to validate the existence and/or configuration of a domain name as part of <code>email</code> or <code>hostname</code> validation.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">new</span> <span class="fu">Ajv</span>({<span class="dt">formats</span><span class="op">:</span> {<span class="dt">email</span><span class="op">:</span> <span class="kw">true</span>}})</span></code></pre></div>
+<p>The configuration above would allow and ignore <code>email</code> format in your schemas, but would still throw exception if any other format is used. This approach is more performant than passing regular expression <code>/.*/</code> or function <code>() =&gt; true</code> because they would have to be executed, and in case of <code>true</code> no validation code is generated when this format is used.
+3. Use <a href="https://github.com/ajv-validator/ajv-formats">ajv-formats</a> package - it includes all formats previously shipped as part of Ajv, some of the formats have two options - more performant and more correct (<code>fast</code> and <code>full</code> - see the docs to ajv-formats).
+4. Define your own functions (or use some a 3rd-party library) to validate formats that suit your application - you can pass functions to ajv for each format you use and you can even use asynchronous validation if, for example, you want to validate the existence and/or configuration of a domain name as part of <code>email</code> or <code>hostname</code> validation.</p>
 <p>The last approach to validate formats - defining your own functions or using a library - is strongly recommended as it allows you to achieve the right balance between validation security, speed and correctness that fits your application.</p>
 <h3 id="migrating-from-json-schema-draft-4">Migrating from JSON Schema draft 4</h3>
 <p>Draft 4 of the JSON Schema is the first version that Ajv supported, and since then there were several important changes in the specification that made supporting multiple versions of JSON Schema in the same code unnecessarily complex.</p>

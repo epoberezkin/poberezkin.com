@@ -75,48 +75,48 @@
 <p><a href="https://github.com/epoberezkin/poberezkin.com/tree/master/dot/elevator.gv"><img src="../images/elevator.svg" title="source" alt="Elevator states" /></a></p>
 <p>In addition to that elevator cannot go below than the ground floor (type-level natural number <code>0</code> will be used for it).</p>
 <p>To have the state of the elevator available both in types, and also at run-time we will use singletons library and we will need to enable some GHC extensions:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="ot">{-# LANGUAGE ConstraintKinds, DataKinds, DeriveAnyClass, EmptyCase,</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="ot">  FlexibleContexts, FlexibleInstances, FunctionalDependencies, GADTs,</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a><span class="ot">  InstanceSigs, LambdaCase, PartialTypeSignatures, PolyKinds, RankNTypes,</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a><span class="ot">  ScopedTypeVariables, StandaloneDeriving, TemplateHaskell,</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true"></a><span class="ot">  TypeApplications, TypeFamilies, TypeOperators, UndecidableInstances #-}</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true"></a><span class="ot">{-# OPTIONS_GHC -Werror=incomplete-patterns #-}</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true"></a><span class="ot">{-# OPTIONS_GHC -fno-warn-unticked-promoted-constructors #-}</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true"></a></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true"></a><span class="kw">import</span> <span class="dt">Data.Kind</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true"></a><span class="kw">import</span> <span class="dt">Data.Singletons</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true"></a><span class="kw">import</span> <span class="dt">Data.Singletons.Prelude</span></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true"></a><span class="kw">import</span> <span class="dt">Data.Singletons.TH</span></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true"></a><span class="kw">import</span> <span class="dt">Data.Singletons.TypeLits</span></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true"></a><span class="kw">import</span> <span class="dt">System.IO</span></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true"></a><span class="kw">import</span> <span class="dt">System.IO.Interact</span></span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE ConstraintKinds, DataKinds, DeriveAnyClass, EmptyCase,</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ot">  FlexibleContexts, FlexibleInstances, FunctionalDependencies, GADTs,</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ot">  InstanceSigs, LambdaCase, PartialTypeSignatures, PolyKinds, RankNTypes,</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ot">  ScopedTypeVariables, StandaloneDeriving, TemplateHaskell,</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ot">  TypeApplications, TypeFamilies, TypeOperators, UndecidableInstances #-}</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# OPTIONS_GHC -Werror=incomplete-patterns #-}</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# OPTIONS_GHC -fno-warn-unticked-promoted-constructors #-}</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Data.Kind</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Data.Singletons</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Data.Singletons.Prelude</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Data.Singletons.TH</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Data.Singletons.TypeLits</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">System.IO</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">System.IO.Interact</span></span></code></pre></div>
 <p>We will define the state of the elevator door and movement in types, and also create singleton types for them:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="op">$</span>(singletons [d|</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>  data DoorState = Opened | Closed</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>    deriving (Show, Read, Eq)</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a>  data MoveState = Stopped | Up | Down</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a>    deriving (Show, Read, Eq)</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true"></a>  |])</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">$</span>(singletons [d|</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  data DoorState = Opened | Closed</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    deriving (Show, Read, Eq)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  data MoveState = Stopped | Up | Down</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    deriving (Show, Read, Eq)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  |])</span></code></pre></div>
 <p><a href="2020-05-17-using-dependent-types-haskell-singletons.html">This post</a> shows what singletons library does when you wrap type definitions like that. If you did not use singletons before, you can read an <a href="https://blog.jle.im/entry/introduction-to-singletons-1.html">introduction to singletons library</a> by Justin Le.</p>
 <p>We also need to define dependent state changes both in types and at run-time. For that we will need type families and functions on singletons that can also be created with singletons library:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a><span class="op">$</span>(singletonsOnly [d|</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>  nextFloor :: MoveState -&gt; Nat -&gt; Nat</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a>  nextFloor Stopped f = f</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true"></a>  nextFloor Up f = f + 1</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true"></a>  nextFloor Down f =</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true"></a>    if f &gt; 0</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true"></a>      then f - 1</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true"></a>      else 0</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true"></a></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true"></a>  nextMoveState :: MoveState -&gt; Nat -&gt; MoveState</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true"></a>  nextMoveState Stopped _ = Stopped</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true"></a>  nextMoveState Up _ = Up</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true"></a>  nextMoveState Down f =</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true"></a>    if f &lt;= 1</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true"></a>      then Stopped</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true"></a>      else Down</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true"></a>  |])</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="op">$</span>(singletonsOnly [d|</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  nextFloor :: MoveState -&gt; Nat -&gt; Nat</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  nextFloor Stopped f = f</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  nextFloor Up f = f + 1</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  nextFloor Down f =</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    if f &gt; 0</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>      then f - 1</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>      else 0</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  nextMoveState :: MoveState -&gt; Nat -&gt; MoveState</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  nextMoveState Stopped _ = Stopped</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  nextMoveState Up _ = Up</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  nextMoveState Down f =</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    if f &lt;= 1</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>      then Stopped</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>      else Down</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>  |])</span></code></pre></div>
 <p>The two functions above define that the floor should increase when the elevator is going up, and decrease when it is going down, but not below <code>0</code> (<code>nextFloor</code>) and that when the elevator reaches the ground floor it should stop (<code>nextMoveState</code>).</p>
 <p>Singletons library generates code that adds type families <code>NextFloor</code> and <code>NextMoveState</code> to the above declaration and equivalent functions on singletons (<code>sNextFloor</code> and <code>sNextMoveState</code>). They are defined similarly to the below (but you do not need to add this code - it is added automatically):</p>
 <pre class="haskell-ignore"><code>type family NextFloor (m :: MoveState) (f :: Nat) :: Nat where
@@ -129,62 +129,63 @@ sNextMoveState ::
   Sing (m :: MoveState) -&gt; Sing (f :: Nat) -&gt; Sing (NextFloor m f)</code></pre>
 <p>etc. The actual generated code is a bit more complex.</p>
 <p>Now we can define the type for allowed elevator actions:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="kw">infixr</span> <span class="dv">2</span> <span class="op">:&gt;&gt;</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a><span class="kw">type</span> <span class="dt">Elevator</span> <span class="ot">=</span> (<span class="dt">DoorState</span>, <span class="dt">MoveState</span>, <span class="dt">Nat</span>)</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a><span class="kw">type</span> <span class="kw">family</span> <span class="dt">Moving</span> (<span class="ot">m ::</span> <span class="dt">MoveState</span>)<span class="ot"> ::</span> <span class="dt">Constraint</span> <span class="kw">where</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true"></a>  <span class="dt">Moving</span> <span class="dt">Up</span> <span class="ot">=</span> ()</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true"></a>  <span class="dt">Moving</span> <span class="dt">Down</span> <span class="ot">=</span> ()</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true"></a></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true"></a><span class="kw">data</span> <span class="dt">Action</span> (<span class="ot">s ::</span> <span class="dt">Elevator</span>) (<span class="ot">s' ::</span> <span class="dt">Elevator</span>)<span class="ot"> ::</span> <span class="dt">Type</span> <span class="kw">where</span></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true"></a>  <span class="dt">Open</span> <span class="ot">::</span></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true"></a>    <span class="dt">Action</span></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true"></a>      '(<span class="dt">Closed</span>, <span class="dt">Stopped</span>, f)</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true"></a>      '(<span class="dt">Opened</span>, <span class="dt">Stopped</span>, f)</span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true"></a>  <span class="dt">Close</span> <span class="ot">::</span></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true"></a>    <span class="dt">Action</span></span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true"></a>      '(<span class="dt">Opened</span>, <span class="dt">Stopped</span>, f)</span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true"></a>      '(<span class="dt">Closed</span>, <span class="dt">Stopped</span>, f)</span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true"></a>  <span class="dt">Move</span> <span class="ot">::</span></span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true"></a>    <span class="dt">Moving</span> m <span class="ot">=&gt;</span></span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true"></a>    <span class="dt">Sing</span> (<span class="ot">m ::</span> <span class="dt">MoveState</span>) <span class="ot">-&gt;</span></span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true"></a>    <span class="dt">Action</span></span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true"></a>      '(<span class="dt">Closed</span>, <span class="dt">Stopped</span>, f)</span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true"></a>      '(<span class="dt">Closed</span>, <span class="dt">NextMoveState</span> m f, <span class="dt">NextFloor</span> m f)</span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true"></a>  <span class="dt">Stop</span> <span class="ot">::</span></span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true"></a>    <span class="dt">Action</span></span>
-<span id="cb5-26"><a href="#cb5-26" aria-hidden="true"></a>      '(<span class="dt">Closed</span>, m, f)</span>
-<span id="cb5-27"><a href="#cb5-27" aria-hidden="true"></a>      '(<span class="dt">Closed</span>, <span class="dt">Stopped</span>, f)</span>
-<span id="cb5-28"><a href="#cb5-28" aria-hidden="true"></a>  <span class="dt">Wait</span> <span class="ot">::</span></span>
-<span id="cb5-29"><a href="#cb5-29" aria-hidden="true"></a>    <span class="dt">Action</span></span>
-<span id="cb5-30"><a href="#cb5-30" aria-hidden="true"></a>      '(d, m, f)</span>
-<span id="cb5-31"><a href="#cb5-31" aria-hidden="true"></a>      '(d, <span class="dt">NextMoveState</span> m f, <span class="dt">NextFloor</span> m f)</span>
-<span id="cb5-32"><a href="#cb5-32" aria-hidden="true"></a><span class="ot">  (:&gt;&gt;) ::</span> <span class="dt">Action</span> s1 s2 <span class="ot">-&gt;</span> <span class="dt">Action</span> s2 s3 <span class="ot">-&gt;</span> <span class="dt">Action</span> s1 s3</span></code></pre></div>
-<p><code>Action</code> type is defined as generalized algebraic data type and it includes elevator state before and after the action as type-level tuples. Another alternative would be to parametrize <code>Action</code> on 6 separate parameters, but it would be more difficult to manage.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">infixr</span> <span class="dv">2</span> <span class="op">:&gt;&gt;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="dt">Elevator</span> <span class="ot">=</span> (<span class="dt">DoorState</span>, <span class="dt">MoveState</span>, <span class="dt">Nat</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="kw">family</span> <span class="dt">Moving</span> (<span class="ot">m ::</span> <span class="dt">MoveState</span>)<span class="ot"> ::</span> <span class="dt">Constraint</span> <span class="kw">where</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">Moving</span> <span class="dt">Up</span> <span class="ot">=</span> ()</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">Moving</span> <span class="dt">Down</span> <span class="ot">=</span> ()</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Action</span> (<span class="ot">s ::</span> <span class="dt">Elevator</span>) (<span class="ot">s' ::</span> <span class="dt">Elevator</span>)<span class="ot"> ::</span> <span class="dt">Type</span> <span class="kw">where</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">Open</span> <span class="ot">::</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">Action</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>      '(<span class="dt">Closed</span>, <span class="dt">Stopped</span>, f)</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>      '(<span class="dt">Opened</span>, <span class="dt">Stopped</span>, f)</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  <span class="dt">Close</span> <span class="ot">::</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    <span class="dt">Action</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>      '(<span class="dt">Opened</span>, <span class="dt">Stopped</span>, f)</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>      '(<span class="dt">Closed</span>, <span class="dt">Stopped</span>, f)</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>  <span class="dt">Move</span> <span class="ot">::</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>    <span class="dt">Moving</span> m <span class="ot">=&gt;</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>    <span class="dt">Sing</span> (<span class="ot">m ::</span> <span class="dt">MoveState</span>) <span class="ot">-&gt;</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>    <span class="dt">Action</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>      '(<span class="dt">Closed</span>, <span class="dt">Stopped</span>, f)</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>      '(<span class="dt">Closed</span>, <span class="dt">NextMoveState</span> m f, <span class="dt">NextFloor</span> m f)</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>  <span class="dt">Stop</span> <span class="ot">::</span></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>    <span class="dt">Action</span></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>      '(<span class="dt">Closed</span>, m, f)</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>      '(<span class="dt">Closed</span>, <span class="dt">Stopped</span>, f)</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>  <span class="dt">Wait</span> <span class="ot">::</span></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>    <span class="dt">Action</span></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>      '(d, m, f)</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>      '(d, <span class="dt">NextMoveState</span> m f, <span class="dt">NextFloor</span> m f)</span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a><span class="ot">  (:&gt;&gt;) ::</span> <span class="dt">Action</span> s1 s2 <span class="ot">-&gt;</span> <span class="dt">Action</span> s2 s3 <span class="ot">-&gt;</span> <span class="dt">Action</span> s1 s3</span></code></pre></div>
+<p><code>Action</code> type is defined as generalized algebraic data type and it includes elevator state before and after the action as type-level tuples.
+Another alternative would be to parametrize <code>Action</code> on 6 separate parameters, but it would be more difficult to manage.</p>
 <p><code>Move</code> constructor takes parameter that should be <code>SUp</code> or <code>SDown</code> (singletons for <code>Up</code> and <code>Down</code>) and type family <code>Moving</code> ensures that <code>SStoped</code> cannot be used here.</p>
 <p>As actions can only be created using one of the available constructors, only allowed actions can be created. For example, the door can only be opened if it is closed and if the elevator is stopped. And the elevator can only start moving only if the door is closed.</p>
 <p><code>Wait</code> action lets the elevator to go up and down, and it will also stop the elevator when it reaches the ground floor.</p>
 <p><code>:&gt;&gt;</code> constructor allows to sequence actions, but only in such way that the final state of the first action is the same as the initial state of the second action. It also defines that the resulting compound action starts from the initial state of the first action and ends with the final state of the second action, in this way ensuring the continuity of state transitions.</p>
 <p>With this type definition we expressed the original requirements in types without any executable code. The code using these types will not need tests to ensure the validity of state transitions, because we can only create allowed actions and we can only chain actions in a way that state changes are sequential, otherwise the code will not compile.</p>
 <p>We can create a small “program” for the elevator to perform a sequence of actions:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a><span class="kw">type</span> <span class="dt">ElevatorProgram</span> f f' <span class="ot">=</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a>  <span class="dt">Action</span> '(<span class="dt">Opened</span>, <span class="dt">Stopped</span>, f) '(<span class="dt">Opened</span>, <span class="dt">Stopped</span>, f')</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true"></a><span class="ot">program ::</span> <span class="dt">ElevatorProgram</span> <span class="dv">0</span> <span class="dv">0</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true"></a>program <span class="ot">=</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true"></a>  <span class="dt">Close</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true"></a>  <span class="op">:&gt;&gt;</span> <span class="dt">Move</span> <span class="dt">SUp</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true"></a>  <span class="op">:&gt;&gt;</span> <span class="dt">Wait</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true"></a>  <span class="op">:&gt;&gt;</span> <span class="dt">Wait</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true"></a>  <span class="op">:&gt;&gt;</span> <span class="dt">Stop</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true"></a>  <span class="op">:&gt;&gt;</span> <span class="dt">Open</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true"></a>  <span class="op">:&gt;&gt;</span> <span class="dt">Close</span></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true"></a>  <span class="op">:&gt;&gt;</span> <span class="dt">Move</span> <span class="dt">SDown</span></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true"></a>  <span class="op">:&gt;&gt;</span> <span class="dt">Wait</span></span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true"></a>  <span class="op">:&gt;&gt;</span> <span class="dt">Wait</span></span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true"></a>  <span class="op">:&gt;&gt;</span> <span class="dt">Stop</span></span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true"></a>  <span class="op">:&gt;&gt;</span> <span class="dt">Open</span></span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="dt">ElevatorProgram</span> f f' <span class="ot">=</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">Action</span> '(<span class="dt">Opened</span>, <span class="dt">Stopped</span>, f) '(<span class="dt">Opened</span>, <span class="dt">Stopped</span>, f')</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="ot">program ::</span> <span class="dt">ElevatorProgram</span> <span class="dv">0</span> <span class="dv">0</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>program <span class="ot">=</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">Close</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="op">:&gt;&gt;</span> <span class="dt">Move</span> <span class="dt">SUp</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="op">:&gt;&gt;</span> <span class="dt">Wait</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="op">:&gt;&gt;</span> <span class="dt">Wait</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="op">:&gt;&gt;</span> <span class="dt">Stop</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  <span class="op">:&gt;&gt;</span> <span class="dt">Open</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  <span class="op">:&gt;&gt;</span> <span class="dt">Close</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>  <span class="op">:&gt;&gt;</span> <span class="dt">Move</span> <span class="dt">SDown</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  <span class="op">:&gt;&gt;</span> <span class="dt">Wait</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  <span class="op">:&gt;&gt;</span> <span class="dt">Wait</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  <span class="op">:&gt;&gt;</span> <span class="dt">Stop</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>  <span class="op">:&gt;&gt;</span> <span class="dt">Open</span></span></code></pre></div>
 <p>This sequence of actions has type <code>Action '(Opened, Stopped, 0) '(Opened, Stopped, 0)</code> - the elevator starts and ends on the ground floor, with the opened door and stopped. If you try to write a program that performs the sequence of actions that is not allowed, it will not compile:</p>
 <pre class="haskell-ignore"><code>badElevator :: ElevatorProgram 0 1
 badElevator =
@@ -209,71 +210,71 @@ badElevator =
 <h2 id="whats-the-point">What’s the point?</h2>
 <p>We have the program, but what can we do with it? It is not code, so we cannot just run it.</p>
 <p>We can interpret this program in different contexts - for that we need to write interpreter. For example, one of the interpreters can be just printing this program to console:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true"></a><span class="ot">printElevator ::</span> <span class="dt">Action</span> s s' <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true"></a>printElevator <span class="dt">Open</span> <span class="ot">=</span> <span class="fu">putStrLn</span> <span class="st">&quot;open&quot;</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true"></a>printElevator <span class="dt">Close</span> <span class="ot">=</span> <span class="fu">putStrLn</span> <span class="st">&quot;close&quot;</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true"></a>printElevator (<span class="dt">Move</span> m) <span class="ot">=</span> <span class="kw">case</span> m <span class="kw">of</span></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true"></a>  <span class="dt">SUp</span> <span class="ot">-&gt;</span> <span class="fu">putStrLn</span> <span class="st">&quot;up&quot;</span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true"></a>  _ <span class="ot">-&gt;</span> <span class="fu">putStrLn</span> <span class="st">&quot;down&quot;</span></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true"></a>printElevator <span class="dt">Stop</span> <span class="ot">=</span> <span class="fu">putStrLn</span> <span class="st">&quot;stop&quot;</span></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true"></a>printElevator <span class="dt">Wait</span> <span class="ot">=</span> <span class="fu">putStrLn</span> <span class="st">&quot;wait&quot;</span></span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true"></a>printElevator (a <span class="op">:&gt;&gt;</span> prog) <span class="ot">=</span> printElevator a <span class="op">&gt;&gt;</span> printElevator prog</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ot">printElevator ::</span> <span class="dt">Action</span> s s' <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>printElevator <span class="dt">Open</span> <span class="ot">=</span> <span class="fu">putStrLn</span> <span class="st">&quot;open&quot;</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>printElevator <span class="dt">Close</span> <span class="ot">=</span> <span class="fu">putStrLn</span> <span class="st">&quot;close&quot;</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>printElevator (<span class="dt">Move</span> m) <span class="ot">=</span> <span class="kw">case</span> m <span class="kw">of</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">SUp</span> <span class="ot">-&gt;</span> <span class="fu">putStrLn</span> <span class="st">&quot;up&quot;</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  _ <span class="ot">-&gt;</span> <span class="fu">putStrLn</span> <span class="st">&quot;down&quot;</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>printElevator <span class="dt">Stop</span> <span class="ot">=</span> <span class="fu">putStrLn</span> <span class="st">&quot;stop&quot;</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>printElevator <span class="dt">Wait</span> <span class="ot">=</span> <span class="fu">putStrLn</span> <span class="st">&quot;wait&quot;</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>printElevator (a <span class="op">:&gt;&gt;</span> prog) <span class="ot">=</span> printElevator a <span class="op">&gt;&gt;</span> printElevator prog</span></code></pre></div>
 <p>The same approach can be used in real code - there could be an interpreter to control the real elevator. But it is now safe, as by defining allowed operations on the type level we ensured that we cannot perform unsafe actions - opening the door while the elevator is moving, or starting to move without closing the door.</p>
 <h2 id="how-to-make-it-interactive">How to make it interactive?</h2>
 <p>In some situations this can be useful and real programs can be written in this way - we achieved the possibility to restrict allowed operations in type system.</p>
 <p>But how can we make this elevator interactive, so it can respond to the passengers’ commands? These commands are just data, so we need a way to move between data and types.</p>
 <p>We will use singletons for the elevator state - they have type <code>Sing (s :: Elevator)</code>. We defined <code>Elevator</code> as a type synonym for the tuple of type <code>(DoorState, MoveState, Nat)</code> and we do not need anything special to use singletons for this type - as we have created singletons for our types <code>DoorState</code> and <code>MoveState</code>, singletons library defines singletons for all standard derived types, including tuples.</p>
 <p>Because we want to create elevator actions at run time, from passenger commands, we will also need the existential wrapper for the typed action:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true"></a><span class="kw">data</span> <span class="dt">SomeAction</span> <span class="kw">where</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true"></a>  <span class="dt">SomeAction</span><span class="ot"> ::</span> <span class="dt">Action</span> s s' <span class="ot">-&gt;</span> <span class="dt">Sing</span> s <span class="ot">-&gt;</span> <span class="dt">Sing</span> s' <span class="ot">-&gt;</span> <span class="dt">SomeAction</span></span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">SomeAction</span> <span class="kw">where</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">SomeAction</span><span class="ot"> ::</span> <span class="dt">Action</span> s s' <span class="ot">-&gt;</span> <span class="dt">Sing</span> s <span class="ot">-&gt;</span> <span class="dt">Sing</span> s' <span class="ot">-&gt;</span> <span class="dt">SomeAction</span></span></code></pre></div>
 <p>The action constructor includes the action itself and its initial and final states, so we can pattern match on them.</p>
 <p>Now if we have the initial state and the action, we can both check that the action is compatible with it and get its final state:</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true"></a><span class="ot">finalState ::</span> <span class="dt">SomeSing</span> <span class="dt">Elevator</span> <span class="ot">-&gt;</span> <span class="dt">SomeAction</span> <span class="ot">-&gt;</span> <span class="dt">Maybe</span> (<span class="dt">SomeSing</span> <span class="dt">Elevator</span>)</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true"></a>finalState (<span class="dt">SomeSing</span> s1) (<span class="dt">SomeAction</span> _ s1' s2) <span class="ot">=</span></span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true"></a>  <span class="kw">case</span> s1 <span class="op">%~</span> s1' <span class="kw">of</span></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true"></a>    <span class="dt">Proved</span> <span class="dt">Refl</span> <span class="ot">-&gt;</span> <span class="dt">Just</span> (<span class="dt">SomeSing</span> s2)</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true"></a>    _ <span class="ot">-&gt;</span> <span class="dt">Nothing</span></span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ot">finalState ::</span> <span class="dt">SomeSing</span> <span class="dt">Elevator</span> <span class="ot">-&gt;</span> <span class="dt">SomeAction</span> <span class="ot">-&gt;</span> <span class="dt">Maybe</span> (<span class="dt">SomeSing</span> <span class="dt">Elevator</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>finalState (<span class="dt">SomeSing</span> s1) (<span class="dt">SomeAction</span> _ s1' s2) <span class="ot">=</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">case</span> s1 <span class="op">%~</span> s1' <span class="kw">of</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">Proved</span> <span class="dt">Refl</span> <span class="ot">-&gt;</span> <span class="dt">Just</span> (<span class="dt">SomeSing</span> s2)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    _ <span class="ot">-&gt;</span> <span class="dt">Nothing</span></span></code></pre></div>
 <p><code>%~</code> compares types of singletons <code>s1</code> and <code>s1'</code> and returns <code>Proved Refl</code> if they are the same. In this case we could have also converted both singletons to their base types and compare using <code>fromSing s1 == fromSing s1'</code> but it will not work in the contexts where type equality should be established, and not only value equality.</p>
 <p>The following function creates the elevator action from the passenger’s commands. We also need to pass the initial state, both to make sure that the action is allowed and also to create actions with specific types, as all constructors are polymorphic:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true"></a><span class="ot">actionFromString ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">SomeSing</span> <span class="dt">Elevator</span> <span class="ot">-&gt;</span> <span class="dt">Maybe</span> <span class="dt">SomeAction</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true"></a>actionFromString name (<span class="dt">SomeSing</span> st) <span class="ot">=</span> action name st</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true"></a>  <span class="kw">where</span></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true"></a><span class="ot">    act ::</span> <span class="dt">Action</span> s s' <span class="ot">-&gt;</span> <span class="dt">Sing</span> s <span class="ot">-&gt;</span> <span class="dt">Sing</span> s' <span class="ot">-&gt;</span> <span class="dt">Maybe</span> <span class="dt">SomeAction</span></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true"></a>    act a s1 s2 <span class="ot">=</span> <span class="dt">Just</span> <span class="op">$</span> <span class="dt">SomeAction</span> a s1 s2</span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true"></a><span class="ot">    action ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">Sing</span> (<span class="ot">s ::</span> <span class="dt">Elevator</span>) <span class="ot">-&gt;</span> <span class="dt">Maybe</span> <span class="dt">SomeAction</span></span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true"></a>    action <span class="st">&quot;open&quot;</span> s<span class="op">@</span>(<span class="dt">STuple3</span> <span class="dt">SClosed</span> <span class="dt">SStopped</span> f) <span class="ot">=</span></span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true"></a>      act <span class="dt">Open</span> s (<span class="dt">STuple3</span> <span class="dt">SOpened</span> <span class="dt">SStopped</span> f)</span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true"></a>    action <span class="st">&quot;close&quot;</span> s<span class="op">@</span>(<span class="dt">STuple3</span> <span class="dt">SOpened</span> <span class="dt">SStopped</span> f) <span class="ot">=</span></span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true"></a>      act <span class="dt">Close</span> s (<span class="dt">STuple3</span> <span class="dt">SClosed</span> <span class="dt">SStopped</span> f)</span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true"></a>    action <span class="st">&quot;up&quot;</span> s<span class="op">@</span>(<span class="dt">STuple3</span> <span class="dt">SClosed</span> <span class="dt">SStopped</span> f) <span class="ot">=</span></span>
-<span id="cb12-12"><a href="#cb12-12" aria-hidden="true"></a>      act (<span class="dt">Move</span> <span class="dt">SUp</span>) s (<span class="dt">STuple3</span> <span class="dt">SClosed</span> <span class="dt">SUp</span> (sNextFloor <span class="dt">SUp</span> f))</span>
-<span id="cb12-13"><a href="#cb12-13" aria-hidden="true"></a>    action <span class="st">&quot;down&quot;</span> s<span class="op">@</span>(<span class="dt">STuple3</span> <span class="dt">SClosed</span> <span class="dt">SStopped</span> f) <span class="ot">=</span></span>
-<span id="cb12-14"><a href="#cb12-14" aria-hidden="true"></a>      act (<span class="dt">Move</span> <span class="dt">SDown</span>) s</span>
-<span id="cb12-15"><a href="#cb12-15" aria-hidden="true"></a>        (<span class="dt">STuple3</span> <span class="dt">SClosed</span> (sNextMoveState <span class="dt">SDown</span> f) (sNextFloor <span class="dt">SDown</span> f))</span>
-<span id="cb12-16"><a href="#cb12-16" aria-hidden="true"></a>    action <span class="st">&quot;stop&quot;</span> s<span class="op">@</span>(<span class="dt">STuple3</span> <span class="dt">SClosed</span> _ f) <span class="ot">=</span></span>
-<span id="cb12-17"><a href="#cb12-17" aria-hidden="true"></a>      act <span class="dt">Stop</span> s (<span class="dt">STuple3</span> <span class="dt">SClosed</span> <span class="dt">SStopped</span> f)</span>
-<span id="cb12-18"><a href="#cb12-18" aria-hidden="true"></a>    action <span class="st">&quot;wait&quot;</span> s<span class="op">@</span>(<span class="dt">STuple3</span> d m f) <span class="ot">=</span></span>
-<span id="cb12-19"><a href="#cb12-19" aria-hidden="true"></a>      act <span class="dt">Wait</span> s (<span class="dt">STuple3</span> d (sNextMoveState m f) (sNextFloor m f))</span>
-<span id="cb12-20"><a href="#cb12-20" aria-hidden="true"></a>    action _ _ <span class="ot">=</span> <span class="dt">Nothing</span></span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ot">actionFromString ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">SomeSing</span> <span class="dt">Elevator</span> <span class="ot">-&gt;</span> <span class="dt">Maybe</span> <span class="dt">SomeAction</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>actionFromString name (<span class="dt">SomeSing</span> st) <span class="ot">=</span> action name st</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">where</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="ot">    act ::</span> <span class="dt">Action</span> s s' <span class="ot">-&gt;</span> <span class="dt">Sing</span> s <span class="ot">-&gt;</span> <span class="dt">Sing</span> s' <span class="ot">-&gt;</span> <span class="dt">Maybe</span> <span class="dt">SomeAction</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    act a s1 s2 <span class="ot">=</span> <span class="dt">Just</span> <span class="op">$</span> <span class="dt">SomeAction</span> a s1 s2</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="ot">    action ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">Sing</span> (<span class="ot">s ::</span> <span class="dt">Elevator</span>) <span class="ot">-&gt;</span> <span class="dt">Maybe</span> <span class="dt">SomeAction</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    action <span class="st">&quot;open&quot;</span> s<span class="op">@</span>(<span class="dt">STuple3</span> <span class="dt">SClosed</span> <span class="dt">SStopped</span> f) <span class="ot">=</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>      act <span class="dt">Open</span> s (<span class="dt">STuple3</span> <span class="dt">SOpened</span> <span class="dt">SStopped</span> f)</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    action <span class="st">&quot;close&quot;</span> s<span class="op">@</span>(<span class="dt">STuple3</span> <span class="dt">SOpened</span> <span class="dt">SStopped</span> f) <span class="ot">=</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>      act <span class="dt">Close</span> s (<span class="dt">STuple3</span> <span class="dt">SClosed</span> <span class="dt">SStopped</span> f)</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    action <span class="st">&quot;up&quot;</span> s<span class="op">@</span>(<span class="dt">STuple3</span> <span class="dt">SClosed</span> <span class="dt">SStopped</span> f) <span class="ot">=</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>      act (<span class="dt">Move</span> <span class="dt">SUp</span>) s (<span class="dt">STuple3</span> <span class="dt">SClosed</span> <span class="dt">SUp</span> (sNextFloor <span class="dt">SUp</span> f))</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    action <span class="st">&quot;down&quot;</span> s<span class="op">@</span>(<span class="dt">STuple3</span> <span class="dt">SClosed</span> <span class="dt">SStopped</span> f) <span class="ot">=</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>      act (<span class="dt">Move</span> <span class="dt">SDown</span>) s</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>        (<span class="dt">STuple3</span> <span class="dt">SClosed</span> (sNextMoveState <span class="dt">SDown</span> f) (sNextFloor <span class="dt">SDown</span> f))</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>    action <span class="st">&quot;stop&quot;</span> s<span class="op">@</span>(<span class="dt">STuple3</span> <span class="dt">SClosed</span> _ f) <span class="ot">=</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>      act <span class="dt">Stop</span> s (<span class="dt">STuple3</span> <span class="dt">SClosed</span> <span class="dt">SStopped</span> f)</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>    action <span class="st">&quot;wait&quot;</span> s<span class="op">@</span>(<span class="dt">STuple3</span> d m f) <span class="ot">=</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>      act <span class="dt">Wait</span> s (<span class="dt">STuple3</span> d (sNextMoveState m f) (sNextFloor m f))</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>    action _ _ <span class="ot">=</span> <span class="dt">Nothing</span></span></code></pre></div>
 <p>We need to specify both initial and final states of the action here, so at first it may seem that we can violate the type restrictions in the Action type and create disallowed action. But if any mistake is made in the function above that could lead to the creation of disallowed command, this function will not compile - try changing any of the state values above.</p>
 <h2 id="lets-run-it">Let’s run it!</h2>
 <p>We will let “the passengers” control the elevator, but if they try to perform the action that is not allowed it will be rejected.</p>
 <p>To print the current elevator state we need a function to convert it to String, so it shows as, e.g., <code>(Opened,Stopped,0)</code>, and not as <code>SomeSing (STuple3 SOpened SStopped (SNat @0))</code>:</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true"></a><span class="ot">show' ::</span> <span class="dt">SomeSing</span> <span class="dt">Elevator</span> <span class="ot">-&gt;</span> <span class="dt">String</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true"></a>show' (<span class="dt">SomeSing</span> s) <span class="ot">=</span> <span class="fu">show</span> (fromSing s)</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="ot">show' ::</span> <span class="dt">SomeSing</span> <span class="dt">Elevator</span> <span class="ot">-&gt;</span> <span class="dt">String</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>show' (<span class="dt">SomeSing</span> s) <span class="ot">=</span> <span class="fu">show</span> (fromSing s)</span></code></pre></div>
 <p>To create an interactive REPL that modifies and prints the elevator state in a loop we will use <a href="https://hackage.haskell.org/package/interact">interact</a> library <a id="interact_text"></a><a href="#interact">*</a>:</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true"></a>main <span class="ot">=</span> <span class="kw">do</span></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true"></a>  <span class="kw">let</span> elevator <span class="ot">=</span> toSing (<span class="dt">Opened</span>, <span class="dt">Stopped</span>, <span class="dv">0</span>)</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true"></a>  <span class="fu">putStrLn</span> <span class="st">&quot;Enter: open, close, up, down, wait or stop&quot;</span></span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true"></a>  <span class="fu">putStrLn</span> <span class="op">$</span> show' elevator</span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true"></a>  replState runElevator elevator</span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true"></a></span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true"></a><span class="ot">runElevator ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">SomeSing</span> <span class="dt">Elevator</span> <span class="ot">-&gt;</span> (<span class="dt">String</span>, <span class="dt">SomeSing</span> <span class="dt">Elevator</span>)</span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true"></a>runElevator act st <span class="ot">=</span></span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true"></a>  <span class="kw">case</span> actionFromString act st <span class="op">&gt;&gt;=</span> finalState st <span class="kw">of</span></span>
-<span id="cb14-11"><a href="#cb14-11" aria-hidden="true"></a>    <span class="dt">Just</span> st' <span class="ot">-&gt;</span> (show' st', st')</span>
-<span id="cb14-12"><a href="#cb14-12" aria-hidden="true"></a>    <span class="dt">Nothing</span> <span class="ot">-&gt;</span> (<span class="st">&quot;action &quot;</span> <span class="op">++</span> act <span class="op">++</span> <span class="st">&quot; not allowed&quot;</span>, st)</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>main <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> elevator <span class="ot">=</span> toSing (<span class="dt">Opened</span>, <span class="dt">Stopped</span>, <span class="dv">0</span>)</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">putStrLn</span> <span class="st">&quot;Enter: open, close, up, down, wait or stop&quot;</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">putStrLn</span> <span class="op">$</span> show' elevator</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  replState runElevator elevator</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="ot">runElevator ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">SomeSing</span> <span class="dt">Elevator</span> <span class="ot">-&gt;</span> (<span class="dt">String</span>, <span class="dt">SomeSing</span> <span class="dt">Elevator</span>)</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>runElevator act st <span class="ot">=</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>  <span class="kw">case</span> actionFromString act st <span class="op">&gt;&gt;=</span> finalState st <span class="kw">of</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">Just</span> st' <span class="ot">-&gt;</span> (show' st', st')</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">Nothing</span> <span class="ot">-&gt;</span> (<span class="st">&quot;action &quot;</span> <span class="op">++</span> act <span class="op">++</span> <span class="st">&quot; not allowed&quot;</span>, st)</span></code></pre></div>
 <p>The “elevator” now support actions “open”, “close”, “up”, “down”, “wait” and “stop” and prints its current state after each action.</p>
 <p>You can run the code right from this post by cloning the <a href="https://github.com/epoberezkin/poberezkin.com">site repo</a> and executing <code>stack run elevator</code>. The source code without the text is available <a href="https://github.com/epoberezkin/elevator-state-machine">here</a>.</p>
 <h2 id="exercises">Exercises</h2>

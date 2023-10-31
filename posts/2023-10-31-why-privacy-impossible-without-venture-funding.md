@@ -2,6 +2,7 @@
 title: "Why privacy becoming a norm requires venture funding"
 author: Evgeny Poberezkin
 tags: privacy, internet
+reddit: r/SimpleXChat/comments/17kv2tn/why_privacy_becoming_a_norm_requires_venture/
 ---
 
 This post is about myths and realities of privacy, business and venture funding. The privacy community is isolated from the rest of people. Unless it changes privacy won't become a norm for technology solutions.

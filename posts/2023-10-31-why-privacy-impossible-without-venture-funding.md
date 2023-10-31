@@ -15,14 +15,14 @@ It enabled our team [^team] to continue working full time, and to pay for a secu
 
 When we announced [this funding][funding], the community response was polarized: while most people were excited about us having the funds to continue the development, some critics stated that _venture funding is incompatible with privacy and the need to make profit creates a conflict of interest with users' privacy_.
 
-I discovered, to my surprise, that in the same way majority of people ignore their privacy, regardless how much it costs them [^costs], many people in privacy community believe some damaging myths – both groups equally preventing privacy from becoming a norm.
+We discovered that in the same way majority of people ignore their privacy, regardless how much it costs them [^costs], many people in privacy community believe some damaging myths – both groups equally preventing privacy from becoming a norm.
 
 
 ## Myths ahout privacy
 
 ### Myth 1: Venture funding is incompatible with privacy
 
-The "story" in support of this myth:
+The narrative in support of this myth:
 
 - a business needs to make profit for the investors,
 - majority of the users won't pay, as they don't care about privacy,

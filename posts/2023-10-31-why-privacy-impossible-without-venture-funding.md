@@ -4,8 +4,6 @@ author: Evgeny Poberezkin
 tags: privacy, internet
 ---
 
-# Why privacy is impossible without venture funding
-
 This post is about myths and realities of privacy, business and venture funding. The privacy community is isolated from the rest of people. Unless it changes privacy won't become a norm for technology solutions.
 
 
@@ -125,16 +123,16 @@ And if you are interested to help us, spread the word, use SimpleX Chat with you
 
 [funding]: https://simplex.chat/blog/20230422-simplex-chat-vision-funding-v5-videos-files-passcode.html
 
-[^costs] based on the publicly available revenue data, using the largest social network must be causing its users to lose a hundred or more of dollars each year each, on average, in the form of higher prices and unnecessary impulse-driven purchases enabled by users' data.
+[^costs]: based on the publicly available revenue data, using the largest social network must be causing its users to lose a hundred or more of dollars each year each, on average, in the form of higher prices and unnecessary impulse-driven purchases enabled by users' data.
 
-[^control] VCs can only influence the companies as the agreement allows, so it depends on the founders what level of control the investors will have. The tale of investors "making" companies do bad things is supported by the founders who accepted a high level of control from investors, and then blaming the investors rather than accepting responsibility.
+[^control]: VCs can only influence the companies as the agreement allows, so it depends on the founders what level of control the investors will have. The tale of investors "making" companies do bad things is supported by the founders who accepted a high level of control from investors, and then blaming the investors rather than accepting responsibility.
 
-[^non-profit] "Non-profit" does not mean that organisation does not need profit to exist - it only means that this organisation won't pay tax on any profit it makes. While it may be beneficial to organization in some cases, in may be harmful in some others, as it creates certain regulatory obligations and limits this organisation freedom. - its status  is a tax status granted for having as the main objective providing value to society. It does not remove the need to pay bills, and having profit makes an organisation sustainable and less dependent on its funders. It also does not guarantee that non-profit actions benefit privacy - for example, an active support of anti-privacy legislation is done by the non-profits that prioritize online safety.
+[^non-profit]: "Non-profit" does not mean that organisation does not need profit to exist - it only means that this organisation won't pay tax on any profit it makes. While it may be beneficial to organization in some cases, in may be harmful in some others, as it creates certain regulatory obligations and limits this organisation freedom. - its status  is a tax status granted for having as the main objective providing value to society. It does not remove the need to pay bills, and having profit makes an organisation sustainable and less dependent on its funders. It also does not guarantee that non-profit actions benefit privacy - for example, an active support of anti-privacy legislation is done by the non-profits that prioritize online safety.
 
 [^users]: Other than Internet technology companies, there is only one other industry that refers to its customers as "users".
 
-[^thorn] For example, [thorn.org](https://thorn.org).
+[^thorn]: For example, [thorn.org](https://thorn.org).
 
 [^chasm]: The concept of "the whole product" is from the book [Crossing the Chasm](https://en.wikipedia.org/wiki/Crossing_the_Chasm) by Geoffrey Moore. While the chasm between early adopters and pragmatic users usually exists only for the business products, it appears that privacy community is also isolated from the rest of people by such chasm.
 
-[^netscape] Netscape evolved the standards created to distribute documents into an application platform, inventing all the foundational pieces of the web technologies we rely on today: SSL for web security, JavaScript to enable client-side applications and cookies to allow user authentication. Even though cookies are often used to track users, hurting their privacy, they are necessary to login to online services.
+[^netscape]: Netscape evolved the standards created to distribute documents into an application platform, inventing all the foundational pieces of the web technologies we rely on today: SSL for web security, JavaScript to enable client-side applications and cookies to allow user authentication. Even though cookies are often used to track users, hurting their privacy, they are necessary to login to online services.

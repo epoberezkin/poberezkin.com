@@ -1,8 +1,8 @@
 #!/usr/bin/env sh
 
 git checkout master
-stack exec my-site clean
-stack exec my-site build
+cabal run my-site -- clean
+cabal run my-site -- build
 git fetch --all
 git checkout -b gh-pages --track origin/gh-pages
 cp -a _site/. .

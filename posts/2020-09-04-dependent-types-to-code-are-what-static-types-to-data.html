@@ -15,8 +15,8 @@
     <meta name="twitter:creator" content="@epoberezkin">
     
       <meta property="og:image" content="https://www.poberezkin.com/images/atm.png">
-      <meta itemprop="image" content="https://www.poberezkin.com/images/atm.png"> 
-      <meta name="twitter:image:src" content="https://www.poberezkin.com/images/atm.png"> 
+      <meta itemprop="image" content="https://www.poberezkin.com/images/atm.png">
+      <meta name="twitter:image:src" content="https://www.poberezkin.com/images/atm.png">
     
     <link rel="alternate" title="Evgeny Poberezkin" type="application/atom+xml" href="../feed.atom">
     <link rel="alternate" title="Evgeny Poberezkin" type="application/rss+xml" href="../feed.rss">
@@ -34,7 +34,7 @@
           <a href="../">Evgeny Poberezkin</a>
         </div>
         <a class="nav" href="../">Blog</a>
-        <a class="nav" href="../tags/privacy.html">#privacy</a>
+        <a class="nav" href="../tags/security.html">#security</a>
         <a class="nav" href="../tags/coding.html">#coding</a>
         <a class="nav" href="../tags/haskell.html">#haskell</a>
         <a class="nav" href="../tags/talk.html">#talk</a>
@@ -56,7 +56,7 @@
     </div>
     <div class="info">
       
-        Tags: <a title="All pages tagged 'haskell'." href="../tags/haskell.html">haskell</a>, <a title="All pages tagged 'executable'." href="../tags/executable.html">executable</a>, <a title="All pages tagged 'coding'." href="../tags/coding.html">coding</a>
+        Tags: <a title="All pages tagged 'haskell'." href="../tags/haskell.html" rel="tag">haskell</a>, <a title="All pages tagged 'executable'." href="../tags/executable.html" rel="tag">executable</a>, <a title="All pages tagged 'coding'." href="../tags/coding.html" rel="tag">coding</a>
       
     </div>
   </section>
@@ -105,10 +105,10 @@
 <p>It defines Command type with two constructors parameterized on the result type that change the type-level state from On to Off and back. The last constructor allows chaining them. It is very much like a monadic bind, but it is parameterized on the toggle state to ensure that the sequence is type-aligned, that is the final type of the first argument is the same as the initial type of the second, and the combined type also matches.</p>
 <p>We can define a functor instance for this type, but because of the parameterization we cannot define Applicative and Monad. Relatively well covered concept that allows to abstract what is needed here is called parameterized monads - I will not go the into details here, please review it in other sources:</p>
 <ul>
-<li><a href="http://okmij.org/ftp/Computation/monads.html#param-monad">Parameterized monads</a> by Oleg Kiselev</li>
+<li><a href="https://okmij.org/ftp/Computation/monads.html#param-monad">Parameterized monads</a> by Oleg Kiselev</li>
 <li><a href="https://leanpub.com/thinking-with-types/">Thinking with Types</a> (Indexed monads chapter) by Sandy Maguire</li>
 </ul>
-<p>Rather than defining the instances of indexed applicative and monad by hand, it is possible to use indexed freer monads - an evolution of <a href="http://okmij.org/ftp/Haskell/extensible/more.pdf">freer monads</a> generalized to indexed monads. It has also been covered in <a href="http://okmij.org/ftp/Haskell/extensible/index.html#extext">Parameterized extensible effects and session types</a> by Oleg Kiselev.</p>
+<p>Rather than defining the instances of indexed applicative and monad by hand, it is possible to use indexed freer monads - an evolution of <a href="https://okmij.org/ftp/Haskell/extensible/more.pdf">freer monads</a> generalized to indexed monads. It has also been covered in <a href="https://okmij.org/ftp/Haskell/extensible/index.html#extext">Parameterized extensible effects and session types</a> by Oleg Kiselev.</p>
 <p>These are all fascinating subjects that probably deserve a separate tutorial-style post, please let me know if you have seen it or if you wrote it.</p>
 <p>Long story short, we will use <a href="https://hackage.haskell.org/package/freer-indexed">freer-indexed</a> package to create functor, indexed applicative (<code>XApplicative</code>) and indexed monad (<code>XMonad</code>) instances of a derived type with just a few lines of code without the need to manually define monadic operations:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Command'</span> (<span class="ot">s ::</span> <span class="dt">ToggleState</span>) (<span class="ot">s' ::</span> <span class="dt">ToggleState</span>)<span class="ot"> res ::</span> <span class="dt">Type</span> <span class="kw">where</span></span>

@@ -15,8 +15,8 @@
     <meta name="twitter:creator" content="@epoberezkin">
     
       <meta property="og:image" content="https://www.poberezkin.com/images/haskell.png">
-      <meta itemprop="image" content="https://www.poberezkin.com/images/haskell.png"> 
-      <meta name="twitter:image:src" content="https://www.poberezkin.com/images/haskell.png"> 
+      <meta itemprop="image" content="https://www.poberezkin.com/images/haskell.png">
+      <meta name="twitter:image:src" content="https://www.poberezkin.com/images/haskell.png">
     
     <link rel="alternate" title="Evgeny Poberezkin" type="application/atom+xml" href="../feed.atom">
     <link rel="alternate" title="Evgeny Poberezkin" type="application/rss+xml" href="../feed.rss">
@@ -34,7 +34,7 @@
           <a href="../">Evgeny Poberezkin</a>
         </div>
         <a class="nav" href="../">Blog</a>
-        <a class="nav" href="../tags/privacy.html">#privacy</a>
+        <a class="nav" href="../tags/security.html">#security</a>
         <a class="nav" href="../tags/coding.html">#coding</a>
         <a class="nav" href="../tags/haskell.html">#haskell</a>
         <a class="nav" href="../tags/talk.html">#talk</a>
@@ -56,7 +56,7 @@
     </div>
     <div class="info">
       
-        Tags: <a title="All pages tagged 'haskell'." href="../tags/haskell.html">haskell</a>, <a title="All pages tagged 'coding'." href="../tags/coding.html">coding</a>, <a title="All pages tagged 'essay'." href="../tags/essay.html">essay</a>
+        Tags: <a title="All pages tagged 'haskell'." href="../tags/haskell.html" rel="tag">haskell</a>, <a title="All pages tagged 'coding'." href="../tags/coding.html" rel="tag">coding</a>, <a title="All pages tagged 'essay'." href="../tags/essay.html" rel="tag">essay</a>
       
     </div>
   </section>
@@ -229,7 +229,7 @@
 <p>For now, you would be much better off investing this time into getting fluent with Monad <a href="http://hackage.haskell.org/package/transformers">transformers</a> and <a href="https://hackage.haskell.org/package/mtl">mtl</a> libraries, and not worry about n<sup>2</sup> composition cost <a href="#fn15" class="footnote-ref" id="fnref15" role="doc-noteref"><sup>15</sup></a>.</p>
 <h2 id="where-to-learn-from">Where to learn from</h2>
 <h3 id="do-not-read-lyah">Do not read LYAH</h3>
-<p><a href="http://learnyouahaskell.com">Learn You a Haskell</a> is branded as “the funkiest way to learn Haskell”, but to me it was the book that killed my interest to Haskell for several years. It has many details but it doesn’t provide a big picture.</p>
+<p><a href="https://learnyouahaskell.github.io">Learn You a Haskell</a> is branded as “the funkiest way to learn Haskell”, but to me it was the book that killed my interest to Haskell for several years. It has many details but it doesn’t provide a big picture.</p>
 <p>If you must read it (e.g. your boss makes you), do it quickly and avoid the most detail-heavy chapters. And once you have read it, do not assume you can write real world Haskell programs - this book does not prepare you for it.</p>
 <h3 id="what-to-read">What to read</h3>
 <p>In addition to the books and posts mentioned before, you could find these books helpful:</p>
@@ -249,10 +249,10 @@
 <ol>
 <li id="fn1"><p>As the measure of engineering productivity we can use the average time to launch a given set of requirements with a fixed size team, and as the cost of ownership - the engineering time required to maintain the application.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn2"><p>It is worth watching <a href="https://www.youtube.com/watch?v=ybSBCVhVWs8">the video by the Aaron Contorer</a>, the chairman of FP Complete, about functional programming, where he tells how Haskell allows to achieve productivity, quality and performance without the need to compromise on any of them.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn3"><p><a href="http://dev.stephendiehl.com/hask/">What I wish I knew when learning Haskell</a> is a great writing by Stephen Diehl that gave me a big picture of what can be done with Haskell - for some time it was my go to reference to find other resources.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p><a href="https://github.com/sdiehl/wiwinwlh">What I wish I knew when learning Haskell</a> is a great writing by Stephen Diehl that gave me a big picture of what can be done with Haskell - for some time it was my go to reference to find other resources.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn4"><p>I did took advantage of Haskell data immutability though, being able to use a dictionary as a key to another dictionary (by value) - in typescript I had to compute its hash.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn5"><p><code>pure</code> and <code>return</code> are the same for <a href="https://hackage.haskell.org/package/base-4.15.0.0/docs/Control-Monad.html#t:Monad">well-behaved monads</a>. <a href="https://www.idris-lang.org">Idris</a> that is very similar to Haskell, with first class dependent types, completely removed <code>return</code> and only has <code>pure</code> - you could do it too in your Haskell code.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn6"><p>A great book on modelling software systems is <a href="https://mitpress.mit.edu/sites/default/files/sicp/index.html">Structure and Interpretation of Computer Programs</a> that is used as MIT course text - you would become a much better programmer if you study it, regardless of the language you use, and it would help you with the functional programming in particular - it uses Lisp.<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>A great book on modelling software systems is <a href="https://mitp-content-server.mit.edu/books/content/sectbyfn/books_pres_0/6515/sicp.zip/index.html">Structure and Interpretation of Computer Programs</a> that is used as MIT course text - you would become a much better programmer if you study it, regardless of the language you use, and it would help you with the functional programming in particular - it uses Lisp.<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn7"><p>“you don’t need to understand how it works to play on it” - it is based on the <a href="https://byorgey.wordpress.com/2009/01/12/abstraction-intuition-and-the-monad-tutorial-fallacy/">earlier post</a> by Brent Yorgey. Some specific monad instances have additional interfaces, but there is a common interface
 to them all. And you can still play on them differently.<a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn8"><p>The actual letters you use for different types do not matter.<a href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>

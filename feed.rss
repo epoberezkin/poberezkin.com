@@ -7,8 +7,93 @@
         <description><![CDATA[Evgeny Poberezkin's blog]]></description>
         <atom:link href="https://www.poberezkin.com/feed.rss" rel="self"
                    type="application/rss+xml" />
-        <lastBuildDate>Tue, 31 Oct 2023 00:00:00 UT</lastBuildDate>
+        <lastBuildDate>Tue, 12 Aug 2025 00:00:00 UT</lastBuildDate>
         <item>
+    <title>MLS: The Naked King of End-to-End Encryption</title>
+    <link>https://www.poberezkin.com/posts/2025-08-12-mls-the-naked-king-of-end-to-end-encryption.html</link>
+    <description><![CDATA[<article>
+  <section class="header">
+    <div class="info">
+      Posted on
+      
+        August 12, 2025
+      
+      
+        by Evgeny Poberezkin
+      
+    </div>
+    <div class="info">
+      
+        Tags: <a title="All pages tagged &#39;security&#39;." href="/tags/security.html" rel="tag">security</a>, <a title="All pages tagged &#39;internet&#39;." href="/tags/internet.html" rel="tag">internet</a>
+      
+    </div>
+  </section>
+  <section>
+    <p>This essay is purposefully provocative. It has no intention to offend anybody. I appreciate that many people worked very hard designing and implementing MLS (Messaging Layer Security), and many of them have a fervent belief that MLS is a necessary technology.</p>
+<p>But the value of the technology is not determined by how much was invested, nor by who supports it. The value of technology comes from effectively solving problems for people. By that metric, many simple technical solutions are more valuable than complex ones.</p>
+<p>The goal of this essay is to revisit the core problems that MLS aims to solve, and consider whether it solves them well enough. And if it does not solve them well enough, then what areas it can be effectively applied to, and what are the alternatives to MLS.</p>
+<h2 id="what-problem-does-mls-aim-to-solve">What Problem Does MLS Aim to Solve?</h2>
+<p>The problem that the cryptographers who designed MLS aimed to solve is end-to-end (E2E) encryption in large groups. E2E encryption, by definition, is a cryptographic solution that protects the content of the messages from the communication providers.</p>
+<p>A simple approach to E2E encryption in large groups would be for all members to agree on a shared key. But the problem of this approach is the cost of key updates. If the group is really large, then every time a member leaves, the remaining members must agree on a new key so that the member who left cannot decrypt the new messages. With a simple approach the cost of agreeing on the group key grows linearly with the group size, and it does not scale well enough.</p>
+<h2 id="what-is-the-proposed-solution">What is the proposed solution?</h2>
+<p>Instead of agreeing on a new key with remaining members, MLS proposes to represent this shared key as a composition of the tree of keys (a “ratchet tree”), where each member contributes a “leaf” (some part of the key). When a member leaves, the remaining members would only need to update a small part of the tree, reducing the cost of an update from <code>O(N)</code> (N is the number of members) to <code>O(log N)</code>.</p>
+<p>While the essence of the approach sounds very simple, practical implementation of this idea is very complex: it involves a key schedule, proposals/commits for group changes, and handling of pre-shared keys (PSKs) for added entropy.</p>
+<h2 id="does-mls-work-for-end-to-end-encryption">Does MLS Work for End-to-End Encryption?</h2>
+<p><em>TL;DR: Yes, if you accept “Trust Me Bro” security model</em>.</p>
+<p>To answer this question, we first need to agree what “to work” means in this context. Let’s start from a rather non-controversial statement: the purpose of E2E encryption is to protect message content from the untrusted communication providers, and to provide effective mechanisms to mitigate the risk of the provider being compromised. So, “to work”, any solution for E2E encryption must satisfy those criteria.</p>
+<p>Let’s look at the Double Ratchet algorithm, for comparison, that is used for E2E encryption in Signal, SimpleX Chat and many other messengers. Does it protect message content from the untrusted provider? Yes, as long as the provider did not perform man-in-the-middle attack <a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> on the key exchange. Does it prevent or mitigate the risk of MITM attack? This is implementation-dependent. Signal allows communication parties to compare security codes to confirm that key exchange was not compromised. SimpleX network servers simply cannot replace the keys, as key agreement requires another channel; in addition, SimpleX also allows comparing security codes, to mitigate the risk that the used channel was compromised. In any case, the Double Ratchet algorithm itself provides the security code that communication parties can compare to confirm the integrity of key exchange. From that we can conclude that the Double Ratchet algorithm is an effective solution for E2E encryption that achieves its goal, and in addition to that it has important security properties: forward secrecy and post-compromise security <a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>.</p>
+<p>Let’s apply the same reasoning to MLS. Does MLS protect message content from the untrusted provider? One of the components of MLS is the “authentication service” — a component that is supplied by a communication provider. The MLS specification states in <a href="https://www.rfc-editor.org/rfc/rfc9420.html#name-authentication-service-comp">part 16.10</a>:</p>
+<blockquote>
+<p>A compromised Authentication Service (AS) can assert a binding for a signature key and identity pair of its choice, thus allowing impersonation of a given user. This ability is sufficient to allow the AS to join new groups as if it were that user. Depending on the application architecture, it may also be sufficient to allow the compromised AS to join the group as an existing user, for instance, as if it were a new device associated with the same user.</p>
+</blockquote>
+<p>The MLS specification explicitly requires trust in the communication provider as a condition for MLS securing the message content from the untrusted provider, which is self-contradictory — <strong>we are required to trust an untrusted party</strong>, which contradicts the purpose of E2E encryption.</p>
+<p>Does the MLS specification offer a practical mechanism for the end users to mitigate the effect of a compromised Authentication Service? No, it does not; it only refers to the approaches based on key transparency, but they are not practical in real-world applications, and, to the best of my knowledge, are not implemented in any of the communication platforms that deployed MLS <a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>.</p>
+<p>Proponents of MLS would argue that it still provides some security, as it protects past messages from the provider being compromised in the future. But this is an invalid argument, as the expectation that users have about E2E encryption is that the provider is cryptographically unable to compromise it without detection, rather than it is only unable to compromise past messages. And if the provider wants to compromise group security, nothing stops it from infiltrating the group via the authentication service it controls at the group inception.</p>
+<h2 id="is-end-to-end-encryption-in-large-groups-a-real-problem">Is End-to-End Encryption in Large Groups a Real Problem?</h2>
+<p>It depends on the definition of “large”, but we are assuming that “large” is any group where simple member broadcast to update keys is inefficient, so we are talking about many thousands of members.</p>
+<p>In practical scenarios, there are two types of such groups:</p>
+<ul>
+<li>groups comprised of the general public, which are not completely public. E.g., they may have some admission criteria. Practically, the content in such groups is impossible to protect beyond a thousand or so members (coincidentally, it is the limit on group size in Signal), as it becomes increasingly easy to join such a group as it grows. So members of such semi-closed/semi-public groups should not have expectations of content security, and MLS does not solve any real problems in this case. At best, such groups can provide participation privacy, but MLS does not provide it <a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a>.</li>
+<li>large enterprise groups. While enterprises must protect their content from the public and from competitors, for every enterprise it is important to retain and to monitor content in their groups, for compliance, knowledge retention, and dispute resolution. Therefore, any E2E encryption would be counter-productive, and instead the enterprise would benefit more from using trusted servers it can control.</li>
+</ul>
+<p>The proponents of MLS would argue that it allows E2E encryption in large federated groups. But this is also an invalid argument, as having multiple Authentication Services increases the risk of one of them being compromised, exposing messages of all users, even those that do not use the compromised provider. Federation also makes it harder to mitigate this risk.</p>
+<p>I am open to being presented with the scenario where E2E encryption (protection from the untrusted provider) in really large groups could be more beneficial than choosing a secure and trusted provider or using servers under the control of the communication parties.</p>
+<h2 id="alternatives-for-medium-sized-groups">Alternatives for Medium-Sized Groups</h2>
+<p>Signal’s approach for groups up to 1000 members is pragmatic and effective: all members agree pairwise states for the Double Ratchet algorithm. This way the cost of agreeing keys is “front-loaded” — each new member must agree on a key with each other member before being able to send messages. When a member leaves, no special action is needed, other than notifying all members about it.</p>
+<p>Does it mean that each member has to encrypt and send a message 1000 times? No, it would be very inefficient. In Signal, each message is encrypted with one small random symmetric key, and then this small key, and not the whole message, is encrypted separately for each member. Then, a message sender packages all encrypted keys and an encrypted message together into a bundle and sends it to the provider, which forwards the message and one of the encrypted keys to each member.</p>
+<p>What is the cost of sending a message with this approach? It depends on the variant of the Double Ratchet, but in any case, it is not more than 100-150kb plus the message size for a group of 1000 members, which is acceptable even on relatively slow internet connections.</p>
+<p>How can the risk of the compromised provider be mitigated? In the case of Signal, there is no simple and effective solution to verify all connections, but some members could verify their pairwise security codes. In the case of a decentralized network, it is sufficient to have several unaffiliated servers re-broadcasting messages in the group to mitigate the risk of one of them being compromised — as long as some of the servers do not collude, they would act as “the second verification channel” to each other. This is the approach considered for medium-sized E2E encrypted groups in SimpleX network.</p>
+<h2 id="who-benefits-from-mls">Who Benefits From MLS?</h2>
+<p>This is the most controversial statement, and the reason to make it is not to upset people, but to be proven wrong.</p>
+<p>To me, it increasingly looks like the only people who benefit from MLS are its designers and implementers, and not the end users, particularly if MLS is being compared to other, simpler and more secure alternatives.</p>
+<p>MLS might have provided some security via its modular design and separation of components — e.g., if providers explained to end users the difference between Delivery Service component, which may be untrusted, and Authentication Service, which must be trusted, and offered a separate choice of providers for these components.</p>
+<p>But without the separation of services on the business level, this separation in design is purely academic rather than practical. Promoting MLS as an effective solution for E2E encryption, without disclosing the requirement for provider trust, is at best misleading, at worst — fraudulent <a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a>.</p>
+<p>MLS, in its current form, hailed by cryptography experts, large technology companies, and tech media as the next generation of secure messaging, almost the king of encryption, appears to be naked. And, like the naked king’s attire, its implementations are quite expensive to create as well.</p>
+<p>I would love to hear the arguments about what problems MLS in its current state solves, and how the requirement for provider trust can be mitigated, as so far I have failed to find any coherent answers to these questions — MLS appears to be a proverbial “solution in search of a problem”.</p>
+<p>Until then, my strong recommendation to the users is to consider “MLS encryption” as ineffective in protecting message content from communication providers, and use communication products that use other, effective solutions for E2E encryption.</p>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>Man-in-the-middle attack is the attack by the intermediary (e.g., a communication provider) on the key exchange, where instead of breaking the encryption, the attacker simply substitutes the key, allowing it to read all messages between members. You can read more about how a MITM attack is performed and how to mitigate it in <a href="https://simplex.chat/blog/20240314-simplex-chat-v5-6-quantum-resistance-signal-double-ratchet-algorithm.html#5-man-in-the-middle-attack-mitigated-by-two-factor-key-exchange">this post</a>.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>Somewhat counterintuitively, perfect-forward secrecy (PFS) protects past messages, sent before the long-term encryption keys were compromised, and post-compromise security (PCS, also known as break-in recovery) protects future messages, sent after long-term keys were compromised.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>A notable exception here is Nostr-based <a href="https://www.whitenoise.chat">WhiteNoise</a> that avoids the need for an authentication service, relying on user identities being their public keys. The main downside of WhiteNoise remains the lack of participation privacy, as relays have knowledge of all groups where the user participates.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>In fact, using MLS is likely to make it harder to provide participation privacy — centralized authentication service requires a network-wide user identity, so providers would know all groups where a user participates.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>IETF’s <a href="https://www.rfc-editor.org/rfc/rfc9750.html#name-authentication-service">ongoing work</a> to find solutions for mitigating a compromised Authentication Service confirms the acceptance of this problem: <em>“The AS is invested with a large amount of trust and the compromise of the AS could allow an adversary to, among other things, impersonate group members.”</em> But this work has not found any robust solutions yet, its recommendations are not mandatory for MLS implementations, and some of them involve substantial complications of already complex specification, without fully removing AS trust requirement.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+  </section>
+  <section class="links">
+    <a href="https://www.reddit.com/submit?url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2025-08-12-mls-the-naked-king-of-end-to-end-encryption.html&title=MLS: The Naked King of End-to-End Encryption" target="_blank"><img src="/images/reddit.png"></a>
+    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=MLS%3A%20The%20Naked%20King%20of%20End-to-End%20Encryption&hashtags=security%2Cinternet&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2025-08-12-mls-the-naked-king-of-end-to-end-encryption.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2025-08-12-mls-the-naked-king-of-end-to-end-encryption.html" target="_blank"><img src="/images/tweet.png"></a>
+    
+  </section>
+</article>
+]]></description>
+    <pubDate>Tue, 12 Aug 2025 00:00:00 UT</pubDate>
+    <guid>https://www.poberezkin.com/posts/2025-08-12-mls-the-naked-king-of-end-to-end-encryption.html</guid>
+    <dc:creator>Evgeny Poberezkin</dc:creator>
+</item>
+<item>
     <title>Why privacy becoming a norm requires venture funding</title>
     <link>https://www.poberezkin.com/posts/2023-10-31-why-privacy-impossible-without-venture-funding.html</link>
     <description><![CDATA[<article>
@@ -24,7 +109,7 @@
     </div>
     <div class="info">
       
-        Tags: <a title="All pages tagged &#39;privacy&#39;." href="/tags/privacy.html">privacy</a>, <a title="All pages tagged &#39;internet&#39;." href="/tags/internet.html">internet</a>
+        Tags: <a title="All pages tagged &#39;security&#39;." href="/tags/security.html" rel="tag">security</a>, <a title="All pages tagged &#39;internet&#39;." href="/tags/internet.html" rel="tag">internet</a>
       
     </div>
   </section>
@@ -100,7 +185,7 @@
   </section>
   <section class="links">
     <a href="https://www.reddit.com/r/SimpleXChat/comments/17kv2tn/why_privacy_becoming_a_norm_requires_venture/" target="_blank"><img src="/images/reddit.png"></a>
-    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Why%20privacy%20becoming%20a%20norm%20requires%20venture%20funding&hashtags=privacy%2Cinternet&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2023-10-31-why-privacy-impossible-without-venture-funding.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2023-10-31-why-privacy-impossible-without-venture-funding.html" target="_blank"><img src="/images/tweet.png"></a>
+    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Why%20privacy%20becoming%20a%20norm%20requires%20venture%20funding&hashtags=security%2Cinternet&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2023-10-31-why-privacy-impossible-without-venture-funding.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2023-10-31-why-privacy-impossible-without-venture-funding.html" target="_blank"><img src="/images/tweet.png"></a>
     
   </section>
 </article>
@@ -125,7 +210,7 @@
     </div>
     <div class="info">
       
-        Tags: <a title="All pages tagged &#39;privacy&#39;." href="/tags/privacy.html">privacy</a>, <a title="All pages tagged &#39;internet&#39;." href="/tags/internet.html">internet</a>
+        Tags: <a title="All pages tagged &#39;security&#39;." href="/tags/security.html" rel="tag">security</a>, <a title="All pages tagged &#39;internet&#39;." href="/tags/internet.html" rel="tag">internet</a>
       
     </div>
   </section>
@@ -178,7 +263,7 @@
   </section>
   <section class="links">
     <a href="https://www.reddit.com/r/SimpleXChat/comments/zf0j3x/why_privacy_needs_to_be_redefined/" target="_blank"><img src="/images/reddit.png"></a>
-    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Why%20privacy%20needs%20to%20be%20redefined&hashtags=privacy%2Cinternet&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2022-12-07-why-privacy-needs-to-be-redefined.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2022-12-07-why-privacy-needs-to-be-redefined.html" target="_blank"><img src="/images/tweet.png"></a>
+    <a href="https://twitter.com/intent/tweet?via=epoberezkin&text=Why%20privacy%20needs%20to%20be%20redefined&hashtags=security%2Cinternet&original_referer=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2022-12-07-why-privacy-needs-to-be-redefined.html&url=https%3A%2F%2Fwww.poberezkin.com%2Fposts%2F2022-12-07-why-privacy-needs-to-be-redefined.html" target="_blank"><img src="/images/tweet.png"></a>
     
   </section>
 </article>
@@ -203,7 +288,7 @@
     </div>
     <div class="info">
       
-        Tags: <a title="All pages tagged &#39;haskell&#39;." href="/tags/haskell.html">haskell</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html">coding</a>, <a title="All pages tagged &#39;essay&#39;." href="/tags/essay.html">essay</a>
+        Tags: <a title="All pages tagged &#39;haskell&#39;." href="/tags/haskell.html" rel="tag">haskell</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html" rel="tag">coding</a>, <a title="All pages tagged &#39;essay&#39;." href="/tags/essay.html" rel="tag">essay</a>
       
     </div>
   </section>
@@ -376,7 +461,7 @@
 <p>For now, you would be much better off investing this time into getting fluent with Monad <a href="http://hackage.haskell.org/package/transformers">transformers</a> and <a href="https://hackage.haskell.org/package/mtl">mtl</a> libraries, and not worry about n<sup>2</sup> composition cost <a href="#fn15" class="footnote-ref" id="fnref15" role="doc-noteref"><sup>15</sup></a>.</p>
 <h2 id="where-to-learn-from">Where to learn from</h2>
 <h3 id="do-not-read-lyah">Do not read LYAH</h3>
-<p><a href="http://learnyouahaskell.com">Learn You a Haskell</a> is branded as “the funkiest way to learn Haskell”, but to me it was the book that killed my interest to Haskell for several years. It has many details but it doesn’t provide a big picture.</p>
+<p><a href="https://learnyouahaskell.github.io">Learn You a Haskell</a> is branded as “the funkiest way to learn Haskell”, but to me it was the book that killed my interest to Haskell for several years. It has many details but it doesn’t provide a big picture.</p>
 <p>If you must read it (e.g. your boss makes you), do it quickly and avoid the most detail-heavy chapters. And once you have read it, do not assume you can write real world Haskell programs - this book does not prepare you for it.</p>
 <h3 id="what-to-read">What to read</h3>
 <p>In addition to the books and posts mentioned before, you could find these books helpful:</p>
@@ -396,10 +481,10 @@
 <ol>
 <li id="fn1"><p>As the measure of engineering productivity we can use the average time to launch a given set of requirements with a fixed size team, and as the cost of ownership - the engineering time required to maintain the application.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn2"><p>It is worth watching <a href="https://www.youtube.com/watch?v=ybSBCVhVWs8">the video by the Aaron Contorer</a>, the chairman of FP Complete, about functional programming, where he tells how Haskell allows to achieve productivity, quality and performance without the need to compromise on any of them.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn3"><p><a href="http://dev.stephendiehl.com/hask/">What I wish I knew when learning Haskell</a> is a great writing by Stephen Diehl that gave me a big picture of what can be done with Haskell - for some time it was my go to reference to find other resources.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p><a href="https://github.com/sdiehl/wiwinwlh">What I wish I knew when learning Haskell</a> is a great writing by Stephen Diehl that gave me a big picture of what can be done with Haskell - for some time it was my go to reference to find other resources.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn4"><p>I did took advantage of Haskell data immutability though, being able to use a dictionary as a key to another dictionary (by value) - in typescript I had to compute its hash.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn5"><p><code>pure</code> and <code>return</code> are the same for <a href="https://hackage.haskell.org/package/base-4.15.0.0/docs/Control-Monad.html#t:Monad">well-behaved monads</a>. <a href="https://www.idris-lang.org">Idris</a> that is very similar to Haskell, with first class dependent types, completely removed <code>return</code> and only has <code>pure</code> - you could do it too in your Haskell code.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn6"><p>A great book on modelling software systems is <a href="https://mitpress.mit.edu/sites/default/files/sicp/index.html">Structure and Interpretation of Computer Programs</a> that is used as MIT course text - you would become a much better programmer if you study it, regardless of the language you use, and it would help you with the functional programming in particular - it uses Lisp.<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>A great book on modelling software systems is <a href="https://mitp-content-server.mit.edu/books/content/sectbyfn/books_pres_0/6515/sicp.zip/index.html">Structure and Interpretation of Computer Programs</a> that is used as MIT course text - you would become a much better programmer if you study it, regardless of the language you use, and it would help you with the functional programming in particular - it uses Lisp.<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn7"><p>“you don’t need to understand how it works to play on it” - it is based on the <a href="https://byorgey.wordpress.com/2009/01/12/abstraction-intuition-and-the-monad-tutorial-fallacy/">earlier post</a> by Brent Yorgey. Some specific monad instances have additional interfaces, but there is a common interface
 to them all. And you can still play on them differently.<a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn8"><p>The actual letters you use for different types do not matter.<a href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
@@ -440,7 +525,7 @@ to them all. And you can still play on them differently.<a href="#fnref7" class=
     </div>
     <div class="info">
       
-        Tags: <a title="All pages tagged &#39;open-source&#39;." href="/tags/open-source.html">open-source</a>, <a title="All pages tagged &#39;javascript&#39;." href="/tags/javascript.html">javascript</a>, <a title="All pages tagged &#39;json-schema&#39;." href="/tags/json-schema.html">json-schema</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html">coding</a>, <a title="All pages tagged &#39;ajv&#39;." href="/tags/ajv.html">ajv</a>
+        Tags: <a title="All pages tagged &#39;open-source&#39;." href="/tags/open-source.html" rel="tag">open-source</a>, <a title="All pages tagged &#39;javascript&#39;." href="/tags/javascript.html" rel="tag">javascript</a>, <a title="All pages tagged &#39;json-schema&#39;." href="/tags/json-schema.html" rel="tag">json-schema</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html" rel="tag">coding</a>, <a title="All pages tagged &#39;ajv&#39;." href="/tags/ajv.html" rel="tag">ajv</a>
       
     </div>
   </section>
@@ -607,7 +692,7 @@ to them all. And you can still play on them differently.<a href="#fnref7" class=
     </div>
     <div class="info">
       
-        Tags: <a title="All pages tagged &#39;open-source&#39;." href="/tags/open-source.html">open-source</a>, <a title="All pages tagged &#39;javascript&#39;." href="/tags/javascript.html">javascript</a>, <a title="All pages tagged &#39;json-schema&#39;." href="/tags/json-schema.html">json-schema</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html">coding</a>, <a title="All pages tagged &#39;ajv&#39;." href="/tags/ajv.html">ajv</a>
+        Tags: <a title="All pages tagged &#39;open-source&#39;." href="/tags/open-source.html" rel="tag">open-source</a>, <a title="All pages tagged &#39;javascript&#39;." href="/tags/javascript.html" rel="tag">javascript</a>, <a title="All pages tagged &#39;json-schema&#39;." href="/tags/json-schema.html" rel="tag">json-schema</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html" rel="tag">coding</a>, <a title="All pages tagged &#39;ajv&#39;." href="/tags/ajv.html" rel="tag">ajv</a>
       
     </div>
   </section>
@@ -713,7 +798,7 @@ to them all. And you can still play on them differently.<a href="#fnref7" class=
     </div>
     <div class="info">
       
-        Tags: <a title="All pages tagged &#39;haskell&#39;." href="/tags/haskell.html">haskell</a>, <a title="All pages tagged &#39;executable&#39;." href="/tags/executable.html">executable</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html">coding</a>
+        Tags: <a title="All pages tagged &#39;haskell&#39;." href="/tags/haskell.html" rel="tag">haskell</a>, <a title="All pages tagged &#39;executable&#39;." href="/tags/executable.html" rel="tag">executable</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html" rel="tag">coding</a>
       
     </div>
   </section>
@@ -762,10 +847,10 @@ to them all. And you can still play on them differently.<a href="#fnref7" class=
 <p>It defines Command type with two constructors parameterized on the result type that change the type-level state from On to Off and back. The last constructor allows chaining them. It is very much like a monadic bind, but it is parameterized on the toggle state to ensure that the sequence is type-aligned, that is the final type of the first argument is the same as the initial type of the second, and the combined type also matches.</p>
 <p>We can define a functor instance for this type, but because of the parameterization we cannot define Applicative and Monad. Relatively well covered concept that allows to abstract what is needed here is called parameterized monads - I will not go the into details here, please review it in other sources:</p>
 <ul>
-<li><a href="http://okmij.org/ftp/Computation/monads.html#param-monad">Parameterized monads</a> by Oleg Kiselev</li>
+<li><a href="https://okmij.org/ftp/Computation/monads.html#param-monad">Parameterized monads</a> by Oleg Kiselev</li>
 <li><a href="https://leanpub.com/thinking-with-types/">Thinking with Types</a> (Indexed monads chapter) by Sandy Maguire</li>
 </ul>
-<p>Rather than defining the instances of indexed applicative and monad by hand, it is possible to use indexed freer monads - an evolution of <a href="http://okmij.org/ftp/Haskell/extensible/more.pdf">freer monads</a> generalized to indexed monads. It has also been covered in <a href="http://okmij.org/ftp/Haskell/extensible/index.html#extext">Parameterized extensible effects and session types</a> by Oleg Kiselev.</p>
+<p>Rather than defining the instances of indexed applicative and monad by hand, it is possible to use indexed freer monads - an evolution of <a href="https://okmij.org/ftp/Haskell/extensible/more.pdf">freer monads</a> generalized to indexed monads. It has also been covered in <a href="https://okmij.org/ftp/Haskell/extensible/index.html#extext">Parameterized extensible effects and session types</a> by Oleg Kiselev.</p>
 <p>These are all fascinating subjects that probably deserve a separate tutorial-style post, please let me know if you have seen it or if you wrote it.</p>
 <p>Long story short, we will use <a href="https://hackage.haskell.org/package/freer-indexed">freer-indexed</a> package to create functor, indexed applicative (<code>XApplicative</code>) and indexed monad (<code>XMonad</code>) instances of a derived type with just a few lines of code without the need to manually define monadic operations:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Command&#39;</span> (<span class="ot">s ::</span> <span class="dt">ToggleState</span>) (<span class="ot">s&#39; ::</span> <span class="dt">ToggleState</span>)<span class="ot"> res ::</span> <span class="dt">Type</span> <span class="kw">where</span></span>
@@ -1003,7 +1088,7 @@ runATM = runXFree runATMCmd</code></pre>
     </div>
     <div class="info">
       
-        Tags: <a title="All pages tagged &#39;open-source&#39;." href="/tags/open-source.html">open-source</a>, <a title="All pages tagged &#39;javascript&#39;." href="/tags/javascript.html">javascript</a>, <a title="All pages tagged &#39;json-schema&#39;." href="/tags/json-schema.html">json-schema</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html">coding</a>, <a title="All pages tagged &#39;ajv&#39;." href="/tags/ajv.html">ajv</a>
+        Tags: <a title="All pages tagged &#39;open-source&#39;." href="/tags/open-source.html" rel="tag">open-source</a>, <a title="All pages tagged &#39;javascript&#39;." href="/tags/javascript.html" rel="tag">javascript</a>, <a title="All pages tagged &#39;json-schema&#39;." href="/tags/json-schema.html" rel="tag">json-schema</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html" rel="tag">coding</a>, <a title="All pages tagged &#39;ajv&#39;." href="/tags/ajv.html" rel="tag">ajv</a>
       
     </div>
   </section>
@@ -1058,7 +1143,7 @@ runATM = runXFree runATMCmd</code></pre>
     </div>
     <div class="info">
       
-        Tags: <a title="All pages tagged &#39;haskell&#39;." href="/tags/haskell.html">haskell</a>, <a title="All pages tagged &#39;executable&#39;." href="/tags/executable.html">executable</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html">coding</a>
+        Tags: <a title="All pages tagged &#39;haskell&#39;." href="/tags/haskell.html" rel="tag">haskell</a>, <a title="All pages tagged &#39;executable&#39;." href="/tags/executable.html" rel="tag">executable</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html" rel="tag">coding</a>
       
     </div>
   </section>
@@ -1333,7 +1418,7 @@ badElevator =
     </div>
     <div class="info">
       
-        Tags: <a title="All pages tagged &#39;haskell&#39;." href="/tags/haskell.html">haskell</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html">coding</a>
+        Tags: <a title="All pages tagged &#39;haskell&#39;." href="/tags/haskell.html" rel="tag">haskell</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html" rel="tag">coding</a>
       
     </div>
   </section>
@@ -1396,7 +1481,7 @@ badElevator =
     </div>
     <div class="info">
       
-        Tags: <a title="All pages tagged &#39;haskell&#39;." href="/tags/haskell.html">haskell</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html">coding</a>
+        Tags: <a title="All pages tagged &#39;haskell&#39;." href="/tags/haskell.html" rel="tag">haskell</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html" rel="tag">coding</a>
       
     </div>
   </section>
@@ -1567,7 +1652,7 @@ orgMembers (Org _ ms) = ms</code></pre>
     </div>
     <div class="info">
       
-        Tags: <a title="All pages tagged &#39;haskell&#39;." href="/tags/haskell.html">haskell</a>, <a title="All pages tagged &#39;executable&#39;." href="/tags/executable.html">executable</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html">coding</a>
+        Tags: <a title="All pages tagged &#39;haskell&#39;." href="/tags/haskell.html" rel="tag">haskell</a>, <a title="All pages tagged &#39;executable&#39;." href="/tags/executable.html" rel="tag">executable</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html" rel="tag">coding</a>
       
     </div>
   </section>
@@ -1595,7 +1680,7 @@ sequence [Just 1, Just 2, Nothing] = Nothing</code></pre>
 <pre class="haskell-ignore"><code>sequence [[1,2],[3,4]] = [[1,3],[1,4],[2,3],[2,4]]
 sequence [[1,2],[3,4], []] = [] -- [] is &quot;undefined&quot; in this context</code></pre>
 <p>Context-dependent semantics of Haskell code makes Haskell more difficult to learn. As the same syntax can mean many different things, achieving fluency requires more effort than with other languages. But it also makes Haskell infinitely more expressive than any other language — you can implement any new semantics you want by adding the new context to the same code. Therefore, while Haskell requires more investment from you than other programming languages, the return on this investment is infinitely higher.</p>
-<p>Some Haskell books (e.g. <a href="http://learnyouahaskell.com/">LYAH</a>) and lectures (e.g <a href="https://www.seas.upenn.edu/~cis194/fall16/index.html">Penn course</a>) do not capture this fundamental distinction well enough. Instead, they focus on the functional nature of Haskell, and present Monad as almost some work-around to allow using pure functions for context-aware computations (IO, State, indeterminism, etc.). Unfortunately, it creates a barrier to entry for the new developers, because when people are asked to make a larger than usual investment to learn yet one more functional programming language with quirky syntax, this investment is difficult to justify without understanding first that Haskell is a more powerful programming paradigm. How many people abandoned Haskell before grasping its power?</p>
+<p>Some Haskell books (e.g. <a href="https://learnyouahaskell.github.io">LYAH</a>) and lectures (e.g <a href="https://www.seas.upenn.edu/~cis194/fall16/index.html">Penn course</a>) do not capture this fundamental distinction well enough. Instead, they focus on the functional nature of Haskell, and present Monad as almost some work-around to allow using pure functions for context-aware computations (IO, State, indeterminism, etc.). Unfortunately, it creates a barrier to entry for the new developers, because when people are asked to make a larger than usual investment to learn yet one more functional programming language with quirky syntax, this investment is difficult to justify without understanding first that Haskell is a more powerful programming paradigm. How many people abandoned Haskell before grasping its power?</p>
 <p>A good book that explains how Haskell is a higher order language is <a href="https://en.wikibooks.org/wiki/Haskell">Haskell</a> in wiki-books. Once you get over “<a href="https://en.wikibooks.org/wiki/Haskell/Understanding_monads">Understanding monads</a>” section, the Haskell advantage should become apparent.</p>
 <p>If you want to see some relatively simple magic you can do with Haskell, watch the talk by <a href="https://github.com/EncodePanda">Paweł Szulc</a> at Lambda World’19, particularly where he <a href="https://www.youtube.com/watch?v=idU7GdlfP9Q&amp;feature=youtu.be&amp;t=625">talks about Servant</a> — the library to create REST APIs in Haskell. Before you write a single line of implementation code, you can get the whole API definition from a single type definition (I am replacing alpacas from Paweł’s farm with users here):</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE DataKinds, DeriveAnyClass, DeriveGeneric, TypeOperators #-}</span></span>
@@ -1704,7 +1789,7 @@ main = (writeFile &quot;docs.md&quot; . markdown) apiDocs</code></pre>
     </div>
     <div class="info">
       
-        Tags: <a title="All pages tagged &#39;talk&#39;." href="/tags/talk.html">talk</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html">coding</a>, <a title="All pages tagged &#39;open-source&#39;." href="/tags/open-source.html">open-source</a>
+        Tags: <a title="All pages tagged &#39;talk&#39;." href="/tags/talk.html" rel="tag">talk</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html" rel="tag">coding</a>, <a title="All pages tagged &#39;open-source&#39;." href="/tags/open-source.html" rel="tag">open-source</a>
       
     </div>
   </section>
@@ -1750,7 +1835,7 @@ main = (writeFile &quot;docs.md&quot; . markdown) apiDocs</code></pre>
     </div>
     <div class="info">
       
-        Tags: <a title="All pages tagged &#39;essay&#39;." href="/tags/essay.html">essay</a>
+        Tags: <a title="All pages tagged &#39;essay&#39;." href="/tags/essay.html" rel="tag">essay</a>
       
     </div>
   </section>
@@ -1791,7 +1876,7 @@ main = (writeFile &quot;docs.md&quot; . markdown) apiDocs</code></pre>
     </div>
     <div class="info">
       
-        Tags: <a title="All pages tagged &#39;talk&#39;." href="/tags/talk.html">talk</a>, <a title="All pages tagged &#39;github&#39;." href="/tags/github.html">github</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html">coding</a>, <a title="All pages tagged &#39;open-source&#39;." href="/tags/open-source.html">open-source</a>
+        Tags: <a title="All pages tagged &#39;talk&#39;." href="/tags/talk.html" rel="tag">talk</a>, <a title="All pages tagged &#39;github&#39;." href="/tags/github.html" rel="tag">github</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html" rel="tag">coding</a>, <a title="All pages tagged &#39;open-source&#39;." href="/tags/open-source.html" rel="tag">open-source</a>
       
     </div>
   </section>
@@ -1842,7 +1927,7 @@ main = (writeFile &quot;docs.md&quot; . markdown) apiDocs</code></pre>
     </div>
     <div class="info">
       
-        Tags: <a title="All pages tagged &#39;talk&#39;." href="/tags/talk.html">talk</a>, <a title="All pages tagged &#39;reactive&#39;." href="/tags/reactive.html">reactive</a>
+        Tags: <a title="All pages tagged &#39;talk&#39;." href="/tags/talk.html" rel="tag">talk</a>, <a title="All pages tagged &#39;reactive&#39;." href="/tags/reactive.html" rel="tag">reactive</a>
       
     </div>
   </section>
@@ -1889,7 +1974,7 @@ main = (writeFile &quot;docs.md&quot; . markdown) apiDocs</code></pre>
     </div>
     <div class="info">
       
-        Tags: <a title="All pages tagged &#39;tests&#39;." href="/tags/tests.html">tests</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html">coding</a>
+        Tags: <a title="All pages tagged &#39;tests&#39;." href="/tags/tests.html" rel="tag">tests</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html" rel="tag">coding</a>
       
     </div>
   </section>
@@ -1984,7 +2069,7 @@ main = (writeFile &quot;docs.md&quot; . markdown) apiDocs</code></pre>
     </div>
     <div class="info">
       
-        Tags: <a title="All pages tagged &#39;javascript&#39;." href="/tags/javascript.html">javascript</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html">coding</a>
+        Tags: <a title="All pages tagged &#39;javascript&#39;." href="/tags/javascript.html" rel="tag">javascript</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html" rel="tag">coding</a>
       
     </div>
   </section>
@@ -2206,7 +2291,7 @@ main = (writeFile &quot;docs.md&quot; . markdown) apiDocs</code></pre>
     </div>
     <div class="info">
       
-        Tags: <a title="All pages tagged &#39;talk&#39;." href="/tags/talk.html">talk</a>, <a title="All pages tagged &#39;javascript&#39;." href="/tags/javascript.html">javascript</a>, <a title="All pages tagged &#39;open-source&#39;." href="/tags/open-source.html">open-source</a>
+        Tags: <a title="All pages tagged &#39;talk&#39;." href="/tags/talk.html" rel="tag">talk</a>, <a title="All pages tagged &#39;javascript&#39;." href="/tags/javascript.html" rel="tag">javascript</a>, <a title="All pages tagged &#39;open-source&#39;." href="/tags/open-source.html" rel="tag">open-source</a>
       
     </div>
   </section>
@@ -2264,7 +2349,7 @@ main = (writeFile &quot;docs.md&quot; . markdown) apiDocs</code></pre>
     </div>
     <div class="info">
       
-        Tags: <a title="All pages tagged &#39;json-schema&#39;." href="/tags/json-schema.html">json-schema</a>, <a title="All pages tagged &#39;tutorial&#39;." href="/tags/tutorial.html">tutorial</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html">coding</a>, <a title="All pages tagged &#39;ajv&#39;." href="/tags/ajv.html">ajv</a>
+        Tags: <a title="All pages tagged &#39;json-schema&#39;." href="/tags/json-schema.html" rel="tag">json-schema</a>, <a title="All pages tagged &#39;tutorial&#39;." href="/tags/tutorial.html" rel="tag">tutorial</a>, <a title="All pages tagged &#39;coding&#39;." href="/tags/coding.html" rel="tag">coding</a>, <a title="All pages tagged &#39;ajv&#39;." href="/tags/ajv.html" rel="tag">ajv</a>
       
     </div>
   </section>
@@ -2306,7 +2391,7 @@ main = (writeFile &quot;docs.md&quot; . markdown) apiDocs</code></pre>
     </div>
     <div class="info">
       
-        Tags: <a title="All pages tagged &#39;talk&#39;." href="/tags/talk.html">talk</a>, <a title="All pages tagged &#39;javascript&#39;." href="/tags/javascript.html">javascript</a>, <a title="All pages tagged &#39;open-source&#39;." href="/tags/open-source.html">open-source</a>, <a title="All pages tagged &#39;reactive&#39;." href="/tags/reactive.html">reactive</a>
+        Tags: <a title="All pages tagged &#39;talk&#39;." href="/tags/talk.html" rel="tag">talk</a>, <a title="All pages tagged &#39;javascript&#39;." href="/tags/javascript.html" rel="tag">javascript</a>, <a title="All pages tagged &#39;open-source&#39;." href="/tags/open-source.html" rel="tag">open-source</a>, <a title="All pages tagged &#39;reactive&#39;." href="/tags/reactive.html" rel="tag">reactive</a>
       
     </div>
   </section>

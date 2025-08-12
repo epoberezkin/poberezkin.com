@@ -1,7 +1,7 @@
 ---
 title: "Why privacy needs to be redefined"
 author: Evgeny Poberezkin
-tags: privacy, internet
+tags: security, internet
 reddit: r/SimpleXChat/comments/zf0j3x/why_privacy_needs_to_be_redefined/
 ---
 
@@ -73,7 +73,7 @@ This is how we should redefine privacy.
 
 [^e2e]: This is a simplification of course, and in modern cryptography the actual key used to decrypt the message is not passed – either only the encryption key is passed (which is different from the decryption key that is kept private – as happens with [RSA cryptography](https://en.wikipedia.org/wiki/RSA_(cryptosystem))) or both sides pass the public parts of their key pairs to each other and compute a shared secret using the received public part and the private part they never sent (it happens this way in [Diffe-Hellman exchange](https://en.wikipedia.org/wiki/Diffie–Hellman_key_exchange)).
 
-[^mitm]: It is referred to as [man-in-the-middle attack](https://en.wikipedia.org/wiki/Man-in-the-middle_attack) (MITM). 
+[^mitm]: It is referred to as [man-in-the-middle attack](https://en.wikipedia.org/wiki/Man-in-the-middle_attack) (MITM).
 
 [^verify]: It allows you to validate that the key was not substituted by comparing the secrets you and your contact have in the app (e.g. by sending it via another channel or by scanning a QR code).
 

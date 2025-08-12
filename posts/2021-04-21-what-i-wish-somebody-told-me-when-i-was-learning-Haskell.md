@@ -284,7 +284,7 @@ For now, you would be much better off investing this time into getting fluent wi
 
 ### Do not read LYAH
 
-[Learn You a Haskell](http://learnyouahaskell.com) is branded as "the funkiest way to learn Haskell", but to me it was the book that killed my interest to Haskell for several years. It has many details but it doesn't provide a big picture.
+[Learn You a Haskell](https://learnyouahaskell.github.io) is branded as "the funkiest way to learn Haskell", but to me it was the book that killed my interest to Haskell for several years. It has many details but it doesn't provide a big picture.
 
 If you must read it (e.g. your boss makes you), do it quickly and avoid the most detail-heavy chapters. And once you have read it, do not assume you can write real world Haskell programs - this book does not prepare you for it.
 
@@ -305,7 +305,7 @@ There are lots of helpful blogs as well, the one by [Alexis King](https://lexi-l
 Finally, [r/haskell](https://www.reddit.com/r/haskell/) subreddit is a very engaged and supportive community of developers at all levels, where you can learn all the news and ask any questions.
 
 ## Learn and use Haskell!
-  
+
 When people get a bit fluent with Haskell they suddenly see not only its rigour and stability, but also its simplicity - which may be surprising for many people, as Haskell is not particularly famous for it.
 
 Many people using Haskell believe that it is simpler to create and maintain reliable, extensible and performant applications in Haskell than in any other language.
@@ -318,15 +318,15 @@ So, when you find yourself unable to maintain your own code after 3 years of wri
 
 [^fpcomplete]: It is worth watching [the video by the Aaron Contorer](https://www.youtube.com/watch?v=ybSBCVhVWs8), the chairman of FP Complete, about functional programming, where he tells how Haskell allows to achieve productivity, quality and performance without the need to compromise on any of them.
 
-[^diehl]: [What I wish I knew when learning Haskell](http://dev.stephendiehl.com/hask/) is a great writing by Stephen Diehl that gave me a big picture of what can be done with Haskell - for some time it was my go to reference to find other resources.
+[^diehl]: [What I wish I knew when learning Haskell](https://github.com/sdiehl/wiwinwlh) is a great writing by Stephen Diehl that gave me a big picture of what can be done with Haskell - for some time it was my go to reference to find other resources.
 
 [^dict]: I did took advantage of Haskell data immutability though, being able to use a dictionary as a key to another dictionary (by value) - in typescript I had to compute its hash.
 
 [^pure]: `pure` and `return` are the same for [well-behaved monads](https://hackage.haskell.org/package/base-4.15.0.0/docs/Control-Monad.html#t:Monad). [Idris](https://www.idris-lang.org) that is very similar to Haskell, with first class dependent types, completely removed `return` and only has `pure` - you could do it too in your Haskell code.
 
-[^sicp]: A great book on modelling software systems is [Structure and Interpretation of Computer Programs](https://mitpress.mit.edu/sites/default/files/sicp/index.html) that is used as MIT course text - you would become a much better programmer if you study it, regardless of the language you use, and it would help you with the functional programming in particular - it uses Lisp.
+[^sicp]: A great book on modelling software systems is [Structure and Interpretation of Computer Programs](https://mitp-content-server.mit.edu/books/content/sectbyfn/books_pres_0/6515/sicp.zip/index.html) that is used as MIT course text - you would become a much better programmer if you study it, regardless of the language you use, and it would help you with the functional programming in particular - it uses Lisp.
 
-[^monad]: "you don't need to understand how it works to play on it" - it is based on the [earlier post](https://byorgey.wordpress.com/2009/01/12/abstraction-intuition-and-the-monad-tutorial-fallacy/) by Brent Yorgey. Some specific monad instances have additional interfaces, but there is a common interface 
+[^monad]: "you don't need to understand how it works to play on it" - it is based on the [earlier post](https://byorgey.wordpress.com/2009/01/12/abstraction-intuition-and-the-monad-tutorial-fallacy/) by Brent Yorgey. Some specific monad instances have additional interfaces, but there is a common interface
 to them all. And you can still play on them differently.
 
 [^letters]: The actual letters you use for different types do not matter.

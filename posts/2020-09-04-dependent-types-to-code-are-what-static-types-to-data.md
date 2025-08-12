@@ -71,10 +71,10 @@ It defines Command type with two constructors parameterized on the result type t
 
 We can define a functor instance for this type, but because of the parameterization we cannot define Applicative and Monad. Relatively well covered concept that allows to abstract what is needed here is called parameterized monads - I will not go the into details here, please review it in other sources:
 
-- [Parameterized monads](http://okmij.org/ftp/Computation/monads.html#param-monad) by Oleg Kiselev
+- [Parameterized monads](https://okmij.org/ftp/Computation/monads.html#param-monad) by Oleg Kiselev
 - [Thinking with Types](https://leanpub.com/thinking-with-types/) (Indexed monads chapter) by Sandy Maguire
 
-Rather than defining the instances of indexed applicative and monad by hand, it is possible to use indexed freer monads - an evolution of [freer monads](http://okmij.org/ftp/Haskell/extensible/more.pdf) generalized to indexed monads. It has also been covered in [Parameterized extensible effects and session types](http://okmij.org/ftp/Haskell/extensible/index.html#extext) by Oleg Kiselev.
+Rather than defining the instances of indexed applicative and monad by hand, it is possible to use indexed freer monads - an evolution of [freer monads](https://okmij.org/ftp/Haskell/extensible/more.pdf) generalized to indexed monads. It has also been covered in [Parameterized extensible effects and session types](https://okmij.org/ftp/Haskell/extensible/index.html#extext) by Oleg Kiselev.
 
 These are all fascinating subjects that probably deserve a separate tutorial-style post, please let me know if you have seen it or if you wrote it.
 

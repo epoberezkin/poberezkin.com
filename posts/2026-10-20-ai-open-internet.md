@@ -8,7 +8,7 @@ They can – but not on the networks we use today.
 
 ## Internet: a market that nobody owned
 
-When the internet began, commerce was not allowed on it[^aup]. In 1992 Congress opened it to other uses[^law], and in 1993 CERN gave up all rights to the web's code[^cern].
+When the internet began, commerce was not allowed on it. In 1992 Congress opened it to other uses, and in 1993 CERN gave up all rights to the web's code[^history].
 
 Anybody could build on it, publish and read, and people found services in catalogs[^catalog].
 
@@ -65,11 +65,7 @@ Tell us what you need from this network, and what is missing: [write to us on Si
 
 ---
 
-[^aup]: The NSFNET backbone policy prohibited its use "for purposes 'not in support of Research and Education'": Leiner, Cerf, Clark et al., [A Brief History of the Internet](https://www.internetsociety.org/internet/history-internet/brief-history-internet/), Internet Society, 1997.
-
-[^law]: Public Law 102-476, October 23, 1992: networks "which may be used substantially for purposes in addition to research and education in the sciences and engineering" ([text](https://www.govinfo.gov/content/pkg/STATUTE-106/pdf/STATUTE-106-Pg2297.pdf)). The NSFNET backbone was decommissioned on [April 30, 1995](https://www.livinginternet.info/doc/merit.edu/phenom.html).
-
-[^cern]: "CERN relinquishes all intellectual property rights to this code, both source and binary," April 30, 1993: [Licensing the Web](https://home.cern/science/computing/the-birth-of-the-web/licensing-web/), CERN.
+[^history]: The NSFNET backbone policy prohibited its use "for purposes 'not in support of Research and Education'" ([A Brief History of the Internet](https://www.internetsociety.org/internet/history-internet/brief-history-internet/)). Public Law 102-476 of October 23, 1992 allowed networks to be used "substantially for purposes in addition to research and education" ([text](https://www.govinfo.gov/content/pkg/STATUTE-106/pdf/STATUTE-106-Pg2297.pdf)). On April 30, 1993, CERN declared: "CERN relinquishes all intellectual property rights to this code" ([Licensing the Web](https://home.cern/science/computing/the-birth-of-the-web/licensing-web/)).
 
 [^catalog]: The best known was The Whole Internet User's Guide & Catalog, published by Tim O'Reilly's company in 1992; it sold more than a million copies ([Brian Erwin](https://www.oreilly.com/content/monty-python-and-the-dawn-of-internet-marketing/), O'Reilly, 2016). In 1993 the company launched GNN – in O'Reilly's words, "the first commercial website" ([opening remarks at Bellagio](https://ai-disclosures.org/assets/bellagio/Tim-OReilly-Opening-Remarks-Bellagio-2026.pdf), April 28, 2026).
 

@@ -50,13 +50,13 @@ A market stays open only while three conditions hold:
 
 We have been building SimpleX since 2020 for private communication between people. It is the only messaging network without any user identifiers[^simplex]: nobody can contact you, or pretend to be somebody you know, unless you give them a link. Over 600,000 people use it every month.
 
-SimpleX can enable an open market for agents. Sellers can publish their addresses and channels under SimpleX names that only they control[^names]. Buyers' agents can read these channels unseen[^channels] and contact each seller from a throwaway profile with a hidden IP address. And nobody sits in between, including us[^consortium]: the servers relay encrypted messages without knowing who sends them to whom.
+SimpleX can enable an open market for agents. Sellers publish their addresses and channels under SimpleX names that only they control[^names]. Buyers' agents read these channels unseen[^channels] and contact each seller from a throwaway profile with a hidden IP address. And nobody sits in between, including us[^consortium]: the servers relay encrypted messages without knowing who sends them to whom.
 
-Businesses already support their customers on SimpleX. Test names work now, and `.simplex` names go [on sale on December 12, 2026](https://simplex.domains/). We have just released an MCP server[^mcp] that connects any agent to SimpleX, with its owner approving its connections and messages in the app, and published open specifications for websites and agents[^specs].
+Businesses already support their customers on SimpleX. Test names work now, and `.simplex` names go [on sale on December 12, 2026](https://simplex.domains/). We have just released an MCP server[^mcp] that connects any agent to SimpleX, and published open specifications for websites and agents[^specs].
 
 ## What the market can become
 
-On this network, the market can open again. Sellers publish offers under their own names. A buyer's agent reads thousands of them unseen, asks the best sellers privately, and buys with no platform taking a cut. To get there, we are building:
+On this network, the market can open again: a buyer's agent compares thousands of offers, asks the best sellers privately, and buys with no platform taking a cut. To get there, we are building:
 
 - catalogs of sellers on SimpleX names, curated by people and AI-powered services;
 - agents calling each other's tools with a single request over SimpleX, without creating a conversation;

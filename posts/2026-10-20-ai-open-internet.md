@@ -1,5 +1,5 @@
 ---
-title: "Can AI Agents Give Us The Internet Back?"
+title: "Can AI Agents Give Us the Internet Back?"
 author: Evgeny Poberezkin
 tags: ai, internet
 ---
@@ -8,9 +8,9 @@ They can – but not on the networks we use today.
 
 ## Internet: a market that nobody owned
 
-When the internet began, commerce was not allowed on it. The NSFNET backbone policy prohibited its use "for purposes 'not in support of Research and Education'"[^aup]. An act of Congress let it be used for other purposes in 1992[^law], and in April 1993 CERN gave up all rights to the web's code[^cern], so that anybody could build on it.
+When the internet began, commerce was not allowed on it. The NSFNET backbone policy prohibited its use "for purposes 'not in support of Research and Education'"[^aup]. An act of Congress let the internet be used for other purposes in 1992[^law], and in April 1993 CERN gave up all rights to the web's code[^cern], so that anybody could build on it.
 
-What followed was a market that nobody owned. Anybody could publish and read, and people found services in catalogues[^catalog].
+Anybody could publish and read, and people found services in catalogues[^catalog].
 
 ## How we lost it to big tech
 
@@ -34,9 +34,7 @@ For agents to bring back an open market, three things must hold:
 2. Buyers can ask without being identified and profiled.
 3. Nobody sits in between to watch or tax the deal.
 
-Three solutions are proposed today, and each of them fails at least one of these conditions.
-
-## Proposed solutions
+## Proposed solutions, and why they don't work
 
 **A public square.** Sruly Rosenblat, Ilan Strauss and Tim O'Reilly propose a public space where agents broadcast their requests, and sellers' agents answer[^square]. But a request tells who wants what, when and for how much – it is the most private part of commerce, and broadcasting makes it public. The authors list privacy loss among the risks themselves. It should be the opposite: offers are public, and requests are private.
 
@@ -46,19 +44,20 @@ Three solutions are proposed today, and each of them fails at least one of these
 
 ## What we are building instead
 
-We have been building SimpleX since 2020 as a network for private communication between people[^start]. It is the only messaging network without any user identifiers – no phone numbers, usernames, account IDs or even random IDs[^simplex]. Nobody can contact you, or pretend to be somebody you know, unless you gave them a link. The app was downloaded more than 3 million times, and over 600,000 people use it every month[^users].
+We have been building SimpleX since 2020 as a network for private communication between people. It is the only messaging network without any user identifiers – no phone numbers, usernames, account IDs or even random IDs[^simplex]. Nobody can contact you, or pretend to be somebody you know, unless you gave them a link. The app was downloaded more than 3 million times, and over 600,000 people use it every month.
 
 The same design turns out to be what an open market for agents needs.
 
-Sellers can be found and trusted, because they publish a contact address and a channel under a SimpleX name that only they control[^names], and their websites can point agents to these addresses[^discovery].
+Sellers can be found and trusted, because they publish a contact address and a channel under a SimpleX name that only they control[^names], and their websites can point agents to these addresses.
 
 Buyers can ask without being identified. A buyer's agent reads sellers' channels without being seen[^channels], and it contacts each seller with a new random profile – a private two-way conversation that works like a throwaway account, while private message routing hides its IP address from the seller.
 
 And nobody sits in between. SimpleX needs no accounts, and its servers relay encrypted messages without knowing who sends them to whom, so they cannot see a deal, let alone tax it. That includes us: SimpleX Chat licensed the network protocols to the SimpleX Network Consortium[^consortium].
 
-Businesses already use SimpleX channels and business addresses, and the directory lists public groups and channels. Test names work now, and `.simplex` names go on sale on 12 December 2026[^sale]. We have just released an MCP server that lets any agent join SimpleX conversations, with its owner approving each connection and message in the app[^mcp], and published open specifications for websites to publish their SimpleX addresses and for agents to call each other's tools[^protocols].
+Businesses already use SimpleX channels and business addresses, and the directory lists public groups and channels. Test names work now, and `.simplex` names go [on sale on 12 December 2026](https://simplex.domains/). We have just released an MCP server[^mcp] that lets any agent join SimpleX conversations, with its owner approving each connection and message in the app, and published open specifications for websites to publish their SimpleX addresses and for agents to call each other's tools[^specs].
 
 What is coming next:
+
 - catalogues of sellers on SimpleX names, curated by people and by LLMs;
 - agents calling each other's tools with a single request over SimpleX, without creating a conversation;
 - custom interfaces inside chats; and
@@ -66,7 +65,7 @@ What is coming next:
 
 ## Join us and own it
 
-Businesses can already publish a channel and a contact on SimpleX, and agent builders can connect their agents today. And this time, the people who use the network can own a part of it: SimpleX Chat is raising a community round on Wefunder[^wefunder].
+Tell us what you need from this network, and what is missing: [write to us on SimpleX](https://smp6.simplex.im/a#lrdvu2d8A1GumSmoKb2krQmtKhWXq-tyGpHuM7aMwsw). And so that its users can own a part of it, SimpleX Chat is raising a [community round on Wefunder](https://wefunder.com/simplex.chat?utm_source=blog).
 
 ---
 
@@ -86,24 +85,14 @@ Businesses can already publish a channel and a contact on SimpleX, and agent bui
 
 [^ucp]: [Storefront MCP](https://shopify.dev/docs/agents/catalog/storefront-mcp), Shopify: every request includes an agent profile (`meta.ucp-agent.profile`).
 
-[^start]: [SimpleX Chat](https://simplex.chat/blog/20201022-simplex-chat.html), 22 October 2020.
-
-[^simplex]: [How SimpleX works](https://simplex.chat/docs/simplex.html).
-
-[^users]: [SimpleX Chat on Wefunder](https://simplex.chat/wefunder.md), October 2026.
+[^simplex]: Instead of identifying users, SimpleX assigns random identifiers to each connection – separate ones for sending and receiving – so only the users know who they talk to: [How SimpleX works](https://simplex.chat/docs/simplex.html).
 
 [^names]: [SimpleX public names](https://simplex.chat/blog/20260722-simplex-public-names.html): "Only you control the name with the key in your wallet".
 
-[^discovery]: [Publishing SimpleX addresses on websites](https://github.com/simplex-chat/simplex-chat/blob/stable/docs/protocol/web-discovery.md).
-
 [^channels]: [SimpleX channels](https://simplex.chat/blog/20260430-simplex-channels-v6-5-consortium-crowdfunding-freedom-of-speech.html): "Anybody can join a public channel via its link and see what is sent, but not who sent it, and not who else is reading."
 
-[^sale]: [simplex.domains](https://simplex.domains/).
+[^mcp]: Start an agent with `npx -y @simplex-chat/mcp serve my-agent` and join its chat in the SimpleX app: the agent asks there before it connects to anybody or sends a message, and you approve with one tap. It works with Claude Code now: [@simplex-chat/mcp](https://www.npmjs.com/package/@simplex-chat/mcp).
 
-[^mcp]: [@simplex-chat/mcp](https://www.npmjs.com/package/@simplex-chat/mcp).
-
-[^protocols]: [Publishing SimpleX addresses on websites](https://github.com/simplex-chat/simplex-chat/blob/stable/docs/protocol/web-discovery.md) and [Agent protocols over SimpleX](https://github.com/simplex-chat/simplex-chat/blob/stable/docs/protocol/agent-protocols.md).
+[^specs]: A website marks its SimpleX addresses with the `simplex` link relation and lists them in `/.well-known/simplex.json` ([Publishing SimpleX addresses on websites](https://github.com/simplex-chat/simplex-chat/blob/stable/docs/protocol/web-discovery.md)). Agents call each other's tools with ordinary MCP messages, sent in a chat with `/_call` or as a single request ([Agent protocols over SimpleX](https://github.com/simplex-chat/simplex-chat/blob/stable/docs/protocol/agent-protocols.md)).
 
 [^consortium]: The Consortium is a perpetual and irrevocable agreement between the non-profit SimpleX Network Foundation and SimpleX Chat that governs the protocols and their licensing, and the protocol governance is moving to it. Once the power over the protocols moves away from the company, it cannot move back: [SimpleX Channels, SimpleX Network Consortium and Community Crowdfunding](https://simplex.chat/blog/20260430-simplex-channels-v6-5-consortium-crowdfunding-freedom-of-speech.html).
-
-[^wefunder]: [wefunder.com/simplex.chat](https://wefunder.com/simplex.chat?utm_source=blog).

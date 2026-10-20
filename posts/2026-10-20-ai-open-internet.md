@@ -1,5 +1,5 @@
 ---
-title: "AI Can Reopen the Internet"
+title: "How AI Agents Can Give Us the Internet Back"
 author: Evgeny Poberezkin
 tags: ai, internet
 ---
@@ -18,19 +18,21 @@ The market became a few walled gardens. Their owners decide who gets found, see 
 
 ## AI changes the game
 
-AI reverses all three. Catalogues can scale again, as LLMs can curate them and search them. Search indices can become a public good, because data is now cheap. And creating software costs next to nothing, so anybody can build a service.
+AI reverses all three. Catalogues can scale again, because LLMs can curate and search them. Search indices can become a public good, because data is now cheap. And creating software costs next to nothing, so anybody can build a service.
 
-Agents also make buying cheaper, safer and more convenient. An agent can compare a thousand times more offers than a person, without an aggregator in the middle that skews the comparison to whoever pays it – LLMs make aggregators unnecessary, as they aggregate offers themselves, cheaply. An agent can protect its owner from manipulation. And everybody can have a concierge.
+Agents also make buying cheaper, safer and more convenient. An agent can compare a thousand times more offers than a person can, and it needs no aggregator to do it – it aggregates offers itself, cheaply, without anybody in the middle skewing the comparison towards whoever pays. It can protect its owner from manipulation, and it gives everybody what only a few could afford before – a personal concierge.
 
 But AI also breaks trust in the networks we use to reach each other. It can clone a voice and a face, and phone numbers and email addresses are easy to spoof. Anybody who has your number or email can target you, or pretend to be somebody you know – and an agent can be deceived the same way.
 
 ## What has to be true
 
-For this opportunity to become an open market again, three things must hold:
+For agents to bring back an open market, three things must hold:
 
 1. Sellers can be found and trusted.
 2. Buyers can ask without being identified and profiled.
 3. Nobody sits in between to watch or tax the deal.
+
+Three solutions are proposed today, and each of them fails at least one of these conditions.
 
 ## Proposed solutions
 
@@ -42,23 +44,25 @@ For this opportunity to become an open market again, three things must hold:
 
 ## What we are building instead
 
-SimpleX is the only messaging network without any user identifiers – no phone numbers, usernames, account IDs or even random IDs[^simplex]. Nobody can contact you, or pretend to be somebody you know, unless you gave them a link. The app was downloaded more than 3 million times, and over 600,000 people use it every month[^users].
+We have been building SimpleX since 2020 as a network for private communication between people[^start]. It is the only messaging network without any user identifiers – no phone numbers, usernames, account IDs or even random IDs[^simplex]. Nobody can contact you, or pretend to be somebody you know, unless you gave them a link. The app was downloaded more than 3 million times, and over 600,000 people use it every month[^users].
 
-For agents, SimpleX meets all three conditions:
+The same design turns out to be what an open market for agents needs.
 
-1. Sellers publish a contact address and a channel under SimpleX names that only their owners control[^names], and websites can mark these addresses for agents[^discovery].
-2. A buyer's agent reads sellers' channels unseen[^channels], and contacts each seller with a new random profile – a private two-way channel with that seller, effectively a throwaway account. Private message routing hides its IP address from the seller.
-3. Nobody sits in between: SimpleX needs no accounts, and its servers relay encrypted messages without knowing who sends them to whom.
+Sellers can be found and trusted, because they publish a contact address and a channel under a SimpleX name that only they control[^names], and their websites can point agents to these addresses[^discovery].
 
-Already working: channels, business addresses and the directory; test names, with `.simplex` names on sale from 12 December 2026[^sale]; an MCP server that connects any agent to SimpleX conversations, with its owner approving each connection and message in the app[^mcp]; and open specifications for websites to publish their SimpleX addresses and for agents to call each other's tools over SimpleX[^protocols].
+Buyers can ask without being identified. A buyer's agent reads sellers' channels without being seen[^channels], and it contacts each seller with a new random profile – a private two-way conversation that works like a throwaway account, while private message routing hides its IP address from the seller.
 
-Next: catalogues of sellers on SimpleX names, curated by people and LLMs; agents calling each other's tools with a single request and response, without a conversation; custom interfaces inside chats; and names operated by the SimpleX Network Consortium[^consortium], not by one company.
+And nobody sits in between. SimpleX needs no accounts, and its servers relay encrypted messages without knowing who sends them to whom, so they cannot see a deal, let alone tax it.
 
-If another network passes all three tests, I would like to know which.
+Much of this already works. Businesses use SimpleX channels and business addresses, and the directory lists public groups and channels. Test names work now, and `.simplex` names go on sale on 12 December 2026[^sale]. We have just released an MCP server that lets any agent join SimpleX conversations, with its owner approving each connection and message in the app[^mcp], and published open specifications for websites to publish their SimpleX addresses and for agents to call each other's tools[^protocols].
+
+Over the next years we plan to build the rest: catalogues of sellers on SimpleX names, curated by people and by LLMs; agents calling each other's tools with a single request, without a conversation; custom interfaces inside chats; and the transfer of names to the SimpleX Network Consortium[^consortium], so that no single company, including ours, operates them.
+
+I do not know of another network that passes all three tests. If you do, I would like to hear about it.
 
 ## Join us, own it
 
-Businesses can publish a channel and a contact on SimpleX today, and agent builders can connect their agents. To own a part of the network where agents will trade, invest in SimpleX Chat's community round on Wefunder[^wefunder].
+Businesses can already publish a channel and a contact on SimpleX, and agent builders can connect their agents today. And this time, the people who use the network can own a part of it: SimpleX Chat is raising a community round on Wefunder[^wefunder].
 
 ---
 
@@ -77,6 +81,8 @@ Businesses can publish a channel and a contact on SimpleX today, and agent build
 [^meta]: "more than 1 million businesses using them to talk to their customers or complete sales every week": Meta, [Q2 2026 prepared remarks](https://s21.q4cdn.com/399680738/files/doc_financials/2026/q2/META-Q2-2026-Prepared-Remarks.pdf), 29 July 2026.
 
 [^ucp]: [Storefront MCP](https://shopify.dev/docs/agents/catalog/storefront-mcp), Shopify: every request includes an agent profile (`meta.ucp-agent.profile`).
+
+[^start]: [SimpleX Chat](https://simplex.chat/blog/20201022-simplex-chat.html), 22 October 2020.
 
 [^simplex]: [How SimpleX works](https://simplex.chat/docs/simplex.html).
 

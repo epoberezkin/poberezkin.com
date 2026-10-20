@@ -14,7 +14,7 @@ Anybody could build on it, publish and read, and people found services in catalo
 
 ## How we lost it to big tech
 
-Catalogs did not scale: people curated them manually, and the web grew too fast for that to work. Search replaced them, and a few companies came to own it: they fill the top results with paid placements, which people click even when they are more expensive or worse rated[^clicks]. And software was expensive, so only large companies could afford to build the services people used.
+Catalogs did not scale: people curated them manually, and the web grew too fast for that to work. Search replaced them, and a few companies came to own it: they fill the top results with paid placements, which people click even when the products are more expensive or worse rated[^clicks]. And software was expensive, so only large companies could afford to build the services people used.
 
 The market became a few walled gardens. Their owners decide who gets found and charge for it, see every buyer and take a cut of the deals.
 
@@ -34,15 +34,15 @@ But AI also breaks trust in the networks we use. It can clone a voice and a face
 
 A market stays open only while three things hold:
 
-1. **Sellers can be found and trusted.** An agent can buy only from a seller it can find, under a name that stays the same. When anybody can be faked, agents without such names will buy from impostors.
+1. **Sellers can be found and trusted.** When anybody can be faked, a seller's name has to stay the same, or agents will buy from impostors.
 2. **Buyers can ask without being identified.** A request tells who wants what, when and for how much. Whoever learns that can raise the price for the buyer who needs it most.
-3. **Nobody sits in between.** Whoever sits in between decides who gets found and takes a cut of every deal – this is how the open market closed last time.
+3. **Nobody sits in between.** A middleman decides who gets found and takes a cut of every deal – this is how the open market closed last time.
 
 ## Why today's proposals fail
 
 **A public square.** Sruly Rosenblat, Ilan Strauss and Tim O'Reilly propose a public space where agents broadcast their requests, and sellers' agents answer[^square]. But broadcasting makes every request public, so buyers can no longer ask without being identified. The authors list privacy loss among the risks themselves. It should be the opposite: offers are public, and requests are private.
 
-**Platforms.** We saw what happens when a platform owns the market, and agents on platforms change nothing: the platform still decides who gets found, sees every buyer and takes its cut. Meta's business agents already serve customers inside WhatsApp and Messenger[^meta].
+**Platforms.** We saw what happens when a platform owns the market, and agents on platforms change nothing: the platform still decides who gets found, sees every buyer and takes its cut. Meta's business agents, for example, already serve customers inside WhatsApp and Messenger[^meta].
 
 **Websites with MCP.** An agent can call a seller's website directly, but every request shows its IP address, and to get a reply later it needs an account – a registration that is hard for an agent, and that identifies the buyer. And it still finds sellers through search that big tech owns.
 
@@ -50,7 +50,7 @@ A market stays open only while three things hold:
 
 We have been building SimpleX since 2020 for private communication between people. It is the only messaging network without any user identifiers[^simplex]: nobody can contact you, or pretend to be somebody you know, unless you give them a link. Over 600,000 people use it every month.
 
-The same design is what an open market for agents needs. Sellers can publish their addresses and channels under SimpleX names that only they control[^names]. Buyers' agents can read these channels unseen[^channels] and contact each seller with a new random profile and a hidden IP address – a throwaway account for one conversation. And nobody sits in between: the servers relay encrypted messages without knowing who sends them to whom, and SimpleX Chat licensed the network protocols to the SimpleX Network Consortium[^consortium].
+The same design is what an open market for agents needs. Sellers can publish their addresses and channels under SimpleX names that only they control[^names]. Buyers' agents can read these channels unseen[^channels] and contact each seller with a new random profile and a hidden IP address – a throwaway account for one conversation. And nobody sits in between: the servers relay encrypted messages without knowing who sends them to whom – and that includes us: SimpleX Chat licensed the network protocols to the SimpleX Network Consortium[^consortium].
 
 Businesses already support their customers on SimpleX. Test names work now, and `.simplex` names go [on sale on December 12, 2026](https://simplex.domains/). We have just released an MCP server[^mcp] that connects any agent to SimpleX, with its owner approving its connections and messages in the app, and published open specifications for websites and agents[^specs].
 

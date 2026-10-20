@@ -40,7 +40,7 @@ A market stays open only while three conditions hold:
 
 ## Why today's solutions fail
 
-**Platforms.** We saw what happens when a platform owns the market, and agents on platforms change nothing: the platform still decides who gets found, sees every buyer and takes its cut. Meta's business agents, for example, already sell inside WhatsApp and Messenger[^meta], where Meta knows every buyer.
+**Platforms.** We saw what happens when a platform owns the market, and agents on platforms change nothing: the platform still decides who gets found, sees every buyer and takes its cut. Meta's business agents, for example, already sell inside WhatsApp and Messenger[^meta], where Meta knows who buys what.
 
 **Websites with MCP services.** An agent can call a seller's website directly, but every request shows its IP address, and to get a reply later it needs an account – a registration that is hard for an agent, and that identifies the buyer. And it still finds sellers through search that big tech owns.
 
@@ -56,7 +56,7 @@ Businesses already support their customers on SimpleX. Test names work now, and 
 
 ## What the market can become
 
-On this network, the market can open again. Sellers publish offers under names nobody can take away, in catalogs that AI-powered services curate and search. A buyer's agent reads thousands of them unseen, asks the best sellers privately, and buys with no platform taking a cut. To get there, we are building:
+On this network, the market can open again. Sellers publish offers under their own names. A buyer's agent reads thousands of them unseen, asks the best sellers privately, and buys with no platform taking a cut. To get there, we are building:
 
 - catalogs of sellers on SimpleX names, curated by people and AI-powered services;
 - agents calling each other's tools with a single request over SimpleX, without creating a conversation;

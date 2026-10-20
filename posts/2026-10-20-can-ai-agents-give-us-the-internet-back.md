@@ -40,7 +40,7 @@ A market stays open only while three conditions hold:
 
 ## Why today's solutions fail
 
-**Platforms.** We saw what happens when a platform owns the market, and agents on platforms change nothing: the platform still decides who gets found, sees every buyer and takes its cut. Meta's business agents, for example, already sell inside WhatsApp and Messenger[^meta], where Meta knows who buys what.
+**Platforms.** We saw what happens when a platform owns the market, and agents change nothing: the platform still decides who gets found, sees every buyer and takes its cut. Meta's business agents, for example, already sell inside WhatsApp and Messenger[^meta], where Meta knows who buys what.
 
 **Websites with MCP services.** An agent can call a seller's website directly, but every request shows its IP address, and to get a reply later it needs an account – a registration that is hard for an agent, and that identifies the buyer. And it still finds sellers through search that big tech owns.
 

@@ -20,7 +20,7 @@ The market became a few walled gardens. Their owners decide who gets found and c
 
 ## AI changes the game
 
-AI can solve the three problems that closed the Internet market:
+AI can solve the three problems that closed the internet market:
 
 - catalogs can scale again, because AI-powered services can curate and search them;
 - search indices can become a public good, because data is now cheap;
@@ -67,7 +67,7 @@ On this network, the market can open again: a buyer's agent compares thousands o
 
 Whatever you create and build on SimpleX – a community, a channel, a service or an agent – is yours. Tell us what you need from the network, and what is missing: [write to us on SimpleX](https://smp6.simplex.im/a#lrdvu2d8A1GumSmoKb2krQmtKhWXq-tyGpHuM7aMwsw).
 
-And to own a part of what we are building, invest in SimpleX Chat's [community round on Wefunder](https://wefunder.com/simplex.chat?utm_source=ep).
+To own a part of the company that builds it, invest in SimpleX Chat's [community round on Wefunder](https://wefunder.com/simplex.chat?utm_source=ep).
 
 ---
 

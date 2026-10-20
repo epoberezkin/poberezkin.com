@@ -28,7 +28,7 @@ AI can solve the three problems that closed the market:
 
 Agents can also make buying cheaper, safer and more convenient: an agent can compare a thousand times more offers than a person, without an aggregator skewing the comparison toward whoever pays; it can protect its owner from manipulation; and it gives everybody what only a few could afford – a personal concierge.
 
-But AI also breaks trust in the networks we use to reach each other. It can clone a voice and a face, and phone numbers and email addresses are easy to spoof. Anybody who has your number or email can target you, or pretend to be somebody you know – and an agent can be deceived the same way.
+But AI also breaks trust in the networks we use. It can clone a voice and a face, and phone numbers and email addresses are easy to spoof. Anybody who has your number or email can target you, or pretend to be somebody you know – and an agent can be deceived the same way.
 
 ## What keeps a market open
 

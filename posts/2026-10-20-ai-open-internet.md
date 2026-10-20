@@ -1,18 +1,20 @@
 ---
-title: "How AI Agents Can Give Us the Internet Back"
+title: "Can AI Agents Give Us The Internet Back?"
 author: Evgeny Poberezkin
 tags: ai, internet
 ---
 
-## Internet: commerce not allowed
+They can – but not on the networks we use today.
 
-When the internet began, commerce was not allowed on it. The NSFNET backbone policy prohibited its use "for purposes 'not in support of Research and Education'"[^aup]. An act of Congress let the networks be used for other purposes in 1992[^law], and in April 1993 CERN gave up all rights to the web's code[^cern], so that anybody could build on it.
+## Internet: a market that nobody owned
+
+When the internet began, commerce was not allowed on it. The NSFNET backbone policy prohibited its use "for purposes 'not in support of Research and Education'"[^aup]. An act of Congress let it be used for other purposes in 1992[^law], and in April 1993 CERN gave up all rights to the web's code[^cern], so that anybody could build on it.
 
 What followed was a market that nobody owned. Anybody could publish and read, and people found services in catalogues[^catalog].
 
 ## How we lost it to big tech
 
-Catalogues did not scale: people curated them by hand, and the web grew faster than they could. Search replaced them and became private – a few companies own the indices and fill the top results with paid placements, which people click even when they are more expensive or worse rated[^clicks]. And software was expensive, so only large companies could afford to build the services people used.
+Catalogues did not scale: people curated them manually, and the web grew too fast for it to work. Search replaced them and became private – a few companies own the indices and fill the top results with paid placements, which people click even when they are more expensive or worse rated[^clicks]. And software was expensive, so only large companies could afford to build the services people used.
 
 The market became a few walled gardens. Their owners decide who gets found, see every buyer and take a cut of every deal.
 
@@ -20,7 +22,7 @@ The market became a few walled gardens. Their owners decide who gets found, see 
 
 AI solves the three problems that closed the market. Catalogues can scale again, because LLMs can curate and search them. Search indices can become a public good, because data is now cheap. And creating software costs next to nothing, so anybody can build a service.
 
-Agents also make buying cheaper, safer and more convenient. An agent can compare a thousand times more offers than a person can, and it needs no aggregator to do it – it aggregates offers itself, cheaply, without anybody in the middle skewing the comparison towards whoever pays. It can protect its owner from manipulation, and it gives everybody what only a few could afford before – a personal concierge.
+Agents can also make buying cheaper, safer and more convenient. An agent can compare a thousand times more offers than a person can, and it needs no aggregator to do it – it can aggregate offers itself, without anybody in the middle skewing the comparison towards whoever pays. It can protect its owner from manipulation, and it gives everybody what only a few could afford before – a personal concierge.
 
 But AI also breaks trust in the networks we use to reach each other. It can clone a voice and a face, and phone numbers and email addresses are easy to spoof. Anybody who has your number or email can target you, or pretend to be somebody you know – and an agent can be deceived the same way.
 
@@ -54,11 +56,13 @@ Buyers can ask without being identified. A buyer's agent reads sellers' channels
 
 And nobody sits in between. SimpleX needs no accounts, and its servers relay encrypted messages without knowing who sends them to whom, so they cannot see a deal, let alone tax it. That includes us: SimpleX Chat licensed the network protocols to the SimpleX Network Consortium[^consortium].
 
-Much of this already works. Businesses use SimpleX channels and business addresses, and the directory lists public groups and channels. Test names work now, and `.simplex` names go on sale on 12 December 2026[^sale]. We have just released an MCP server that lets any agent join SimpleX conversations, with its owner approving each connection and message in the app[^mcp], and published open specifications for websites to publish their SimpleX addresses and for agents to call each other's tools[^protocols].
+Businesses already use SimpleX channels and business addresses, and the directory lists public groups and channels. Test names work now, and `.simplex` names go on sale on 12 December 2026[^sale]. We have just released an MCP server that lets any agent join SimpleX conversations, with its owner approving each connection and message in the app[^mcp], and published open specifications for websites to publish their SimpleX addresses and for agents to call each other's tools[^protocols].
 
-What is coming next: catalogues of sellers on SimpleX names, curated by people and by LLMs; agents calling each other's tools with a single request, without a conversation; custom interfaces inside chats; and a fully autonomous namespace, so that no company, including ours, can take a seller's name away.
-
-I do not know of another network that passes all three tests. If you do, I would like to hear about it.
+What is coming next:
+- catalogues of sellers on SimpleX names, curated by people and by LLMs;
+- agents calling each other's tools with a single request over SimpleX, without creating a conversation;
+- custom interfaces inside chats; and
+- a fully autonomous namespace, so that no company, including ours, can take a seller's name away.
 
 ## Join us and own it
 

@@ -14,7 +14,7 @@ Anybody could build on it, publish and read, and people found services in catalo
 
 ## How we lost it to big tech
 
-Catalogs did not scale: people curated them manually, and the web grew too fast for that to work. Search replaced them, and a few companies came to own it: they fill the top results with paid placements, which people click even when the products are more expensive or worse rated[^clicks]. And software was expensive, so only large companies could afford to build the services people used.
+Catalogs did not scale: people curated them manually, and the web grew too fast for that to work. Search replaced them, and a few companies came to own it: they fill the top results with paid placements, which people click even when the products are more expensive or worse rated[^clicks]. And software was expensive to build at scale, so a few well-funded companies built the services most people used.
 
 The market became a few walled gardens. Their owners decide who gets found and charge for it, see every buyer and take a cut of the deals.
 
@@ -32,7 +32,7 @@ But AI also breaks trust in the networks we use. It can clone a voice and a face
 
 ## What keeps a market open
 
-A market stays open only while three things hold:
+A market stays open only while three conditions hold:
 
 1. **Sellers can be found and trusted.** When anybody can be faked, a seller's reputation should be attached to a trusted name, or agents will buy from impostors.
 2. **Buyers can ask without being identified.** A request tells who wants what, when and for how much. Whoever learns that can raise the price for the buyer who needs it most[^pricing].
@@ -42,7 +42,7 @@ A market stays open only while three things hold:
 
 **A public square.** Rosenblat, Strauss and O'Reilly propose a public space where agents broadcast their requests, and sellers' agents answer[^square]. But broadcasting makes every request public, so buyers can no longer ask without being identified. The authors list privacy loss among the risks themselves. It should be the opposite: offers are public, and requests are private.
 
-**Platforms.** We saw what happens when a platform owns the market, and agents on platforms change nothing: the platform still decides who gets found, sees every buyer and takes its cut. Meta's business agents, for example, already serve customers inside WhatsApp and Messenger[^meta].
+**Platforms.** We saw what happens when a platform owns the market, and agents on platforms change nothing: the platform still decides who gets found, sees every buyer and takes its cut. Meta's business agents, for example, already sell inside WhatsApp and Messenger[^meta], where Meta knows every buyer.
 
 **Websites with MCP.** An agent can call a seller's website directly, but every request shows its IP address, and to get a reply later it needs an account – a registration that is hard for an agent, and that identifies the buyer. And it still finds sellers through search that big tech owns.
 
@@ -65,7 +65,7 @@ On this network, the market can open again. Sellers publish offers under names n
 
 ## Join us and own it
 
-Tell us what you need from this network, and what is missing: [write to us on SimpleX](https://smp6.simplex.im/a#lrdvu2d8A1GumSmoKb2krQmtKhWXq-tyGpHuM7aMwsw). And so that its users can own part of it, SimpleX Chat is raising a [community round on Wefunder](https://wefunder.com/simplex.chat?utm_source=blog).
+Whatever you create and build on SimpleX – a community, a channel, a service or an agent – is yours. Tell us what you need from the network, and what is missing: [write to us on SimpleX](https://smp6.simplex.im/a#lrdvu2d8A1GumSmoKb2krQmtKhWXq-tyGpHuM7aMwsw). And to own a part of the company that builds it, invest in SimpleX Chat's [community round on Wefunder](https://wefunder.com/simplex.chat?utm_source=blog).
 
 ---
 

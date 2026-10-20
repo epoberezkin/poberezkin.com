@@ -34,13 +34,13 @@ But AI also breaks trust in the networks we use. It can clone a voice and a face
 
 A market stays open only while three things hold:
 
-1. **Sellers can be found and trusted.** When anybody can be faked, a seller's name has to stay the same, or agents will buy from impostors.
+1. **Sellers can be found and trusted.** When anybody can be faked, a seller's reputation should be attached to a trusted name, or agents will buy from impostors.
 2. **Buyers can ask without being identified.** A request tells who wants what, when and for how much. Whoever learns that can raise the price for the buyer who needs it most.
 3. **Nobody sits in between.** A middleman decides who gets found and takes a cut of every deal – this is how the open market closed last time.
 
 ## Why today's proposals fail
 
-**A public square.** Sruly Rosenblat, Ilan Strauss and Tim O'Reilly propose a public space where agents broadcast their requests, and sellers' agents answer[^square]. But broadcasting makes every request public, so buyers can no longer ask without being identified. The authors list privacy loss among the risks themselves. It should be the opposite: offers are public, and requests are private.
+**A public square.** Rosenblat, Strauss and O'Reilly propose a public space where agents broadcast their requests, and sellers' agents answer[^square]. But broadcasting makes every request public, so buyers can no longer ask without being identified. The authors list privacy loss among the risks themselves. It should be the opposite: offers are public, and requests are private.
 
 **Platforms.** We saw what happens when a platform owns the market, and agents on platforms change nothing: the platform still decides who gets found, sees every buyer and takes its cut. Meta's business agents, for example, already serve customers inside WhatsApp and Messenger[^meta].
 

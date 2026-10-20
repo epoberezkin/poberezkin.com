@@ -50,7 +50,7 @@ A market stays open only while three conditions hold:
 
 We have been building SimpleX since 2020 for private communication between people. It is the only messaging network without any user identifiers[^simplex]: nobody can contact you, or pretend to be somebody you know, unless you give them a link. Over 600,000 people use it every month.
 
-The same design is what an open market for agents needs. Sellers can publish their addresses and channels under SimpleX names that only they control[^names]. Buyers' agents can read these channels unseen[^channels] and contact each seller with a new random profile and a hidden IP address – a throwaway account for one conversation. And nobody sits in between: the servers relay encrypted messages without knowing who sends them to whom – and that includes us: SimpleX Chat licensed the network protocols to the SimpleX Network Consortium[^consortium].
+The same design is what an open market for agents needs. Sellers can publish their addresses and channels under SimpleX names that only they control[^names]. Buyers' agents can read these channels unseen[^channels] and contact each seller from a throwaway profile with a hidden IP address. And nobody sits in between, including us[^consortium]: the servers relay encrypted messages without knowing who sends them to whom.
 
 Businesses already support their customers on SimpleX. Test names work now, and `.simplex` names go [on sale on December 12, 2026](https://simplex.domains/). We have just released an MCP server[^mcp] that connects any agent to SimpleX, with its owner approving its connections and messages in the app, and published open specifications for websites and agents[^specs].
 
@@ -81,13 +81,13 @@ Whatever you create and build on SimpleX – a community, a channel, a service o
 
 [^square]: Sruly Rosenblat, Ilan Strauss and Tim O'Reilly, [Agents Need a Public Square](https://asimovaddendum.substack.com/p/agents-need-a-public-square), June 5, 2026.
 
-[^simplex]: No phone numbers, usernames, account IDs or even random IDs. Instead of identifying users, SimpleX assigns random identifiers to each connection – separate ones for sending and receiving – so only the users know who they talk to: [How SimpleX works](https://simplex.chat/docs/simplex.html).
+[^simplex]: No phone numbers, usernames, account IDs or even random IDs. Instead of identifying users, SimpleX assigns random identifiers to each connection – separate ones for sending and receiving – so only the users know who they talk to: [SimpleX whitepaper](https://github.com/simplex-chat/simplexmq/blob/stable/protocol/overview-tjr.md).
 
 [^names]: [SimpleX public names](https://simplex.chat/blog/20260722-simplex-public-names.html): "Only you control the name with the key in your wallet."
 
 [^channels]: [SimpleX channels](https://simplex.chat/blog/20260430-simplex-channels-v6-5-consortium-crowdfunding-freedom-of-speech.html): "Anybody can join a public channel via its link and see what is sent, but not who sent it, and not who else is reading."
 
-[^consortium]: The [SimpleX Network Consortium](https://simplexnetwork.org/consortium.html) is a perpetual and irrevocable agreement between the nonprofit SimpleX Network Foundation and SimpleX Chat for protocol licensing and governance; the governance is moving to it. Once the power over the protocols moves away from the company, it cannot move back ([SimpleX Channels, SimpleX Network Consortium and Community Crowdfunding](https://simplex.chat/blog/20260430-simplex-channels-v6-5-consortium-crowdfunding-freedom-of-speech.html)).
+[^consortium]: SimpleX Chat licensed the network protocols to the [SimpleX Network Consortium](https://simplexnetwork.org/consortium.html) – an agreement between the nonprofit SimpleX Network Foundation and SimpleX Chat for protocol licensing and governance.
 
 [^mcp]: Start an agent with `npx -y @simplex-chat/mcp serve my-agent` and join its chat in the SimpleX app: the agent asks there before it connects to anybody or sends a message, and you approve with one tap. It works with Claude Code now: [@simplex-chat/mcp](https://www.npmjs.com/package/@simplex-chat/mcp).
 

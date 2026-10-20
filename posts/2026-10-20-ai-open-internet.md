@@ -18,7 +18,7 @@ The market became a few walled gardens. Their owners decide who gets found, see 
 
 ## AI changes the game
 
-AI reverses all three. Catalogues can scale again, because LLMs can curate and search them. Search indices can become a public good, because data is now cheap. And creating software costs next to nothing, so anybody can build a service.
+AI solves the three problems that closed the market. Catalogues can scale again, because LLMs can curate and search them. Search indices can become a public good, because data is now cheap. And creating software costs next to nothing, so anybody can build a service.
 
 Agents also make buying cheaper, safer and more convenient. An agent can compare a thousand times more offers than a person can, and it needs no aggregator to do it – it aggregates offers itself, cheaply, without anybody in the middle skewing the comparison towards whoever pays. It can protect its owner from manipulation, and it gives everybody what only a few could afford before – a personal concierge.
 
@@ -52,15 +52,15 @@ Sellers can be found and trusted, because they publish a contact address and a c
 
 Buyers can ask without being identified. A buyer's agent reads sellers' channels without being seen[^channels], and it contacts each seller with a new random profile – a private two-way conversation that works like a throwaway account, while private message routing hides its IP address from the seller.
 
-And nobody sits in between. SimpleX needs no accounts, and its servers relay encrypted messages without knowing who sends them to whom, so they cannot see a deal, let alone tax it.
+And nobody sits in between. SimpleX needs no accounts, and its servers relay encrypted messages without knowing who sends them to whom, so they cannot see a deal, let alone tax it. That includes us: SimpleX Chat licensed the network protocols to the SimpleX Network Consortium[^consortium].
 
 Much of this already works. Businesses use SimpleX channels and business addresses, and the directory lists public groups and channels. Test names work now, and `.simplex` names go on sale on 12 December 2026[^sale]. We have just released an MCP server that lets any agent join SimpleX conversations, with its owner approving each connection and message in the app[^mcp], and published open specifications for websites to publish their SimpleX addresses and for agents to call each other's tools[^protocols].
 
-Over the next years we plan to build the rest: catalogues of sellers on SimpleX names, curated by people and by LLMs; agents calling each other's tools with a single request, without a conversation; custom interfaces inside chats; and the transfer of names to the SimpleX Network Consortium[^consortium], so that no single company, including ours, operates them.
+What is coming next: catalogues of sellers on SimpleX names, curated by people and by LLMs; agents calling each other's tools with a single request, without a conversation; custom interfaces inside chats; and a fully autonomous namespace, so that no company, including ours, can take a seller's name away.
 
 I do not know of another network that passes all three tests. If you do, I would like to hear about it.
 
-## Join us, own it
+## Join us and own it
 
 Businesses can already publish a channel and a contact on SimpleX, and agent builders can connect their agents today. And this time, the people who use the network can own a part of it: SimpleX Chat is raising a community round on Wefunder[^wefunder].
 
@@ -100,6 +100,6 @@ Businesses can already publish a channel and a contact on SimpleX, and agent bui
 
 [^protocols]: [Publishing SimpleX addresses on websites](https://github.com/simplex-chat/simplex-chat/blob/stable/docs/protocol/web-discovery.md) and [Agent protocols over SimpleX](https://github.com/simplex-chat/simplex-chat/blob/stable/docs/protocol/agent-protocols.md).
 
-[^consortium]: An agreement between the non-profit SimpleX Network Foundation and SimpleX Chat: [SimpleX channels, the consortium and crowdfunding](https://simplex.chat/blog/20260430-simplex-channels-v6-5-consortium-crowdfunding-freedom-of-speech.html).
+[^consortium]: The Consortium is a perpetual and irrevocable agreement between the non-profit SimpleX Network Foundation and SimpleX Chat that governs the protocols and their licensing, and the protocol governance is moving to it. Once the power over the protocols moves away from the company, it cannot move back: [SimpleX Channels, SimpleX Network Consortium and Community Crowdfunding](https://simplex.chat/blog/20260430-simplex-channels-v6-5-consortium-crowdfunding-freedom-of-speech.html).
 
 [^wefunder]: [wefunder.com/simplex.chat](https://wefunder.com/simplex.chat?utm_source=blog).

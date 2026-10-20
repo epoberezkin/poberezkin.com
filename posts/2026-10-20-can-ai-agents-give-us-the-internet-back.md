@@ -20,7 +20,7 @@ The market became a few walled gardens. Their owners decide who gets found and c
 
 ## AI changes the game
 
-AI can solve the three problems that closed the market:
+AI can solve the three problems that closed the Internet market:
 
 - catalogs can scale again, because AI-powered services can curate and search them;
 - search indices can become a public good, because data is now cheap;
@@ -50,22 +50,24 @@ A market stays open only while three conditions hold:
 
 We have been building SimpleX since 2020 for private communication between people. It is the only messaging network without any user identifiers[^simplex]: nobody can contact you, or pretend to be somebody you know, unless you give them a link. Over 600,000 people use it every month.
 
-SimpleX can enable an open market for agents. Sellers publish their addresses and channels under SimpleX names that only they control[^names]. Buyers' agents read these channels unseen[^channels] and contact each seller from a throwaway profile with a hidden IP address. And nobody sits in between, including us[^consortium]: the servers relay encrypted messages without knowing who sends them to whom.
+SimpleX can enable an open market for agents. Sellers would publish their addresses under SimpleX names that only they control[^names]. Buyers' agents would read sellers' channels privately[^channels] and contact each seller from a throwaway profile with a hidden IP address. And nobody sits in between, including us[^consortium]: the servers relay encrypted messages without knowing who sends them to whom.
 
-Businesses already support their customers on SimpleX. Test names work now, and `.simplex` names go [on sale on December 12, 2026](https://simplex.domains/). We have just released an MCP server[^mcp] that connects any agent to SimpleX, and published open specifications for websites and agents[^specs].
+Some businesses already support their customers via SimpleX. Test names work now, and `.simplex` names go [on sale on December 12, 2026](https://simplex.domains/). We have just released an MCP server[^mcp] that connects any agent to SimpleX, and published open specifications for websites and agents[^specs].
 
 ## What the market can become
 
 On this network, the market can open again: a buyer's agent compares thousands of offers, asks the best sellers privately, and buys with no platform taking a cut. To get there, we are building:
 
 - catalogs of sellers on SimpleX names, curated by people and AI-powered services;
-- agents calling each other's tools with a single request over SimpleX, without creating a conversation;
+- agents calling each other's tools with a request over SimpleX, without creating a conversation;
 - custom interfaces inside chats; and
 - an autonomous namespace, so that no company, including ours, can take a seller's name away.
 
 ## Join us and own it
 
-Whatever you create and build on SimpleX – a community, a channel, a service or an agent – is yours. Tell us what you need from the network, and what is missing: [write to us on SimpleX](https://smp6.simplex.im/a#lrdvu2d8A1GumSmoKb2krQmtKhWXq-tyGpHuM7aMwsw). And to own a part of the company that builds it, invest in SimpleX Chat's [community round on Wefunder](https://wefunder.com/simplex.chat?utm_source=blog).
+Whatever you create and build on SimpleX – a community, a channel, a service or an agent – is yours. Tell us what you need from the network, and what is missing: [write to us on SimpleX](https://smp6.simplex.im/a#lrdvu2d8A1GumSmoKb2krQmtKhWXq-tyGpHuM7aMwsw).
+
+And to own a part of what we are building, invest in SimpleX Chat's [community round on Wefunder](https://wefunder.com/simplex.chat?utm_source=ep).
 
 ---
 

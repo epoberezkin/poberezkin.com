@@ -14,15 +14,15 @@ Anybody could build on it, publish and read, and people found services in catalo
 
 ## How we lost it to big tech
 
-Catalogs did not scale: people curated them manually, and the web grew too fast for that to work. Search replaced them, and a few companies came to own it: they fill the top results with paid placements, which people click even when the products are more expensive or worse rated[^clicks]. And software was expensive to build at scale, so a few well-funded companies built the services most people used.
+Catalogs were curated manually and could not keep up as the web grew. Search replaced them, and a few companies came to own it. And software was expensive to build at scale, so well-funded companies built the services most people used.
 
-The market became a few walled gardens. Their owners decide who gets found and charge for it, see every buyer and take a cut of the deals.
+The market became a few walled gardens. Their owners decide who gets found and charge for it[^clicks], see every buyer and take a cut of the deals.
 
 ## AI changes the game
 
 AI can solve the three problems that closed the market:
 
-- catalogs can scale again, because LLMs can curate and search them;
+- catalogs can scale again, because AI-powered services can curate and search them;
 - search indices can become a public good, because data is now cheap;
 - creating software costs a fraction of what it did, so anybody can build a service.
 
@@ -56,9 +56,9 @@ Businesses already support their customers on SimpleX. Test names work now, and 
 
 ## What the market can become
 
-On this network, the market can open again. Sellers publish offers under names nobody can take away, in catalogs that LLMs curate and search. A buyer's agent reads thousands of them unseen, asks the best sellers privately, and buys with no platform taking a cut. To get there, we are building:
+On this network, the market can open again. Sellers publish offers under names nobody can take away, in catalogs that AI-powered services curate and search. A buyer's agent reads thousands of them unseen, asks the best sellers privately, and buys with no platform taking a cut. To get there, we are building:
 
-- catalogs of sellers on SimpleX names, curated by people and LLMs;
+- catalogs of sellers on SimpleX names, curated by people and AI-powered services;
 - agents calling each other's tools with a single request over SimpleX, without creating a conversation;
 - custom interfaces inside chats; and
 - an autonomous namespace, so that no company, including ours, can take a seller's name away.
@@ -69,13 +69,13 @@ Whatever you create and build on SimpleX – a community, a channel, a service o
 
 ---
 
-[^history]: The NSFNET backbone policy prohibited its use "for purposes 'not in support of Research and Education'" ([A Brief History of the Internet](https://www.internetsociety.org/internet/history-internet/brief-history-internet/)). Public Law 102-476 of October 23, 1992 allowed networks to be used "substantially for purposes in addition to research and education" ([text](https://www.govinfo.gov/content/pkg/STATUTE-106/pdf/STATUTE-106-Pg2297.pdf)). On April 30, 1993, CERN declared: "CERN relinquishes all intellectual property rights to this code" ([Licensing the Web](https://home.cern/science/computing/the-birth-of-the-web/licensing-web/)).
+[^history]: The NSFNET backbone policy prohibited its use "for purposes 'not in support of Research and Education'" ([A Brief History of the Internet](https://www.internetsociety.org/internet/history-internet/brief-history-internet/)). Public Law 102-476 of October 23, 1992 allowed networks to be used "substantially for purposes in addition to research and education" ([section 4](https://www.govinfo.gov/content/pkg/STATUTE-106/pdf/STATUTE-106-Pg2297.pdf#page=4)). On April 30, 1993, CERN declared: "CERN relinquishes all intellectual property rights to this code" ([Licensing the Web](https://home.cern/science/computing/the-birth-of-the-web/licensing-web/)).
 
 [^catalog]: The best known was The Whole Internet User's Guide & Catalog, published by Tim O'Reilly's company in 1992; it sold more than a million copies ([Brian Erwin](https://www.oreilly.com/content/monty-python-and-the-dawn-of-internet-marketing/), O'Reilly, 2016). In 1993 the company launched GNN – in O'Reilly's words, "the first commercial website" ([opening remarks at Bellagio](https://ai-disclosures.org/assets/bellagio/Tim-OReilly-Opening-Remarks-Bellagio-2026.pdf), April 28, 2026).
 
-[^clicks]: Rock, Strauss, O'Reilly and Mazzucato, [Behind the Clicks: Can Amazon allocate user attention as it pleases?](https://www.ucl.ac.uk/bartlett/public-purpose/wp2023-11), UCL IIPP working paper 2023-11.
+[^clicks]: Paid placements fill the top results, and people click them even when the products are more expensive or worse rated: Rock, Strauss, O'Reilly and Mazzucato, [Behind the Clicks: Can Amazon allocate user attention as it pleases?](https://www.ucl.ac.uk/bartlett/public-purpose/wp2023-11), UCL IIPP working paper 2023-11.
 
-[^pricing]: The US Federal Trade Commission found in its preliminary review that details such as a person's precise location or browser history are used to charge different people different prices for the same goods and services: [FTC Surveillance Pricing Study Indicates Wide Range of Personal Data Used to Set Individualized Consumer Prices](https://www.ftc.gov/news-events/news/press-releases/2025/01/ftc-surveillance-pricing-study-indicates-wide-range-personal-data-used-set-individualized-consumer), January 17, 2025.
+[^pricing]: The US Federal Trade Commission found in an initial analysis that details such as a person's precise location or browser history are used to charge different people different prices for the same goods and services: [FTC Surveillance Pricing Study Indicates Wide Range of Personal Data Used to Set Individualized Consumer Prices](https://www.ftc.gov/news-events/news/press-releases/2025/01/ftc-surveillance-pricing-study-indicates-wide-range-personal-data-used-set-individualized-consumer), January 17, 2025.
 
 [^square]: Sruly Rosenblat, Ilan Strauss and Tim O'Reilly, [Agents Need a Public Square](https://asimovaddendum.substack.com/p/agents-need-a-public-square), June 5, 2026.
 

@@ -4,7 +4,7 @@ author: Evgeny Poberezkin
 tags: ai, internet
 ---
 
-They can – but not on the networks we use today.
+They can – but not on the networks most people use.
 
 ## Internet: a market that nobody owned
 

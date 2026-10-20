@@ -35,7 +35,7 @@ But AI also breaks trust in the networks we use. It can clone a voice and a face
 A market stays open only while three things hold:
 
 1. **Sellers can be found and trusted.** When anybody can be faked, a seller's reputation should be attached to a trusted name, or agents will buy from impostors.
-2. **Buyers can ask without being identified.** A request tells who wants what, when and for how much. Whoever learns that can raise the price for the buyer who needs it most.
+2. **Buyers can ask without being identified.** A request tells who wants what, when and for how much. Whoever learns that can raise the price for the buyer who needs it most[^pricing].
 3. **Nobody sits in between.** A middleman decides who gets found and takes a cut of every deal – this is how the open market closed last time.
 
 ## Why today's proposals fail
@@ -74,6 +74,8 @@ Tell us what you need from this network, and what is missing: [write to us on Si
 [^catalog]: The best known was The Whole Internet User's Guide & Catalog, published by Tim O'Reilly's company in 1992; it sold more than a million copies ([Brian Erwin](https://www.oreilly.com/content/monty-python-and-the-dawn-of-internet-marketing/), O'Reilly, 2016). In 1993 the company launched GNN – in O'Reilly's words, "the first commercial website" ([opening remarks at Bellagio](https://ai-disclosures.org/assets/bellagio/Tim-OReilly-Opening-Remarks-Bellagio-2026.pdf), April 28, 2026).
 
 [^clicks]: Rock, Strauss, O'Reilly and Mazzucato, [Behind the Clicks: Can Amazon allocate user attention as it pleases?](https://www.ucl.ac.uk/bartlett/public-purpose/wp2023-11), UCL IIPP working paper 2023-11.
+
+[^pricing]: The US Federal Trade Commission found in its preliminary review that details such as a person's precise location or browser history are used to charge different people different prices for the same goods and services: [FTC Surveillance Pricing Study Indicates Wide Range of Personal Data Used to Set Individualized Consumer Prices](https://www.ftc.gov/news-events/news/press-releases/2025/01/ftc-surveillance-pricing-study-indicates-wide-range-personal-data-used-set-individualized-consumer), January 17, 2025.
 
 [^square]: Sruly Rosenblat, Ilan Strauss and Tim O'Reilly, [Agents Need a Public Square](https://asimovaddendum.substack.com/p/agents-need-a-public-square), June 5, 2026.
 

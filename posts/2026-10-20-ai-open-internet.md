@@ -8,7 +8,7 @@ They can – but not on the networks we use today.
 
 ## Internet: a market that nobody owned
 
-When the internet began, commerce was not allowed on it. In 1992 Congress opened it to other uses, and in 1993 CERN gave up all rights to the web's code[^history].
+When the internet began, commerce was not allowed on it. In 1992 Congress opened it to commerce, and in 1993 CERN gave up all rights to the web's code[^history].
 
 Anybody could build on it, publish and read, and people found services in catalogs[^catalog].
 

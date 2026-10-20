@@ -38,13 +38,13 @@ A market stays open only while three conditions hold:
 2. **Buyers can ask without being identified.** A request tells who wants what, when and for how much. Whoever learns that can raise the price for the buyer who needs it most[^pricing].
 3. **Nobody sits in between.** A middleman decides who gets found and takes a cut of every deal – this is how the open market closed last time.
 
-## Why today's proposals fail
-
-**A public square.** Rosenblat, Strauss and O'Reilly propose a public space where agents broadcast their requests, and sellers' agents answer[^square]. But broadcasting makes every request public, so buyers can no longer ask without being identified. The authors list privacy loss among the risks themselves. It should be the opposite: offers are public, and requests are private.
+## Why today's solutions fail
 
 **Platforms.** We saw what happens when a platform owns the market, and agents on platforms change nothing: the platform still decides who gets found, sees every buyer and takes its cut. Meta's business agents, for example, already sell inside WhatsApp and Messenger[^meta], where Meta knows every buyer.
 
-**Websites with MCP.** An agent can call a seller's website directly, but every request shows its IP address, and to get a reply later it needs an account – a registration that is hard for an agent, and that identifies the buyer. And it still finds sellers through search that big tech owns.
+**Websites with MCP services.** An agent can call a seller's website directly, but every request shows its IP address, and to get a reply later it needs an account – a registration that is hard for an agent, and that identifies the buyer. And it still finds sellers through search that big tech owns.
+
+**A public square.** Rosenblat, Strauss and O'Reilly propose a public space where agents broadcast their requests, and sellers' agents answer[^square]. But broadcasting makes every request public, so buyers can no longer ask without being identified. The authors list privacy loss among the risks themselves. It should be the opposite: offers are public, and requests are private.
 
 ## We built SimpleX for people – it is ready for agents
 
@@ -77,9 +77,9 @@ Whatever you create and build on SimpleX – a community, a channel, a service o
 
 [^pricing]: The US Federal Trade Commission found in an initial analysis that details such as a person's precise location or browser history are used to charge different people different prices for the same goods and services: [FTC Surveillance Pricing Study Indicates Wide Range of Personal Data Used to Set Individualized Consumer Prices](https://www.ftc.gov/news-events/news/press-releases/2025/01/ftc-surveillance-pricing-study-indicates-wide-range-personal-data-used-set-individualized-consumer), January 17, 2025.
 
-[^square]: Sruly Rosenblat, Ilan Strauss and Tim O'Reilly, [Agents Need a Public Square](https://asimovaddendum.substack.com/p/agents-need-a-public-square), June 5, 2026.
-
 [^meta]: "more than 1 million businesses using them to talk to their customers or complete sales every week": Meta, [Q2 2026 prepared remarks](https://s21.q4cdn.com/399680738/files/doc_financials/2026/q2/META-Q2-2026-Prepared-Remarks.pdf), July 29, 2026.
+
+[^square]: Sruly Rosenblat, Ilan Strauss and Tim O'Reilly, [Agents Need a Public Square](https://asimovaddendum.substack.com/p/agents-need-a-public-square), June 5, 2026.
 
 [^simplex]: No phone numbers, usernames, account IDs or even random IDs. Instead of identifying users, SimpleX assigns random identifiers to each connection – separate ones for sending and receiving – so only the users know who they talk to: [How SimpleX works](https://simplex.chat/docs/simplex.html).
 
@@ -87,8 +87,8 @@ Whatever you create and build on SimpleX – a community, a channel, a service o
 
 [^channels]: [SimpleX channels](https://simplex.chat/blog/20260430-simplex-channels-v6-5-consortium-crowdfunding-freedom-of-speech.html): "Anybody can join a public channel via its link and see what is sent, but not who sent it, and not who else is reading."
 
+[^consortium]: The [SimpleX Network Consortium](https://simplexnetwork.org/consortium.html) is a perpetual and irrevocable agreement between the nonprofit SimpleX Network Foundation and SimpleX Chat for protocol licensing and governance; the governance is moving to it. Once the power over the protocols moves away from the company, it cannot move back ([SimpleX Channels, SimpleX Network Consortium and Community Crowdfunding](https://simplex.chat/blog/20260430-simplex-channels-v6-5-consortium-crowdfunding-freedom-of-speech.html)).
+
 [^mcp]: Start an agent with `npx -y @simplex-chat/mcp serve my-agent` and join its chat in the SimpleX app: the agent asks there before it connects to anybody or sends a message, and you approve with one tap. It works with Claude Code now: [@simplex-chat/mcp](https://www.npmjs.com/package/@simplex-chat/mcp).
 
 [^specs]: A website marks its SimpleX addresses with the `simplex` link relation and lists them in `/.well-known/simplex.json` ([Publishing SimpleX addresses on websites](https://github.com/simplex-chat/simplex-chat/blob/stable/docs/protocol/web-discovery.md)). Agents call each other's tools with ordinary MCP messages, sent in a chat with `/_call` or as a single request ([Agent protocols over SimpleX](https://github.com/simplex-chat/simplex-chat/blob/stable/docs/protocol/agent-protocols.md)).
-
-[^consortium]: The [SimpleX Network Consortium](https://simplexnetwork.org/consortium.html) is a perpetual and irrevocable agreement between the nonprofit SimpleX Network Foundation and SimpleX Chat for protocol licensing and governance; the governance is moving to it. Once the power over the protocols moves away from the company, it cannot move back ([SimpleX Channels, SimpleX Network Consortium and Community Crowdfunding](https://simplex.chat/blog/20260430-simplex-channels-v6-5-consortium-crowdfunding-freedom-of-speech.html)).

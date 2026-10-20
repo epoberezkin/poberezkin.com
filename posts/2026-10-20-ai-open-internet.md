@@ -20,9 +20,13 @@ The market became a few walled gardens. Their owners decide who gets found and c
 
 ## AI changes the game
 
-AI can solve the three problems that closed the market. Catalogs can scale again, because LLMs can curate and search them. Search indices can become a public good, because data is now cheap. And creating software costs a fraction of what it did, so anybody can build a service.
+AI can solve the three problems that closed the market:
 
-Agents can also make buying cheaper, safer and more convenient. An agent can compare a thousand times more offers than a person can, without an aggregator in the middle skewing the comparison toward whoever pays. It can protect its owner from manipulation, and it gives everybody what only a few could afford – a personal concierge.
+- catalogs can scale again, because LLMs can curate and search them;
+- search indices can become a public good, because data is now cheap;
+- creating software costs a fraction of what it did, so anybody can build a service.
+
+Agents can also make buying cheaper, safer and more convenient: an agent can compare a thousand times more offers than a person, without an aggregator skewing the comparison toward whoever pays; it can protect its owner from manipulation; and it gives everybody what only a few could afford – a personal concierge.
 
 But AI also breaks trust in the networks we use to reach each other. It can clone a voice and a face, and phone numbers and email addresses are easy to spoof. Anybody who has your number or email can target you, or pretend to be somebody you know – and an agent can be deceived the same way.
 
